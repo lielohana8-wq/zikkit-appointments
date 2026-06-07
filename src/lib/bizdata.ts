@@ -182,6 +182,64 @@ export async function upsertCustomer(bizId: string, data: { name: string; phone:
   await patchBiz(bizId, { customers: { items } });
 }
 
+// ---------- Services / Pricing ----------
+export interface Service {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  duration: number;      // minutes
+  description: string;
+  whatToAsk?: string;    // what Dana should ask before booking
+  active: boolean;
+}
+
+export async function getServices(bizId: string): Promise<Service[]> {
+  const biz = await loadBiz(bizId);
+  // Services live under dana.services so Dana uses the same source of truth.
+  const raw = (biz.dana?.services as Array<Record<string, unknown>>) || [];
+  return raw.map((s) => ({
+    id: (s.id as string) || 'svc_' + Math.random().toString(36).slice(2, 8),
+    name: (s.name as string) || '',
+    category: (s.category as string) || '',
+    price: typeof s.price === 'number' ? s.price : parseInt(String(s.price || 0)) || 0,
+    duration: (s.duration as number) || 30,
+    description: (s.description as string) || '',
+    whatToAsk: (s.whatToAsk as string) || '',
+    active: s.active !== false,
+  }));
+}
+
+export async function saveServices(bizId: string, services: Service[]): Promise<void> {
+  const biz = await loadBiz(bizId);
+  await patchBiz(bizId, { dana: { ...(biz.dana || {}), services } });
+}
+
+export async function addService(bizId: string, service: Partial<Service>): Promise<void> {
+  const services = await getServices(bizId);
+  const newService: Service = {
+    id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    name: service.name || '',
+    category: service.category || '',
+    price: service.price || 0,
+    duration: service.duration || 30,
+    description: service.description || '',
+    whatToAsk: service.whatToAsk || '',
+    active: true,
+  };
+  await saveServices(bizId, [...services, newService]);
+}
+
+export async function updateService(bizId: string, id: string, changes: Partial<Service>): Promise<void> {
+  const services = await getServices(bizId);
+  await saveServices(bizId, services.map((s) => (s.id === id ? { ...s, ...changes } : s)));
+}
+
+export async function deleteService(bizId: string, id: string): Promise<void> {
+  const services = await getServices(bizId);
+  await saveServices(bizId, services.filter((s) => s.id !== id));
+}
+
 // ---------- Stations ----------
 export async function setStations(bizId: string, stations: number): Promise<void> {
   const biz = await loadBiz(bizId);

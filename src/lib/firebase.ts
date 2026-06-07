@@ -6,6 +6,8 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
+  onSnapshot,
   collection,
   getDocs,
   type Firestore,
@@ -47,7 +49,7 @@ export function getFirestoreDb(): Firestore {
   return dbInstance;
 }
 
-export { doc, getDoc, setDoc, collection, getDocs };
+export { doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs };
 
 // Product tag — this is how ZikkitAppointments data is separated
 // from the field-service Zikkit while sharing the same Firebase project.

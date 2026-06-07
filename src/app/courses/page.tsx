@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { getProducts, addProduct, deleteProduct } from '@/lib/bizdata';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Product {
@@ -23,16 +24,15 @@ export default function CoursesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState({ type: 'course', name: '', description: '', price: 0, contentUrl: '', sessions: 5 });
+  const [draft, setDraft] = useState<{ type: 'course' | 'package' | 'physical'; name: string; description: string; price: number; contentUrl: string; sessions: number }>({ type: 'course', name: '', description: '', price: 0, contentUrl: '', sessions: 5 });
 
   useEffect(() => { if (!loading && !firebaseUser) router.push('/login'); }, [loading, firebaseUser, router]);
 
   const load = useCallback(async () => {
     if (!bizId) return;
     try {
-      const res = await fetch(`/api/courses?bizId=${bizId}`);
-      const data = await res.json();
-      if (data.success) setProducts(data.products);
+      const items = await getProducts(bizId);
+      setProducts(items);
     } finally { setDataLoading(false); }
   }, [bizId]);
 
@@ -40,10 +40,7 @@ export default function CoursesPage() {
 
   const create = async () => {
     if (!bizId || !draft.name) return;
-    await fetch('/api/courses', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bizId, action: 'create', product: draft }),
-    });
+    await addProduct(bizId, draft);
     setOpen(false);
     setDraft({ type: 'course', name: '', description: '', price: 0, contentUrl: '', sessions: 5 });
     load();
@@ -51,10 +48,7 @@ export default function CoursesPage() {
 
   const remove = async (id: string) => {
     if (!bizId) return;
-    await fetch('/api/courses', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bizId, action: 'delete', product: { id } }),
-    });
+    await deleteProduct(bizId, id);
     load();
   };
 
@@ -96,7 +90,7 @@ export default function CoursesPage() {
 
       <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>פריט חדש</Typography>
-        <TextField select fullWidth label="סוג" value={draft.type} onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value }))} sx={{ mb: 2 }}>
+        <TextField select fullWidth label="סוג" value={draft.type} onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value as 'course' | 'package' | 'physical' }))} sx={{ mb: 2 }}>
           {TYPES.map((t) => <MenuItem key={t.id} value={t.id}>{t.label}</MenuItem>)}
         </TextField>
         <TextField fullWidth label="שם" value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />

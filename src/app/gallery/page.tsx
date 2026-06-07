@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { getGallery, addGalleryImage, removeGalleryImage } from '@/lib/bizdata';
 import { zikkitColors as c } from '@/styles/theme';
 
 export default function GalleryPage() {
@@ -18,9 +19,8 @@ export default function GalleryPage() {
   const load = useCallback(async () => {
     if (!bizId) return;
     try {
-      const res = await fetch(`/api/gallery?bizId=${bizId}`);
-      const data = await res.json();
-      if (data.success) setImages(data.images);
+      const imgs = await getGallery(bizId);
+      setImages(imgs);
     } finally { setDataLoading(false); }
   }, [bizId]);
 
@@ -33,24 +33,17 @@ export default function GalleryPage() {
     // Downscale to keep under Firestore limits
     const dataUrl = await downscale(file, 900, 0.7);
     try {
-      const res = await fetch('/api/gallery', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bizId, action: 'add', imageUrl: dataUrl }),
-      });
-      const data = await res.json();
-      if (data.success) setImages(data.images);
-      else alert(data.error || 'שגיאה');
+      const updated = await addGalleryImage(bizId, dataUrl);
+      setImages(updated);
+    } catch (err) {
+      alert((err as Error).message || 'שגיאה');
     } finally { setUploading(false); }
   };
 
   const remove = async (index: number) => {
     if (!bizId) return;
-    const res = await fetch('/api/gallery', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bizId, action: 'remove', index }),
-    });
-    const data = await res.json();
-    if (data.success) setImages(data.images);
+    const updated = await removeGalleryImage(bizId, index);
+    setImages(updated);
   };
 
   if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;

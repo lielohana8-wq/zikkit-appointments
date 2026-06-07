@@ -99,7 +99,10 @@ export default function DashboardPage() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1.5, mb: 3 }}>
           {[
             { icon: '📅', label: 'יומן תורים', path: '/calendar' },
+            { icon: '👥', label: 'לקוחות', path: '/customers' },
+            { icon: '📊', label: 'דוחות כספיים', path: '/reports' },
             { icon: '⚙️', label: 'הגדרת דנה', path: '/setup' },
+            { icon: '🕐', label: 'שעות פעילות', path: '/hours' },
             { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses' },
             { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery' },
             { icon: '💺', label: 'ניהול עמדות', path: '/stations' },

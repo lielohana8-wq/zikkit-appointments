@@ -95,6 +95,23 @@ export default function DashboardPage() {
           )}
         </Box>
 
+        {/* Feature navigation */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1.5, mb: 3 }}>
+          {[
+            { icon: '📅', label: 'יומן תורים', path: '/calendar' },
+            { icon: '⚙️', label: 'הגדרת דנה', path: '/setup' },
+            { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses' },
+            { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery' },
+            { icon: '💺', label: 'ניהול עמדות', path: '/stations' },
+            { icon: '📈', label: 'יועץ AI', path: '/ai-studio' },
+          ].map((t) => (
+            <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, textAlign: 'center', transition: 'all 0.2s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' } }}>
+              <Box sx={{ fontSize: 28, mb: 0.5 }}>{t.icon}</Box>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text }}>{t.label}</Typography>
+            </Box>
+          ))}
+        </Box>
+
         {/* Stats */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
           {[

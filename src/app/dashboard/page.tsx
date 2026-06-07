@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getFirestoreDb, doc, getDoc } from '@/lib/firebase';
+import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     (async () => {
       try {
         const db = getFirestoreDb();
-        const snap = await getDoc(doc(db, 'businesses', bizId));
+        const snap = await getDoc(doc(db, BIZ_COLLECTION, bizId));
         if (snap.exists()) {
           const data = snap.data();
           setBizName(data.cfg?.biz_name || '');

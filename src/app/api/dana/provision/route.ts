@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
 async function saveConfig(bizId: string, config: Record<string, unknown>, idToken: string) {
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'zikkit-e87ff';
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/businesses/${bizId}?updateMask.fieldPaths=dana&updateMask.fieldPaths=appointments`;
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/appointment_businesses/${bizId}?updateMask.fieldPaths=dana&updateMask.fieldPaths=appointments`;
   const danaCfg = {
     businessName: config.businessName,
     voiceId: config.voiceId,

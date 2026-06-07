@@ -10,7 +10,7 @@ import {
   signInWithPopup,
   type User as FirebaseUser,
 } from 'firebase/auth';
-import { getFirebaseAuth, getFirestoreDb, doc, getDoc, setDoc, PRODUCT } from '@/lib/firebase';
+import { getFirebaseAuth, getFirestoreDb, doc, getDoc, setDoc, PRODUCT, BIZ_COLLECTION } from '@/lib/firebase';
 
 interface AppUser {
   id: string;
@@ -57,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const email = fbUser.email || '';
       try {
         const db = getFirestoreDb();
-        // Look for an appointments business owned by this user
-        const snap = await getDoc(doc(db, 'businesses', uid));
-        if (snap.exists() && snap.data().product === PRODUCT) {
+        // Look in the dedicated appointments collection (fully separate from
+        // Zikkit field's `businesses` — no ID collisions possible).
+        const snap = await getDoc(doc(db, BIZ_COLLECTION, uid));
+        if (snap.exists()) {
           const data = snap.data();
           setState({
             firebaseUser: fbUser,
@@ -102,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const db = getFirestoreDb();
       const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-      await setDoc(doc(db, 'businesses', cred.user.uid), {
+      await setDoc(doc(db, BIZ_COLLECTION, cred.user.uid), {
         product: PRODUCT,
         cfg: { biz_name: bizName, lang: 'he', currency: 'ILS', region: 'IL', plan: 'trial', planStatus: 'trial', trialEnds: trialEnd },
         appointments: { bookings: [], stations: 1 },
@@ -123,23 +124,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
       const db = getFirestoreDb();
-      const existing = await getDoc(doc(db, 'businesses', result.user.uid));
-      // Only create an appointments business if none exists for this product
-      if (!existing.exists() || existing.data().product !== PRODUCT) {
-        if (!existing.exists()) {
-          const bizName = result.user.displayName || result.user.email?.split('@')[0] || 'העסק שלי';
-          const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-          await setDoc(doc(db, 'businesses', result.user.uid), {
-            product: PRODUCT,
-            cfg: { biz_name: bizName, lang: 'he', currency: 'ILS', region: 'IL', plan: 'trial', planStatus: 'trial', trialEnds: trialEnd },
-            appointments: { bookings: [], stations: 1 },
-            created: new Date().toISOString(),
-            ownerEmail: result.user.email?.toLowerCase() || '',
-          });
-        }
-        // If a field-service business exists under this uid, we do NOT overwrite it.
-        // (Per product decision: each product = separate subscription. A shared uid
-        //  with both products is an edge case handled later.)
+      // Dedicated collection — safe to check/create without touching Zikkit field.
+      const existing = await getDoc(doc(db, BIZ_COLLECTION, result.user.uid));
+      if (!existing.exists()) {
+        const bizName = result.user.displayName || result.user.email?.split('@')[0] || 'העסק שלי';
+        const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+        await setDoc(doc(db, BIZ_COLLECTION, result.user.uid), {
+          product: PRODUCT,
+          cfg: { biz_name: bizName, lang: 'he', currency: 'ILS', region: 'IL', plan: 'trial', planStatus: 'trial', trialEnds: trialEnd },
+          appointments: { bookings: [], stations: 1 },
+          created: new Date().toISOString(),
+          ownerEmail: result.user.email?.toLowerCase() || '',
+        });
       }
     } catch (e) {
       setState((p) => ({ ...p, loading: false, error: 'התחברות Google נכשלה.' }));

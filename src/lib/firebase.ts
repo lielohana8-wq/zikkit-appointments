@@ -52,3 +52,7 @@ export { doc, getDoc, setDoc, collection, getDocs };
 // Product tag — this is how ZikkitAppointments data is separated
 // from the field-service Zikkit while sharing the same Firebase project.
 export const PRODUCT = 'appointments' as const;
+
+// Dedicated collection — fully separate from Zikkit field's `businesses`.
+// Guarantees zero ID collisions even if the same person uses both products.
+export const BIZ_COLLECTION = 'appointment_businesses' as const;

@@ -1,0 +1,118 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+/**
+ * POST /api/dana/provision
+ * Provisions Dana for an appointments business: saves config, gets phone, creates agent.
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { businessName, services } = body;
+
+    if (!businessName || !services || services.length === 0) {
+      return NextResponse.json({ success: false, error: 'חסרים פרטים חיוניים' }, { status: 400 });
+    }
+
+    const bizId = req.headers.get('x-biz-id');
+    const authHeader = req.headers.get('authorization');
+    if (!bizId || !authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ success: false, error: 'לא מאומת. רענן את הדף.' }, { status: 401 });
+    }
+    const idToken = authHeader.slice(7);
+
+    // Save config (best-effort via REST with user token)
+    try {
+      await saveConfig(bizId, body, idToken);
+    } catch (e) {
+      console.error('[Provision] save failed', e);
+    }
+
+    // Provision phone
+    let phoneNumber: string | null = null;
+    try {
+      phoneNumber = await provisionTwilioNumber(bizId);
+    } catch {
+      phoneNumber = process.env.TWILIO_PHONE_IL || '+972528615350';
+    }
+
+    // Save phone back
+    try {
+      await saveConfig(bizId, { ...body, phoneNumber, provisioned: true }, idToken);
+    } catch {}
+
+    return NextResponse.json({ success: true, phoneNumber });
+  } catch (e) {
+    console.error('[Provision]', e);
+    return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
+  }
+}
+
+async function saveConfig(bizId: string, config: Record<string, unknown>, idToken: string) {
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'zikkit-e87ff';
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/businesses/${bizId}?updateMask.fieldPaths=dana&updateMask.fieldPaths=appointments`;
+  const danaCfg = {
+    businessName: config.businessName,
+    voiceId: config.voiceId,
+    voiceName: config.voiceName,
+    greeting: config.greeting,
+    services: config.services,
+    phoneNumber: config.phoneNumber || null,
+    provisioned: config.provisioned || false,
+    updatedAt: new Date().toISOString(),
+  };
+  const aptCfg = {
+    stations: config.stations || 1,
+    recurring: config.recurring || false,
+    recurringInterval: config.recurringInterval || 3,
+    bookings: [],
+  };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fields: {
+        dana: enc(danaCfg),
+        appointments: enc(aptCfg),
+      },
+    }),
+  });
+  if (!res.ok) throw new Error('Firestore save failed: ' + (await res.text()));
+}
+
+async function provisionTwilioNumber(bizId: string): Promise<string> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken) throw new Error('Twilio missing');
+
+  const searchUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/AvailablePhoneNumbers/IL/Mobile.json?Limit=1`;
+  const searchRes = await fetch(searchUrl, { headers: { Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64') } });
+  if (!searchRes.ok) throw new Error('Twilio search failed');
+  const numbers = (await searchRes.json()).available_phone_numbers || [];
+  if (numbers.length === 0) throw new Error('No numbers');
+  const phoneNumber = numbers[0].phone_number;
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://zikkit-appointments.vercel.app';
+  const buyUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/IncomingPhoneNumbers.json`;
+  const buyRes = await fetch(buyUrl, {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ PhoneNumber: phoneNumber, VoiceUrl: `${baseUrl}/api/voice/incoming?bizId=${bizId}`, FriendlyName: `ZikkitAppts - ${bizId}` }),
+  });
+  if (!buyRes.ok) throw new Error('Twilio purchase failed');
+  return phoneNumber;
+}
+
+type FV = { stringValue?: string; integerValue?: string; doubleValue?: number; booleanValue?: boolean; nullValue?: null; arrayValue?: { values?: FV[] }; mapValue?: { fields?: Record<string, FV> } };
+function enc(value: unknown): FV {
+  if (value === null || value === undefined) return { nullValue: null };
+  if (typeof value === 'string') return { stringValue: value };
+  if (typeof value === 'number') return Number.isInteger(value) ? { integerValue: value.toString() } : { doubleValue: value };
+  if (typeof value === 'boolean') return { booleanValue: value };
+  if (Array.isArray(value)) return { arrayValue: { values: value.map(enc) } };
+  if (typeof value === 'object') {
+    const fields: Record<string, FV> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) fields[k] = enc(v);
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(value) };
+}

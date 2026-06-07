@@ -188,6 +188,61 @@ export async function setStations(bizId: string, stations: number): Promise<void
   await patchBiz(bizId, { appointments: { ...(biz.appointments || {}), stations } });
 }
 
+// ---------- Team members ----------
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;          // e.g. "ספר בכיר", "קוסמטיקאית"
+  photo: string;         // data URL or hosted URL
+  description: string;
+  services: string[];    // names of services this member provides
+  station: number | null;
+  color: string;         // calendar color
+  hours: Record<number, { open: boolean; start: string; end: string }>;
+  active: boolean;
+  createdAt: string;
+}
+
+const MEMBER_COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1', '#EF4444', '#8B5CF6'];
+
+export async function getTeam(bizId: string): Promise<TeamMember[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || [];
+}
+
+export async function addTeamMember(bizId: string, member: Partial<TeamMember>): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const members = ((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || [];
+  const defaultHours: TeamMember['hours'] = {};
+  for (let i = 0; i < 7; i++) defaultHours[i] = { open: i !== 6, start: '09:00', end: i === 5 ? '14:00' : '19:00' };
+  const newMember: TeamMember = {
+    id: 'team_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    name: member.name || '',
+    role: member.role || '',
+    photo: member.photo || '',
+    description: member.description || '',
+    services: member.services || [],
+    station: member.station ?? null,
+    color: member.color || MEMBER_COLORS[members.length % MEMBER_COLORS.length],
+    hours: member.hours || defaultHours,
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+  await patchBiz(bizId, { team: { members: [...members, newMember] } });
+}
+
+export async function updateTeamMember(bizId: string, id: string, changes: Partial<TeamMember>): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const members = (((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || []).map((m) => (m.id === id ? { ...m, ...changes } : m));
+  await patchBiz(bizId, { team: { members } });
+}
+
+export async function deleteTeamMember(bizId: string, id: string): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const members = (((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || []).filter((m) => m.id !== id);
+  await patchBiz(bizId, { team: { members } });
+}
+
 // ---------- Business hours ----------
 export interface BizHours {
   // 0=Sunday .. 6=Saturday

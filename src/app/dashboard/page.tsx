@@ -105,7 +105,7 @@ export default function DashboardPage() {
             { icon: '🕐', label: 'שעות פעילות', path: '/hours' },
             { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses' },
             { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery' },
-            { icon: '💺', label: 'ניהול עמדות', path: '/stations' },
+            { icon: '🧑‍🤝‍🧑', label: 'צוות ועמדות', path: '/team' },
             { icon: '📈', label: 'יועץ AI', path: '/ai-studio' },
           ].map((t) => (
             <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, textAlign: 'center', transition: 'all 0.2s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' } }}>

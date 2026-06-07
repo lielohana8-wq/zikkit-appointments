@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBookings, addBooking, deleteBooking, loadBiz, type Booking } from '@/lib/bizdata';
+import { getBookings, addBooking, deleteBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
 import { zikkitColors as c } from '@/styles/theme';
 
 const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -14,11 +14,12 @@ export default function CalendarPage() {
   const { firebaseUser, bizId, loading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Array<{ name: string; duration: number; price?: string }>>([]);
+  const [team, setTeam] = useState<TeamMember[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '' });
+  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
 
   useEffect(() => { if (!loading && !firebaseUser) router.push('/login'); }, [loading, firebaseUser, router]);
 
@@ -29,6 +30,7 @@ export default function CalendarPage() {
       setBookings((biz.appointments?.bookings || []).filter((b) => b.status !== 'cancelled'));
       const danaSvcs = (biz.dana?.services as Array<{ name: string; duration: number; price?: string }>) || [];
       setServices(danaSvcs);
+      setTeam(((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || []);
     } finally { setDataLoading(false); }
   }, [bizId]);
 
@@ -40,7 +42,7 @@ export default function CalendarPage() {
     try {
       await addBooking(bizId, { ...form, date: selectedDate, source: 'manual' });
       setAddOpen(false);
-      setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '' });
+      setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
       await load();
     } catch (e) {
       alert('שגיאה בשמירה: ' + (e as Error).message);
@@ -112,7 +114,7 @@ export default function CalendarPage() {
                 </Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{b.customerName}</Typography>
-                  <Typography sx={{ fontSize: 13, color: c.text2 }}>{b.service || 'טיפול'}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</Typography>
+                  <Typography sx={{ fontSize: 13, color: c.text2 }}>{b.service || 'טיפול'}{b.staff ? ` · ${b.staff}` : ''}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</Typography>
                 </Box>
                 {b.source === 'dana' && <Chip label="דנה" size="small" sx={{ bgcolor: c.accentDim, color: c.accent, fontWeight: 700, fontSize: 10 }} />}
                 {b.price ? <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text2 }}>₪{b.price}</Typography> : null}
@@ -143,6 +145,12 @@ export default function CalendarPage() {
             {[15, 30, 45, 60, 90, 120, 180].map((d) => <MenuItem key={d} value={d}>{d} דק'</MenuItem>)}
           </TextField>
         </Box>
+        {team.length > 0 && (
+          <TextField select fullWidth label="חבר צוות" value={form.staff} onChange={(e) => setForm((p) => ({ ...p, staff: e.target.value }))} sx={{ mb: 2 }}>
+            <MenuItem value="">ללא שיוך</MenuItem>
+            {team.map((m) => <MenuItem key={m.id} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</MenuItem>)}
+          </TextField>
+        )}
         <TextField fullWidth label="הערות" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} />
         <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'קבע תור'}

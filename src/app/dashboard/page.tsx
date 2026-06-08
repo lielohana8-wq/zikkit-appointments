@@ -27,8 +27,12 @@ export default function DashboardPage() {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !firebaseUser) router.push('/login');
-  }, [loading, firebaseUser, router]);
+    if (!loading && !firebaseUser) { router.push('/login'); return; }
+    // Pending user (no business yet) → straight to Dana setup
+    if (!loading && firebaseUser && user?.role === 'pending') {
+      router.replace('/setup');
+    }
+  }, [loading, firebaseUser, user?.role, router]);
 
   useEffect(() => {
     if (!bizId) return;
@@ -58,13 +62,6 @@ export default function DashboardPage() {
     return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
   }
 
-  // Pending user - no appointments business yet → send straight to Dana setup
-  useEffect(() => {
-    if (!loading && !dataLoading && user?.role === 'pending') {
-      router.replace('/setup');
-    }
-  }, [loading, dataLoading, user?.role, router]);
-
   if (user?.role === 'pending') {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
@@ -74,21 +71,6 @@ export default function DashboardPage() {
   }
 
   // (legacy fallback retained below, no longer reached)
-  if (false && user?.role === 'pending') {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
-        <Box sx={{ textAlign: 'center', maxWidth: 460 }}>
-          <Box sx={{ fontSize: 56, mb: 2 }}>👋</Box>
-          <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text, mb: 1 }}>ברוך הבא ל-ZikkitAppointments</Typography>
-          <Typography sx={{ fontSize: 15, color: c.text2, mb: 4 }}>בוא נקים את העסק שלך ונפעיל את דנה</Typography>
-          <Button onClick={() => router.push('/setup')} variant="contained" size="large" sx={{ py: 2, px: 5, borderRadius: 3, fontWeight: 800 }}>
-            הקם את העסק →
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
-
   const today = new Date().toISOString().split('T')[0];
   const todayBookings = bookings.filter((b) => b.date === today);
   const upcoming = bookings.filter((b) => b.date > today).slice(0, 10);

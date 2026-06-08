@@ -15,11 +15,12 @@ interface Booking {
   time: string;
   duration: number;
   status: string;
+  staff?: string;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { firebaseUser, user, bizId, loading, logout } = useAuth();
+  const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bizName, setBizName] = useState('');
   const [danaPhone, setDanaPhone] = useState('');
@@ -39,7 +40,11 @@ export default function DashboardPage() {
           const data = snap.data();
           setBizName(data.cfg?.biz_name || '');
           setDanaPhone(data.dana?.phoneNumber || '');
-          setBookings((data.appointments?.bookings || []) as Booking[]);
+          let bks = (data.appointments?.bookings || []) as Booking[];
+          if (user?.role === 'staff' && staffName) {
+            bks = bks.filter((b) => b.staff === staffName);
+          }
+          setBookings(bks);
         }
       } catch (e) {
         console.error(e);
@@ -47,14 +52,29 @@ export default function DashboardPage() {
         setDataLoading(false);
       }
     })();
-  }, [bizId]);
+  }, [bizId, user?.role, staffName]);
 
   if (loading || dataLoading) {
     return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
   }
 
-  // Pending user - no appointments business yet
+  // Pending user - no appointments business yet → send straight to Dana setup
+  useEffect(() => {
+    if (!loading && !dataLoading && user?.role === 'pending') {
+      router.replace('/setup');
+    }
+  }, [loading, dataLoading, user?.role, router]);
+
   if (user?.role === 'pending') {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+        <CircularProgress sx={{ color: c.accent }} />
+      </Box>
+    );
+  }
+
+  // (legacy fallback retained below, no longer reached)
+  if (false && user?.role === 'pending') {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
         <Box sx={{ textAlign: 'center', maxWidth: 460 }}>
@@ -97,18 +117,19 @@ export default function DashboardPage() {
 
         {/* Feature navigation */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1.5, mb: 3 }}>
-          {[
-            { icon: '📅', label: 'יומן תורים', path: '/calendar' },
-            { icon: '📋', label: 'מחירון ושירותים', path: '/services' },
-            { icon: '👥', label: 'לקוחות', path: '/customers' },
-            { icon: '📊', label: 'דוחות כספיים', path: '/reports' },
-            { icon: '⚙️', label: 'הגדרת דנה', path: '/setup' },
-            { icon: '🕐', label: 'שעות פעילות', path: '/hours' },
-            { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses' },
-            { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery' },
-            { icon: '🧑‍🤝‍🧑', label: 'צוות ועמדות', path: '/team' },
-            { icon: '📈', label: 'יועץ AI', path: '/ai-studio' },
-          ].map((t) => (
+          {([
+            { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
+            { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
+            { icon: '📋', label: 'מחירון ושירותים', path: '/services', staff: false },
+            { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
+            { icon: '📊', label: 'דוחות כספיים', path: '/reports', staff: false },
+            { icon: '⚙️', label: 'הגדרת דנה', path: '/setup', staff: false },
+            { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: false },
+            { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses', staff: false },
+            { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery', staff: false },
+            { icon: '🧑‍🤝‍🧑', label: 'צוות ועמדות', path: '/team', staff: false },
+            { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
+          ].filter((t) => user?.role !== 'staff' || t.staff)).map((t) => (
             <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, textAlign: 'center', transition: 'all 0.2s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' } }}>
               <Box sx={{ fontSize: 28, mb: 0.5 }}>{t.icon}</Box>
               <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text }}>{t.label}</Typography>

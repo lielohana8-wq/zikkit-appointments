@@ -11,7 +11,7 @@ const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמי
 
 export default function CalendarPage() {
   const router = useRouter();
-  const { firebaseUser, bizId, loading } = useAuth();
+  const { firebaseUser, bizId, loading, user, staffName } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Array<{ name: string; duration: number; price?: string }>>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -27,7 +27,12 @@ export default function CalendarPage() {
     if (!bizId) return;
     try {
       const biz = await loadBiz(bizId);
-      setBookings((biz.appointments?.bookings || []).filter((b) => b.status !== 'cancelled'));
+      let bks = (biz.appointments?.bookings || []).filter((b) => b.status !== 'cancelled');
+      // Staff members see only their own appointments
+      if (user?.role === 'staff' && staffName) {
+        bks = bks.filter((b) => b.staff === staffName);
+      }
+      setBookings(bks);
       const danaSvcs = (biz.dana?.services as Array<{ name: string; duration: number; price?: string }>) || [];
       setServices(danaSvcs);
       setTeam(((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || []);
@@ -40,7 +45,8 @@ export default function CalendarPage() {
     if (!bizId || !form.customerName) return;
     setSaving(true);
     try {
-      await addBooking(bizId, { ...form, date: selectedDate, source: 'manual' });
+      const staffAssign = user?.role === 'staff' && staffName ? staffName : form.staff;
+      await addBooking(bizId, { ...form, staff: staffAssign, date: selectedDate, source: 'manual' });
       setAddOpen(false);
       setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
       await load();

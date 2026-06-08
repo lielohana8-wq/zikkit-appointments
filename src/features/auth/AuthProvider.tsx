@@ -22,7 +22,9 @@ interface AppUser {
 interface AuthState {
   firebaseUser: FirebaseUser | null;
   user: AppUser | null;
-  bizId: string | null;
+  bizId: string | null;        // for staff, this is the OWNER's bizId
+  staffId: string | null;      // set when a staff member is logged in
+  staffName: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -36,51 +38,64 @@ interface AuthContextValue extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextValue>({
-  firebaseUser: null, user: null, bizId: null, loading: true, error: null,
+  firebaseUser: null, user: null, bizId: null, staffId: null, staffName: null, loading: true, error: null,
   login: async () => {}, register: async () => {}, loginWithGoogle: async () => {},
   logout: async () => {}, clearError: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
-    firebaseUser: null, user: null, bizId: null, loading: true, error: null,
+    firebaseUser: null, user: null, bizId: null, staffId: null, staffName: null, loading: true, error: null,
   });
 
   useEffect(() => {
     const auth = getFirebaseAuth();
     return onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
-        setState({ firebaseUser: null, user: null, bizId: null, loading: false, error: null });
+        setState({ firebaseUser: null, user: null, bizId: null, staffId: null, staffName: null, loading: false, error: null });
         return;
       }
       const uid = fbUser.uid;
       const email = fbUser.email || '';
       try {
         const db = getFirestoreDb();
-        // Look in the dedicated appointments collection (fully separate from
-        // Zikkit field's `businesses` — no ID collisions possible).
+        // 1. Owner? Their own business doc exists under their uid.
         const snap = await getDoc(doc(db, BIZ_COLLECTION, uid));
         if (snap.exists()) {
           const data = snap.data();
           setState({
             firebaseUser: fbUser,
             user: { id: uid, name: data.cfg?.biz_name || email.split('@')[0], email, role: 'owner' },
-            bizId: uid, loading: false, error: null,
+            bizId: uid, staffId: null, staffName: null, loading: false, error: null,
           });
           return;
         }
-        // Authenticated but no appointments business yet — pending (will see setup)
+        // 2. Staff member? Check staff_lookup mapping.
+        const staffSnap = await getDoc(doc(db, 'staff_lookup', uid));
+        if (staffSnap.exists()) {
+          const s = staffSnap.data();
+          setState({
+            firebaseUser: fbUser,
+            user: { id: uid, name: s.staffName || email.split('@')[0], email, role: 'staff' },
+            bizId: s.ownerBizId,          // operate within the owner's business
+            staffId: s.staffId,
+            staffName: s.staffName || null,
+            loading: false, error: null,
+          });
+          return;
+        }
+        // 3. Authenticated but unknown — pending (new owner → setup).
         setState({
           firebaseUser: fbUser,
           user: { id: uid, name: email.split('@')[0] || 'User', email, role: 'pending' },
-          bizId: uid, loading: false, error: null,
+          bizId: uid, staffId: null, staffName: null, loading: false, error: null,
         });
       } catch (e) {
         console.error('[ZApp Auth]', e);
         setState({
           firebaseUser: fbUser,
           user: { id: uid, name: email.split('@')[0] || 'User', email, role: 'pending' },
-          bizId: uid, loading: false, error: null,
+          bizId: uid, staffId: null, staffName: null, loading: false, error: null,
         });
       }
     });

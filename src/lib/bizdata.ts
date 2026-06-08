@@ -240,6 +240,62 @@ export async function deleteService(bizId: string, id: string): Promise<void> {
   await saveServices(bizId, services.filter((s) => s.id !== id));
 }
 
+// ---------- Booking page branding ----------
+export interface BookingBranding {
+  logo: string;          // data URL
+  banner: string;        // data URL (optional hero image)
+  brandColor: string;
+  welcomeText: string;
+  showPrices: boolean;
+  enabled: boolean;
+}
+
+export async function getBranding(bizId: string): Promise<BookingBranding> {
+  const biz = await loadBiz(bizId);
+  const b = ((biz as Record<string, unknown>).booking as BookingBranding) || {};
+  return {
+    logo: b.logo || '',
+    banner: b.banner || '',
+    brandColor: b.brandColor || '#9333EA',
+    welcomeText: b.welcomeText || '',
+    showPrices: b.showPrices !== false,
+    enabled: b.enabled !== false,
+  };
+}
+
+export async function saveBranding(bizId: string, branding: BookingBranding): Promise<void> {
+  const biz = await loadBiz(bizId);
+  await patchBiz(bizId, { booking: { ...((biz as Record<string, unknown>).booking || {}), ...branding } });
+}
+
+// Compute free slots for a service on a given date, considering existing
+// bookings, station capacity, and business hours.
+export function computeFreeSlots(
+  bookings: Booking[],
+  date: string,
+  serviceDuration: number,
+  stations: number,
+  dayHours: { open: boolean; start: string; end: string },
+): string[] {
+  if (!dayHours.open) return [];
+  const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
+  const toStr = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const startMin = toMin(dayHours.start);
+  const endMin = toMin(dayHours.end);
+  const dayBookings = bookings.filter((b) => b.date === date && b.status !== 'cancelled');
+  const slots: string[] = [];
+  const step = 15;
+  for (let t = startMin; t + serviceDuration <= endMin; t += step) {
+    const overlapping = dayBookings.filter((b) => {
+      const bStart = toMin(b.time);
+      const bEnd = bStart + (b.duration || 30);
+      return t < bEnd && t + serviceDuration > bStart;
+    }).length;
+    if (overlapping < stations) slots.push(toStr(t));
+  }
+  return slots;
+}
+
 // ---------- Stations ----------
 export async function setStations(bizId: string, stations: number): Promise<void> {
   const biz = await loadBiz(bizId);
@@ -259,6 +315,10 @@ export interface TeamMember {
   hours: Record<number, { open: boolean; start: string; end: string }>;
   active: boolean;
   createdAt: string;
+  // Login credentials (set by owner). staffUid links to a Firebase account
+  // once the member logs in for the first time.
+  loginEmail?: string;
+  staffUid?: string;     // filled after first login
 }
 
 const MEMBER_COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1', '#EF4444', '#8B5CF6'];

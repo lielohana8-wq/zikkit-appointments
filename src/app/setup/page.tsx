@@ -22,6 +22,7 @@ interface AptService {
 interface AptConfig {
   businessName: string;
   contactName: string;
+  ownerPhone: string;
   businessType?: string;
   industry?: string;
   services: AptService[];
@@ -63,6 +64,7 @@ export default function AppointmentsSetupWizard() {
   const [config, setConfig] = useState<AptConfig>({
     businessName: '',
     contactName: '',
+    ownerPhone: '',
     services: [],
     stations: 1,
     recurring: false,
@@ -247,6 +249,10 @@ export default function AppointmentsSetupWizard() {
               <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text2, mb: 1 }}>{'שם איש הקשר'}</Typography>
               <TextField fullWidth placeholder="השם שלך" value={config.contactName}
                 onChange={(e) => setConfig((p) => ({ ...p, contactName: e.target.value }))}
+                sx={{ mb: 2.5, '& input': { fontSize: 17, py: 1.7, textAlign: 'right' } }} />
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text2, mb: 1 }}>{'הטלפון שלך (לקבלת התראות על תורים)'}</Typography>
+              <TextField fullWidth placeholder="050-0000000" value={config.ownerPhone}
+                onChange={(e) => setConfig((p) => ({ ...p, ownerPhone: e.target.value }))}
                 sx={{ mb: 3, '& input': { fontSize: 17, py: 1.7, textAlign: 'right' } }} />
 
               {config.businessName.trim() && !aiDetected && (

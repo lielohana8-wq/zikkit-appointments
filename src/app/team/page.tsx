@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, Dialog, TextField, Chip, Slider } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Dialog, TextField, Chip, Slider, Switch } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, loadBiz, setStations, type TeamMember } from '@/lib/bizdata';
+import { createStaffAccount } from '@/lib/staff';
 import { zikkitColors as c } from '@/styles/theme';
 
 const DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
@@ -13,9 +14,10 @@ const COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1'
 interface Draft {
   name: string; role: string; photo: string; description: string;
   services: string[]; station: number | null; color: string;
+  loginEmail: string; loginPassword: string; createLogin: boolean;
 }
 
-const emptyDraft: Draft = { name: '', role: '', photo: '', description: '', services: [], station: null, color: COLORS[0] };
+const emptyDraft: Draft = { name: '', role: '', photo: '', description: '', services: [], station: null, color: COLORS[0], loginEmail: '', loginPassword: '', createLogin: false };
 
 export default function TeamPage() {
   const router = useRouter();
@@ -46,7 +48,7 @@ export default function TeamPage() {
 
   const openNew = () => { setDraft(emptyDraft); setEditId(null); setOpen(true); };
   const openEdit = (m: TeamMember) => {
-    setDraft({ name: m.name, role: m.role, photo: m.photo, description: m.description, services: m.services, station: m.station, color: m.color });
+    setDraft({ name: m.name, role: m.role, photo: m.photo, description: m.description, services: m.services, station: m.station, color: m.color, loginEmail: m.loginEmail || '', loginPassword: '', createLogin: false });
     setEditId(m.id); setOpen(true);
   };
 
@@ -75,8 +77,35 @@ export default function TeamPage() {
     if (!bizId || !draft.name) return;
     setSaving(true);
     try {
-      if (editId) await updateTeamMember(bizId, editId, draft);
-      else await addTeamMember(bizId, draft);
+      const { createLogin, loginPassword, ...memberData } = draft;
+      if (editId) {
+        await updateTeamMember(bizId, editId, memberData);
+      } else {
+        // Create the team member first to get an id
+        await addTeamMember(bizId, memberData);
+      }
+      // If owner asked to create a login for this member
+      if (createLogin && draft.loginEmail && loginPassword) {
+        // Find the member id (just created or being edited)
+        const members = await getTeam(bizId);
+        const member = editId
+          ? members.find((m) => m.id === editId)
+          : members.find((m) => m.name === draft.name && m.loginEmail === draft.loginEmail);
+        if (member) {
+          const result = await createStaffAccount({
+            ownerBizId: bizId,
+            staffId: member.id,
+            staffName: member.name,
+            email: draft.loginEmail,
+            password: loginPassword,
+          });
+          if (!result.success) {
+            alert('חבר הצוות נשמר, אבל יצירת ההתחברות נכשלה: ' + result.error);
+          } else {
+            await updateTeamMember(bizId, member.id, { loginEmail: draft.loginEmail, staffUid: result.uid });
+          }
+        }
+      }
       setOpen(false); await load();
     } finally { setSaving(false); }
   };
@@ -202,6 +231,23 @@ export default function TeamPage() {
             </Box>
           </>
         )}
+
+        {/* Staff login credentials */}
+        <Box sx={{ bgcolor: c.surface2, borderRadius: 3, p: 2, mb: 3, mt: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: draft.createLogin ? 1.5 : 0 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>🔑 התחברות לחבר הצוות</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>{draft.loginEmail && editId ? `מחובר: ${draft.loginEmail}` : 'תן לו גישה לתורים שלו'}</Typography>
+            </Box>
+            <Switch checked={draft.createLogin} onChange={(e) => setDraft((p) => ({ ...p, createLogin: e.target.checked }))} />
+          </Box>
+          {draft.createLogin && (
+            <>
+              <TextField fullWidth label="אימייל להתחברות" type="email" value={draft.loginEmail} onChange={(e) => setDraft((p) => ({ ...p, loginEmail: e.target.value }))} sx={{ mb: 1.5, mt: 1 }} size="small" />
+              <TextField fullWidth label="סיסמה (לפחות 6 תווים)" type="text" value={draft.loginPassword} onChange={(e) => setDraft((p) => ({ ...p, loginPassword: e.target.value }))} size="small" helperText="חבר הצוות יתחבר עם הפרטים האלה ויראה רק את התורים שלו" />
+            </>
+          )}
+        </Box>
 
         <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : editId ? 'שמור שינויים' : 'הוסף לצוות'}

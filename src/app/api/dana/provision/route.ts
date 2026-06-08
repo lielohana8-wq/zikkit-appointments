@@ -62,7 +62,16 @@ export async function POST(req: NextRequest) {
 
 async function saveConfig(bizId: string, config: Record<string, unknown>, idToken: string) {
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'zikkit-e87ff';
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/appointment_businesses/${bizId}?updateMask.fieldPaths=dana&updateMask.fieldPaths=appointments`;
+  // Use granular field paths so we never clobber existing data
+  // (bookings, business hours, plan/trial, etc.).
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/appointment_businesses/${bizId}`
+    + `?updateMask.fieldPaths=dana`
+    + `&updateMask.fieldPaths=appointments.stations`
+    + `&updateMask.fieldPaths=appointments.recurring`
+    + `&updateMask.fieldPaths=appointments.recurringInterval`
+    + `&updateMask.fieldPaths=cfg.biz_name`
+    + `&updateMask.fieldPaths=cfg.owner_phone`
+    + `&updateMask.fieldPaths=cfg.contact_name`;
   const danaCfg = {
     businessName: config.businessName,
     voiceId: config.voiceId,
@@ -77,19 +86,22 @@ async function saveConfig(bizId: string, config: Record<string, unknown>, idToke
     provisioned: config.provisioned || false,
     updatedAt: new Date().toISOString(),
   };
-  const aptCfg = {
-    stations: config.stations || 1,
-    recurring: config.recurring || false,
-    recurringInterval: config.recurringInterval || 3,
-    bookings: [],
-  };
   const res = await fetch(url, {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       fields: {
         dana: enc(danaCfg),
-        appointments: enc(aptCfg),
+        appointments: { mapValue: { fields: {
+          stations: enc(config.stations || 1),
+          recurring: enc(config.recurring || false),
+          recurringInterval: enc(config.recurringInterval || 3),
+        } } },
+        cfg: { mapValue: { fields: {
+          biz_name: enc(config.businessName),
+          owner_phone: enc(config.ownerPhone || ''),
+          contact_name: enc(config.contactName || ''),
+        } } },
       },
     }),
   });

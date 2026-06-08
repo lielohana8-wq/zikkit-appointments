@@ -14,7 +14,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { if (firebaseUser) router.push('/dashboard'); }, [firebaseUser, router]);
+  useEffect(() => { if (firebaseUser) router.push('/setup'); }, [firebaseUser, router]);
 
   const handleRegister = async () => {
     setLoading(true);

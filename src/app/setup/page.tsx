@@ -31,6 +31,7 @@ interface AptConfig {
   voiceId: string;
   voiceName: string;
   greeting: string;
+  danaMode: 'booking' | 'message';
   fieldsToCollect: {
     fullName: boolean;
     phone: boolean;
@@ -69,6 +70,7 @@ export default function AppointmentsSetupWizard() {
     voiceId: 'noa',
     voiceName: 'נועה',
     greeting: '',
+    danaMode: 'booking',
     fieldsToCollect: {
       fullName: true, phone: true, service: true,
       preferredDate: true, preferredStaff: false, notes: false,
@@ -88,6 +90,38 @@ export default function AppointmentsSetupWizard() {
   useEffect(() => {
     if (!firebaseUser && !user) router.push('/login');
   }, [firebaseUser, user, router]);
+
+  // If Dana is already configured, pre-fill the wizard so this acts as
+  // an EDIT screen rather than wiping the existing setup.
+  const [alreadySetup, setAlreadySetup] = useState(false);
+  useEffect(() => {
+    if (!bizId) return;
+    (async () => {
+      try {
+        const { loadBiz } = await import('@/lib/bizdata');
+        const biz = await loadBiz(bizId);
+        const dana = (biz.dana as Record<string, unknown>) || {};
+        if (dana.provisioned) {
+          setAlreadySetup(true);
+          setConfig((p) => ({
+            ...p,
+            businessName: (dana.businessName as string) || (biz.cfg as Record<string, unknown>)?.biz_name as string || p.businessName,
+            voiceId: (dana.voiceId as string) || p.voiceId,
+            voiceName: (dana.voiceName as string) || p.voiceName,
+            greeting: (dana.greeting as string) || p.greeting,
+            danaMode: (dana.mode as 'booking' | 'message') || 'booking',
+            services: ((dana.services as Array<Record<string, unknown>>) || []).map((s) => ({
+              id: (s.id as string) || 'svc_' + Math.random().toString(36).slice(2, 7),
+              name: (s.name as string) || '', duration: (s.duration as number) || 30,
+              price: String(s.price || ''), whatToAsk: (s.whatToAsk as string) || '',
+            })),
+            stations: (biz.appointments?.stations as number) || p.stations,
+            phoneNumber: (dana.phoneNumber as string) || undefined,
+          }));
+        }
+      } catch { /* ignore - fresh setup */ }
+    })();
+  }, [bizId]);
 
   const detectWithAI = async () => {
     if (!config.businessName.trim()) return;
@@ -151,7 +185,7 @@ export default function AppointmentsSetupWizard() {
           Authorization: `Bearer ${idToken}`,
           'x-biz-id': userBizId,
         },
-        body: JSON.stringify({ ...config, mode: 'appointments' }),
+        body: JSON.stringify({ ...config, mode: 'appointments', danaMode: config.danaMode }),
       });
       const data = await res.json();
       if (data.success) {
@@ -183,6 +217,17 @@ export default function AppointmentsSetupWizard() {
             ))}
           </Box>
         </Box>
+
+        {/* Edit-mode banner */}
+        {alreadySetup && step === 1 && (
+          <Box sx={{ bgcolor: c.accentDim, border: `1px solid ${c.accent}`, borderRadius: 3, p: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ fontSize: 22 }}>{'✏️'}</Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>{'עריכת ההגדרות של דנה'}</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text2 }}>{'הפרטים הקיימים נטענו. שנה מה שצריך ושמור בסוף.'}</Typography>
+            </Box>
+          </Box>
+        )}
 
         {/* STEP 1: Identity + AI */}
         {step === 1 && (
@@ -320,9 +365,27 @@ export default function AppointmentsSetupWizard() {
           <Box className="zk-fade-up">
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               {iconCircle('💬')}
-              <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.text, mb: 1 }}>{'איך דנה מתחילה?'}</Typography>
-              <Typography sx={{ fontSize: 15, color: c.text2 }}>{'משפט פתיחה ומה לאסוף'}</Typography>
+              <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.text, mb: 1 }}>{'איך דנה עובדת?'}</Typography>
+              <Typography sx={{ fontSize: 15, color: c.text2 }}>{'בחר מה דנה עושה כשלקוח מתקשר'}</Typography>
             </Box>
+
+            {/* Mode choice */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 4 }}>
+              <Box onClick={() => setConfig((p) => ({ ...p, danaMode: 'booking' }))}
+                sx={{ cursor: 'pointer', bgcolor: config.danaMode === 'booking' ? c.accentDim : c.surface1, border: `2px solid ${config.danaMode === 'booking' ? c.accent : c.border}`, borderRadius: 3, p: 3 }}>
+                <Box sx={{ fontSize: 32, mb: 1 }}>{'📅'}</Box>
+                <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 0.5 }}>{'דנה קובעת תור'}</Typography>
+                <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.5 }}>{'דנה בודקת ביומן, מציעה שעות פנויות, וקובעת את התור באופן מלא.'}</Typography>
+              </Box>
+              <Box onClick={() => setConfig((p) => ({ ...p, danaMode: 'message' }))}
+                sx={{ cursor: 'pointer', bgcolor: config.danaMode === 'message' ? c.accentDim : c.surface1, border: `2px solid ${config.danaMode === 'message' ? c.accent : c.border}`, borderRadius: 3, p: 3 }}>
+                <Box sx={{ fontSize: 32, mb: 1 }}>{'📝'}</Box>
+                <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 0.5 }}>{'דנה לוקחת הודעה'}</Typography>
+                <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.5 }}>{'דנה אוספת פרטים ושולחת לך SMS עם הפנייה — אתה חוזר ללקוח.'}</Typography>
+              </Box>
+            </Box>
+
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>{'משפט פתיחה'}</Typography>
             <TextField fullWidth multiline rows={3} value={config.greeting}
               onChange={(e) => setConfig((p) => ({ ...p, greeting: e.target.value }))} sx={{ mb: 3 }} />
             <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1.5 }}>{'מה דנה אוספת מהלקוח?'}</Typography>
@@ -412,15 +475,22 @@ export default function AppointmentsSetupWizard() {
           <Box className="zk-fade-up" sx={{ textAlign: 'center', py: 4 }}>
             <Box sx={{ width: 100, height: 100, borderRadius: '50%', background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', fontSize: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: '0 20px 50px rgba(79,70,229,0.3)' }}>{'🎉'}</Box>
             <Typography sx={{ fontSize: 36, fontWeight: 800, color: c.text, mb: 1 }}>{config.voiceName}{' מוכנה!'}</Typography>
-            <Typography sx={{ fontSize: 16, color: c.text2, mb: 5 }}>{'לקוחות יתקשרו ויקבעו תור אוטומטית 24/7'}</Typography>
-            <Box sx={{ bgcolor: c.surface1, border: `2px solid ${c.accent}`, borderRadius: 4, p: 4, maxWidth: 460, mx: 'auto', mb: 4 }}>
-              <Typography sx={{ fontSize: 11, color: c.text3, fontWeight: 700, mb: 1, letterSpacing: 1 }}>{'מספר קביעת התורים שלך'}</Typography>
-              <Typography sx={{ fontSize: 36, fontWeight: 800, color: c.accent, fontFamily: 'monospace', letterSpacing: 1, mb: 2 }}>{config.phoneNumber || '+972-50-123-4567'}</Typography>
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                <Button variant="outlined" onClick={() => { if (config.phoneNumber) navigator.clipboard.writeText(config.phoneNumber); }} sx={{ borderRadius: 3, fontWeight: 600 }}>{'📋 העתק'}</Button>
-                {config.phoneNumber && <Button variant="contained" href={`tel:${config.phoneNumber}`} sx={{ borderRadius: 3, fontWeight: 700 }}>{'📞 התקשר'}</Button>}
+            <Typography sx={{ fontSize: 16, color: c.text2, mb: 5 }}>{config.danaMode === 'booking' ? 'לקוחות יתקשרו ויקבעו תור אוטומטית 24/7' : 'דנה תיקח הודעות ותשלח לך את הפרטים 24/7'}</Typography>
+            {config.phoneNumber ? (
+              <Box sx={{ bgcolor: c.surface1, border: `2px solid ${c.accent}`, borderRadius: 4, p: 4, maxWidth: 460, mx: 'auto', mb: 4 }}>
+                <Typography sx={{ fontSize: 11, color: c.text3, fontWeight: 700, mb: 1, letterSpacing: 1 }}>{'מספר הטלפון של דנה'}</Typography>
+                <Typography sx={{ fontSize: 36, fontWeight: 800, color: c.accent, fontFamily: 'monospace', letterSpacing: 1, mb: 2 }}>{config.phoneNumber}</Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                  <Button variant="outlined" onClick={() => { if (config.phoneNumber) navigator.clipboard.writeText(config.phoneNumber); }} sx={{ borderRadius: 3, fontWeight: 600 }}>{'📋 העתק'}</Button>
+                  <Button variant="contained" href={`tel:${config.phoneNumber}`} sx={{ borderRadius: 3, fontWeight: 700 }}>{'📞 התקשר'}</Button>
+                </Box>
               </Box>
-            </Box>
+            ) : (
+              <Box sx={{ bgcolor: c.hotDim, border: `2px solid ${c.hot}`, borderRadius: 4, p: 4, maxWidth: 460, mx: 'auto', mb: 4 }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.hot, mb: 1 }}>{'⚠️ מספר טלפון עדיין לא הוקצה'}</Typography>
+                <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.6 }}>{'ההגדרות של דנה נשמרו, אבל לא הצלחנו לרכוש מספר טלפון מ-Twilio. צריך להגדיר את חשבון ה-Twilio (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) ולוודא שיש בו אשראי לרכישת מספר ישראלי.'}</Typography>
+              </Box>
+            )}
             <Button variant="contained" size="large" onClick={() => router.push('/dashboard')} sx={{ py: 2, px: 6, fontSize: 16, fontWeight: 800, borderRadius: 3 }}>{'עבור לדאשבורד →'}</Button>
           </Box>
         )}

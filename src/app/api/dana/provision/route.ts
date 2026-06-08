@@ -27,20 +27,33 @@ export async function POST(req: NextRequest) {
       console.error('[Provision] save failed', e);
     }
 
-    // Provision phone
+    // Provision phone — report honestly whether a real number was bought
     let phoneNumber: string | null = null;
+    let phoneStatus = 'provisioned';
     try {
       phoneNumber = await provisionTwilioNumber(bizId);
-    } catch {
-      phoneNumber = process.env.TWILIO_PHONE_IL || '+972528615350';
+    } catch (e) {
+      // Twilio purchase failed — do NOT silently use a private fallback number.
+      console.error('[Provision] Twilio purchase failed:', e);
+      phoneNumber = null;
+      phoneStatus = 'pending'; // owner needs Twilio configured / number purchased
     }
 
-    // Save phone back
+    // Save config back (including mode: 'booking' | 'message')
     try {
-      await saveConfig(bizId, { ...body, phoneNumber, provisioned: true }, idToken);
-    } catch {}
+      await saveConfig(bizId, { ...body, phoneNumber, phoneStatus, provisioned: true }, idToken);
+    } catch (e) {
+      console.error('[Provision] save failed:', e);
+    }
 
-    return NextResponse.json({ success: true, phoneNumber });
+    return NextResponse.json({
+      success: true,
+      phoneNumber,
+      phoneStatus,
+      note: phoneStatus === 'pending'
+        ? 'הסוכן הוגדר, אבל מספר טלפון עדיין לא הוקצה. צריך להגדיר Twilio.'
+        : undefined,
+    });
   } catch (e) {
     console.error('[Provision]', e);
     return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
@@ -56,7 +69,11 @@ async function saveConfig(bizId: string, config: Record<string, unknown>, idToke
     voiceName: config.voiceName,
     greeting: config.greeting,
     services: config.services,
+    // mode: 'booking' = Dana books the appointment herself.
+    //       'message' = Dana takes a message and you call the customer back.
+    mode: config.danaMode || 'booking',
     phoneNumber: config.phoneNumber || null,
+    phoneStatus: config.phoneStatus || 'pending',
     provisioned: config.provisioned || false,
     updatedAt: new Date().toISOString(),
   };

@@ -15,13 +15,37 @@ export async function GET(req: NextRequest) {
     const bizId = req.nextUrl.searchParams.get('bizId');
     if (!bizId) return NextResponse.json({ error: 'missing bizId' }, { status: 400 });
 
-    const biz = await getBiz(bizId);
-    if (!biz) return NextResponse.json({ enabled: false, error: 'not found' }, { status: 404 });
+    // Explicit check: is the service account configured at all?
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      return NextResponse.json({
+        enabled: false,
+        reason: 'no_service_account',
+        error: 'חסר FIREBASE_SERVICE_ACCOUNT_KEY ב-Vercel. צריך להוסיף אותו כדי שדף ההזמנות יעבוד.',
+      });
+    }
+
+    let biz;
+    try {
+      biz = await getBiz(bizId);
+    } catch (e) {
+      return NextResponse.json({
+        enabled: false,
+        reason: 'firestore_error',
+        error: 'שגיאה בקריאה מ-Firestore: ' + (e as Error).message,
+      });
+    }
+    if (!biz) {
+      return NextResponse.json({
+        enabled: false,
+        reason: 'biz_not_found',
+        error: 'העסק לא נמצא. ודא שה-bizId נכון ושנשמרו הגדרות.',
+      });
+    }
 
     const booking = (biz.booking as Record<string, unknown>) || {};
-    // Owner must explicitly enable the page
+    // Owner must explicitly enable the page (default: enabled unless set to false)
     if (booking.enabled === false) {
-      return NextResponse.json({ enabled: false });
+      return NextResponse.json({ enabled: false, reason: 'disabled_by_owner' });
     }
 
     const cfg = (biz.cfg as Record<string, unknown>) || {};

@@ -8,6 +8,8 @@ interface Service { id: string; name: string; duration: number; price?: string |
 interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; }
 interface BizInfo {
   enabled: boolean;
+  reason?: string;
+  error?: string;
   businessName: string;
   services: Service[];
   stations: number;
@@ -86,11 +88,18 @@ export default function PublicBookingPage() {
   if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#FCFBF9' }}><CircularProgress sx={{ color: accent }} /></Box>;
 
   if (!info || !info.enabled) {
+    const reasonText: Record<string, string> = {
+      no_service_account: 'תקלת הגדרה: חסר מפתח שירות בשרת. (פנה לבעל העסק)',
+      firestore_error: 'תקלה זמנית בשרת. נסה שוב מאוחר יותר.',
+      biz_not_found: 'העסק לא נמצא.',
+      disabled_by_owner: 'בעל העסק עדיין לא הפעיל הזמנות מקוונות.',
+    };
+    const msg = info?.reason ? (reasonText[info.reason] || info.error || 'הדף אינו זמין') : 'בעל העסק עדיין לא הפעיל הזמנות מקוונות.';
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#FCFBF9', p: 3, textAlign: 'center', direction: 'rtl' }}>
         <Box sx={{ fontSize: 56, mb: 2 }}>🔒</Box>
         <Typography sx={{ fontSize: 22, fontWeight: 800, color: '#1C1917', mb: 1 }}>דף ההזמנות אינו זמין</Typography>
-        <Typography sx={{ fontSize: 14, color: '#57534E' }}>בעל העסק עדיין לא הפעיל הזמנות מקוונות.</Typography>
+        <Typography sx={{ fontSize: 14, color: '#57534E', maxWidth: 360 }}>{msg}</Typography>
       </Box>
     );
   }

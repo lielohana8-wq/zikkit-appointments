@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField } from '@mui/mater
 import { useParams } from 'next/navigation';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; }
-interface Branding { logo: string; banner: string; brandColor: string; welcomeText: string; showPrices: boolean; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; }
 interface BizInfo {
   enabled: boolean;
   businessName: string;
@@ -27,7 +27,7 @@ export default function PublicBookingPage() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
-  const [form, setForm] = useState({ name: '', phone: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '' });
   const [booking, setBooking] = useState(false);
 
   useEffect(() => {
@@ -184,7 +184,8 @@ export default function PublicBookingPage() {
               <Typography sx={{ fontSize: 13, color: '#57534E' }}>{selectedDate} · {selectedTime} · {selectedService.duration} דק'</Typography>
             </Box>
             <TextField fullWidth label="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
-            <TextField fullWidth label="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 3 }} />
+            <TextField fullWidth label="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 2 : 3 }} />
+            {info.branding.requireEmail && <TextField fullWidth label="אימייל" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3 }} />}
             <Button onClick={submit} disabled={!form.name || !form.phone || booking} fullWidth variant="contained" sx={{ py: 1.75, borderRadius: 3, fontWeight: 800, fontSize: 16, bgcolor: accent, '&:hover': { bgcolor: accent, filter: 'brightness(0.9)' } }}>
               {booking ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : 'אשר תור'}
             </Button>
@@ -198,10 +199,23 @@ export default function PublicBookingPage() {
             <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#1C1917', mb: 1 }}>התור נקבע!</Typography>
             <Typography sx={{ fontSize: 15, color: '#57534E', mb: 1 }}>{selectedService?.name}</Typography>
             <Typography sx={{ fontSize: 16, fontWeight: 700, color: accent }}>{selectedDate} בשעה {selectedTime}</Typography>
-            <Typography sx={{ fontSize: 13, color: '#A8A29E', mt: 3 }}>שלחנו לך SMS עם האישור. נתראה!</Typography>
+            <Typography sx={{ fontSize: 13, color: '#A8A29E', mt: 3 }}>{info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה!'}</Typography>
+            {info.branding.cancellationNote && <Typography sx={{ fontSize: 12, color: '#C4BDB4', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
           </Box>
         )}
       </Box>
+
+      {/* Contact footer */}
+      {(info.branding.address || info.branding.phone || info.branding.instagram || info.branding.whatsapp) && (
+        <Box sx={{ maxWidth: 480, mx: 'auto', px: 2, mt: 4, pt: 3, borderTop: '1px solid #EEE8E1' }}>
+          {info.branding.address && <Typography sx={{ fontSize: 13, color: '#57534E', textAlign: 'center', mb: 1 }}>📍 {info.branding.address}</Typography>}
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {info.branding.phone && <Button href={`tel:${info.branding.phone}`} size="small" sx={{ color: accent, fontWeight: 700 }}>📞 {info.branding.phone}</Button>}
+            {info.branding.whatsapp && <Button href={`https://wa.me/972${info.branding.whatsapp.replace(/^0/, '')}`} target="_blank" size="small" sx={{ color: '#25D366', fontWeight: 700 }}>וואטסאפ</Button>}
+            {info.branding.instagram && <Button href={`https://instagram.com/${info.branding.instagram.replace('@', '')}`} target="_blank" size="small" sx={{ color: '#E1306C', fontWeight: 700 }}>אינסטגרם</Button>}
+          </Box>
+        </Box>
+      )}
 
       <Typography sx={{ textAlign: 'center', mt: 5, fontSize: 12, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
     </Box>

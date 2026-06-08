@@ -41,8 +41,17 @@ export async function GET(req: NextRequest) {
         logo: booking.logo || '',
         banner: booking.banner || '',
         brandColor: booking.brandColor || '#9333EA',
+        headerStyle: booking.headerStyle || 'centered',
         welcomeText: booking.welcomeText || '',
+        thankYouMessage: booking.thankYouMessage || '',
+        cancellationNote: booking.cancellationNote || '',
+        address: booking.address || '',
+        phone: booking.phone || '',
+        instagram: booking.instagram || '',
+        whatsapp: booking.whatsapp || '',
         showPrices: booking.showPrices !== false,
+        showDuration: booking.showDuration !== false,
+        requireEmail: booking.requireEmail === true,
       },
     });
   } catch (e) {

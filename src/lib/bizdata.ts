@@ -245,20 +245,40 @@ export interface BookingBranding {
   logo: string;          // data URL
   banner: string;        // data URL (optional hero image)
   brandColor: string;
+  accentStyle: string;   // 'gradient' | 'solid'
   welcomeText: string;
+  headerStyle: string;   // 'banner' | 'minimal' | 'centered'
   showPrices: boolean;
+  showDuration: boolean;
+  requireEmail: boolean;
+  address: string;
+  phone: string;
+  instagram: string;
+  whatsapp: string;
+  cancellationNote: string;
+  thankYouMessage: string;
   enabled: boolean;
 }
 
 export async function getBranding(bizId: string): Promise<BookingBranding> {
   const biz = await loadBiz(bizId);
-  const b = ((biz as Record<string, unknown>).booking as BookingBranding) || {};
+  const b = ((biz as Record<string, unknown>).booking as Partial<BookingBranding>) || {};
   return {
     logo: b.logo || '',
     banner: b.banner || '',
     brandColor: b.brandColor || '#9333EA',
+    accentStyle: b.accentStyle || 'gradient',
     welcomeText: b.welcomeText || '',
+    headerStyle: b.headerStyle || 'centered',
     showPrices: b.showPrices !== false,
+    showDuration: b.showDuration !== false,
+    requireEmail: b.requireEmail === true,
+    address: b.address || '',
+    phone: b.phone || '',
+    instagram: b.instagram || '',
+    whatsapp: b.whatsapp || '',
+    cancellationNote: b.cancellationNote || '',
+    thankYouMessage: b.thankYouMessage || '',
     enabled: b.enabled !== false,
   };
 }

@@ -19,7 +19,18 @@ export async function getAccessToken(): Promise<string> {
   if (cachedToken && cachedToken.exp > Date.now() + 60000) return cachedToken.token;
   const saKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!saKey) throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY missing');
-  const sa = JSON.parse(saKey);
+  let sa;
+  try {
+    sa = JSON.parse(saKey);
+  } catch (e) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ' + (e as Error).message);
+  }
+  if (!sa.client_email || !sa.private_key) {
+    throw new Error('Service account JSON missing client_email or private_key');
+  }
+  // The private_key may contain literal "\n" sequences (common when pasted
+  // into env vars). Convert them to real newlines so the signer works.
+  const privateKey = (sa.private_key as string).replace(/\\n/g, '\n');
   const now = Math.floor(Date.now() / 1000);
   const enc = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
   const unsigned = `${enc({ alg: 'RS256', typ: 'JWT' })}.${enc({
@@ -31,13 +42,16 @@ export async function getAccessToken(): Promise<string> {
   const crypto = await import('crypto');
   const signer = crypto.createSign('RSA-SHA256');
   signer.update(unsigned);
-  const jwt = `${unsigned}.${signer.sign(sa.private_key, 'base64url')}`;
+  const jwt = `${unsigned}.${signer.sign(privateKey, 'base64url')}`;
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt }),
   });
   const data = await res.json();
+  if (!data.access_token) {
+    throw new Error('Failed to get access token: ' + (data.error_description || data.error || JSON.stringify(data)));
+  }
   cachedToken = { token: data.access_token, exp: Date.now() + 3500000 };
   return data.access_token;
 }

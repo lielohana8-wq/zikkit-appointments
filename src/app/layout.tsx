@@ -1,0 +1,38 @@
+import type { Metadata } from 'next';
+import { Providers } from './providers';
+
+export const metadata: Metadata = {
+  title: 'ZikkitAppointments — ניהול תורים חכם עם AI',
+  description: 'סוכנת AI שעונה לטלפון 24/7, קובעת תורים, ומנהלת את היומן שלך. לספרים, קוסמטיקאיות, קליניקות ועוד.',
+  manifest: '/manifest.json',
+  themeColor: '#9333EA',
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Zikkit' },
+  icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="he" dir="rtl">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+        <style>{`
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Assistant', system-ui, sans-serif; background: #FCFBF9; }
+          .zk-fade-up { animation: zkFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+          @keyframes zkFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        `}</style>
+      </head>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}

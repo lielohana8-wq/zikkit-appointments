@@ -439,6 +439,12 @@ export interface DocBranding {
   email: string;
   footer: string;
   accentColor: string;
+  template: string;            // 'modern' | 'classic' | 'minimal' | 'bold'
+  headerStyle: string;         // 'band' | 'centered' | 'side'
+  showLogo: boolean;
+  showSignature: boolean;
+  signatureName: string;
+  thankYouNote: string;
 }
 
 export async function getDocBranding(bizId: string): Promise<DocBranding> {
@@ -454,6 +460,12 @@ export async function getDocBranding(bizId: string): Promise<DocBranding> {
     email: d.email || '',
     footer: d.footer || 'תודה שבחרתם בנו!',
     accentColor: d.accentColor || '#7C3AED',
+    template: d.template || 'modern',
+    headerStyle: d.headerStyle || 'band',
+    showLogo: d.showLogo !== false,
+    showSignature: d.showSignature === true,
+    signatureName: d.signatureName || '',
+    thankYouNote: d.thankYouNote || '',
   };
 }
 

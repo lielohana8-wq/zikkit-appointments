@@ -92,54 +92,59 @@ export default function ServicesPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.surface1 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontFamily: 'Sora, sans-serif', fontSize: 18, fontWeight: 800, color: c.text }}>מחירון ושירותים</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>מחירון ושירותים</Typography>
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ שירות</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 700, mx: 'auto', p: 3 }}>
-        <Box sx={{ bgcolor: c.accentDim, borderRadius: 3, p: 2, mb: 3 }}>
-          <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.6 }}>
-            🤖 דנה משתמשת במחירון הזה כדי לדעת אילו שירותים יש, כמה זמן כל אחד לוקח, וכמה הוא עולה. ככל שתפרט יותר — דנה תעבוד טוב יותר.
+      <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
+          <Box sx={{ fontSize: 22 }}>🤖</Box>
+          <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5 }}>
+            דנה והיומן משתמשים במחירון הזה כדי לדעת אילו שירותים יש, כמה זמן וכמה הם עולים.
           </Typography>
         </Box>
 
         {services.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <Box sx={{ fontSize: 48, mb: 2 }}>📋</Box>
-            <Typography sx={{ color: c.text2, mb: 1, fontWeight: 700 }}>עדיין אין שירותים במחירון</Typography>
-            <Typography sx={{ color: c.text3, fontSize: 14, mb: 3 }}>הוסף ידנית או תן ל-AI להציע לפי סוג העסק</Typography>
+            <Box sx={{ fontSize: 40, mb: 1.5, opacity: 0.5 }}>📋</Box>
+            <Typography sx={{ color: c.text2, mb: 0.5, fontWeight: 700 }}>עדיין אין שירותים</Typography>
+            <Typography sx={{ color: c.text3, fontSize: 13.5, mb: 3 }}>הוסף ידנית או תן ל-AI להציע לפי סוג העסק</Typography>
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
               <Button onClick={openNew} variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>+ הוסף ידני</Button>
-              <Button onClick={suggestWithAI} disabled={aiLoading} variant="outlined" sx={{ borderRadius: 3, fontWeight: 700, borderColor: c.accent, color: c.accent }}>
+              <Button onClick={suggestWithAI} disabled={aiLoading} variant="outlined" sx={{ borderRadius: 3, fontWeight: 700 }}>
                 {aiLoading ? <CircularProgress size={16} sx={{ color: c.accent }} /> : '✨ הצע עם AI'}
               </Button>
             </Box>
           </Box>
         ) : (
           <>
-            <Button onClick={suggestWithAI} disabled={aiLoading} variant="outlined" sx={{ borderRadius: 3, fontWeight: 700, borderColor: c.accent, color: c.accent, mb: 3, bgcolor: c.accentDim }}>
+            <Button onClick={suggestWithAI} disabled={aiLoading} fullWidth variant="outlined" sx={{ borderRadius: 3, fontWeight: 700, mb: 3, py: 1.25, borderStyle: 'dashed' }}>
               {aiLoading ? <><CircularProgress size={16} sx={{ color: c.accent, mr: 1 }} />מזהה...</> : '✨ הוסף עוד שירותים עם AI'}
             </Button>
 
             {categories.map((cat) => (
-              <Box key={cat} sx={{ mb: 3 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{cat}</Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box key={cat} sx={{ mb: 3.5 }}>
+                <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cat}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   {services.filter((s) => (s.category || 'כללי') === cat).map((s) => (
-                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{s.name}</Typography>
-                        {s.description && <Typography sx={{ fontSize: 12, color: c.text3 }}>{s.description}</Typography>}
-                        <Box sx={{ display: 'flex', gap: 0.75, mt: 0.5 }}>
-                          <Chip label={`${s.duration} דק'`} size="small" sx={{ bgcolor: c.surface3, color: c.text2, fontSize: 10 }} />
-                          {s.whatToAsk && <Chip label="🤖 הוראות לדנה" size="small" sx={{ bgcolor: c.accentDim, color: c.accent, fontSize: 10 }} />}
+                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: c.text }}>{s.name}</Typography>
+                        {s.description && <Typography sx={{ fontSize: 12.5, color: c.text3, mt: 0.25 }}>{s.description}</Typography>}
+                        <Box sx={{ display: 'flex', gap: 0.75, mt: 0.75 }}>
+                          <Box sx={{ fontSize: 10.5, fontWeight: 600, bgcolor: c.surface3, color: c.text2, borderRadius: 99, px: 1, py: 0.2 }}>🕐 {s.duration} דק'</Box>
+                          {s.whatToAsk && <Box sx={{ fontSize: 10.5, fontWeight: 600, bgcolor: c.accentDim, color: c.accent, borderRadius: 99, px: 1, py: 0.2 }}>🤖 הוראות</Box>}
                         </Box>
                       </Box>
-                      <Typography sx={{ fontSize: 20, fontWeight: 800, color: c.accent }}>₪{s.price}</Typography>
-                      <Button onClick={() => openEdit(s)} size="small" sx={{ minWidth: 'auto', color: c.text2 }}>✎</Button>
-                      <Button onClick={() => remove(s.id)} size="small" sx={{ minWidth: 'auto', color: c.hot }}>✕</Button>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: 21, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>₪{s.price}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                        <Button onClick={() => openEdit(s)} size="small" sx={{ minWidth: 32, color: c.text3, '&:hover': { color: c.accent } }}>✎</Button>
+                        <Button onClick={() => remove(s.id)} size="small" sx={{ minWidth: 32, color: c.text3, '&:hover': { color: c.hot } }}>✕</Button>
+                      </Box>
                     </Box>
                   ))}
                 </Box>
@@ -149,8 +154,8 @@ export default function ServicesPage() {
         )}
       </Box>
 
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 440, width: '100%' } }}>
-        <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editId ? 'עריכת שירות' : 'שירות חדש'}</Typography>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
+        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>{editId ? 'עריכת שירות' : 'שירות חדש'}</Typography>
         <TextField fullWidth label="שם השירות" value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="קטגוריה (למשל: תספורות, צבע)" value={draft.category} onChange={(e) => setDraft((p) => ({ ...p, category: e.target.value }))} sx={{ mb: 2 }} />
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -160,8 +165,8 @@ export default function ServicesPage() {
           </TextField>
         </Box>
         <TextField fullWidth label="תיאור (אופציונלי)" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
-        <TextField fullWidth label="מה דנה צריכה לשאול?" placeholder="למשל: גבר/אישה, אורך שיער, אם הייתה כבר" value={draft.whatToAsk} onChange={(e) => setDraft((p) => ({ ...p, whatToAsk: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} helperText="🤖 דנה תשאל את זה לפני קביעת התור" />
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}>
+        <TextField fullWidth label="מה דנה צריכה לשאול?" placeholder="למשל: גבר/אישה, אורך שיער" value={draft.whatToAsk} onChange={(e) => setDraft((p) => ({ ...p, whatToAsk: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} helperText="🤖 דנה תשאל את זה לפני קביעת התור" />
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : editId ? 'שמור' : 'הוסף למחירון'}
         </Button>
       </Dialog>

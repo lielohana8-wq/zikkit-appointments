@@ -56,7 +56,7 @@ export default function GalleryPage() {
         <Box sx={{ width: 80 }} />
       </Box>
 
-      <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Typography sx={{ fontSize: 14, color: c.text2, mb: 3 }}>
           התמונות שתעלה כאן יופיעו בדף הנחיתה האוטומטי של העסק. (עד 12 תמונות)
         </Typography>

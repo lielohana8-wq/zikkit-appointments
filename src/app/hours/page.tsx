@@ -47,7 +47,7 @@ export default function HoursPage() {
         <Box sx={{ width: 80 }} />
       </Box>
 
-      <Box sx={{ maxWidth: 560, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 560, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Typography sx={{ fontSize: 14, color: c.text2, mb: 3 }}>
           דנה תקבע תורים רק בשעות הפעילות. ימים סגורים לא יוצעו ללקוחות.
         </Typography>
@@ -56,9 +56,9 @@ export default function HoursPage() {
           {DAYS.map((dayName, i) => {
             const d = hours.days[i];
             return (
-              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, minWidth: 60 }}>{dayName}</Typography>
-                <Switch checked={d.open} onChange={(e) => update(i, 'open', e.target.checked)} sx={{ '& .Mui-checked': { color: c.accent }, '& .Mui-checked + .MuiSwitch-track': { bgcolor: c.accent } }} />
+              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${d.open ? c.border : c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2, display: 'flex', alignItems: 'center', gap: 1.5, opacity: d.open ? 1 : 0.7, transition: 'all 0.2s' }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, minWidth: 52 }}>{dayName}</Typography>
+                <Switch checked={d.open} onChange={(e) => update(i, 'open', e.target.checked)} />
                 {d.open ? (
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
                     <TextField type="time" value={d.start} onChange={(e) => update(i, 'start', e.target.value)} size="small" sx={{ flex: 1 }} />
@@ -66,7 +66,7 @@ export default function HoursPage() {
                     <TextField type="time" value={d.end} onChange={(e) => update(i, 'end', e.target.value)} size="small" sx={{ flex: 1 }} />
                   </Box>
                 ) : (
-                  <Typography sx={{ fontSize: 14, color: c.text3, flex: 1 }}>סגור</Typography>
+                  <Typography sx={{ fontSize: 14, color: c.text3, flex: 1, fontWeight: 500 }}>סגור</Typography>
                 )}
               </Box>
             );

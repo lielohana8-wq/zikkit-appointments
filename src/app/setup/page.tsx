@@ -310,7 +310,7 @@ export default function AppointmentsSetupWizard() {
               <Typography sx={{ fontSize: 15, color: c.text2 }}>{'כמה אפשר לטפל במקביל'}</Typography>
             </Box>
             <Box sx={{ maxWidth: 480, mx: 'auto' }}>
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 3, mb: 3 }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                   <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{'כמה עמדות / כיסאות?'}</Typography>
                   <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{config.stations}</Typography>
@@ -425,7 +425,7 @@ export default function AppointmentsSetupWizard() {
               {iconCircle('✨')}
               <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.text, mb: 1 }}>{'בדיקה אחרונה'}</Typography>
             </Box>
-            <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 4 }}>
+            <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
               {[
                 { label: 'עסק', value: config.businessName, icon: '💈' },
                 { label: 'תחום', value: config.industry || '—', icon: '🎯' },

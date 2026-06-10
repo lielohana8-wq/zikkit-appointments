@@ -62,7 +62,7 @@ export default function CoursesPage() {
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ הוסף</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 700, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 700, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {products.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Box sx={{ fontSize: 48, mb: 2 }}>🎓</Box>
@@ -73,7 +73,7 @@ export default function CoursesPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {products.map((p) => (
-              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ fontSize: 32 }}>{TYPES.find((t) => t.id === p.type)?.label.split(' ')[0] || '📦'}</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</Typography>
@@ -88,7 +88,7 @@ export default function CoursesPage() {
         )}
       </Box>
 
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 420, width: '100%' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>פריט חדש</Typography>
         <TextField select fullWidth label="סוג" value={draft.type} onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value as 'course' | 'package' | 'physical' }))} sx={{ mb: 2 }}>
           {TYPES.map((t) => <MenuItem key={t.id} value={t.id}>{t.label}</MenuItem>)}

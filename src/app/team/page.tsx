@@ -135,9 +135,9 @@ export default function TeamPage() {
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ חבר צוות</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 760, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stations count */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>💺 מספר עמדות / כיסאות</Typography>
             <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{stations}</Typography>
@@ -158,18 +158,19 @@ export default function TeamPage() {
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             {team.map((m) => (
-              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderTop: `4px solid ${m.color}`, borderRadius: 3, p: 2.5 }}>
+              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd, transform: 'translateY(-2px)' } }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
                   {m.photo ? (
-                    <Box component="img" src={m.photo} sx={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
+                    <Box component="img" src={m.photo} sx={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${m.color}` }} />
                   ) : (
-                    <Box sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: m.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800 }}>{m.name[0]}</Box>
+                    <Box sx={{ width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${m.color}, ${m.color}bb)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800 }}>{m.name[0]}</Box>
                   )}
-                  <Box sx={{ flex: 1 }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{m.name}</Typography>
-                    <Typography sx={{ fontSize: 13, color: c.text2 }}>{m.role}</Typography>
-                    {m.station && <Chip label={`עמדה ${m.station}`} size="small" sx={{ mt: 0.5, bgcolor: c.accentDim, color: c.accent, fontSize: 10 }} />}
+                    <Typography sx={{ fontSize: 13, color: c.text3 }}>{m.role}</Typography>
+                    {m.station && <Box sx={{ display: 'inline-block', mt: 0.5, fontSize: 10, fontWeight: 600, bgcolor: c.accentDim, color: c.accent, borderRadius: 99, px: 1, py: 0.2 }}>עמדה {m.station}</Box>}
                   </Box>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: m.color, flexShrink: 0 }} />
                 </Box>
                 {m.description && <Typography sx={{ fontSize: 12, color: c.text3, mb: 1, lineHeight: 1.5 }}>{m.description}</Typography>}
                 {m.services.length > 0 && (
@@ -189,7 +190,7 @@ export default function TeamPage() {
       </Box>
 
       {/* Add/Edit dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 440, width: '100%' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editId ? 'עריכת חבר צוות' : 'חבר צוות חדש'}</Typography>
 
         {/* Photo */}

@@ -56,7 +56,7 @@ export default function AutomationsPage() {
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Box sx={{ bgcolor: c.accentDim, borderRadius: 3, p: 2, mb: 3 }}>
           <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.6 }}>
             ⚡ אוטומציות עובדות <b>בנפרד מדנה</b>. גם בלי מענה טלפוני, המערכת תשלח אישורים, תזכורות ובקשות ביקורת ללקוחות אוטומטית.
@@ -64,7 +64,7 @@ export default function AutomationsPage() {
         </Box>
 
         {/* Channel */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2.5, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 1.5 }}>📡 ערוץ שליחה</Typography>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Box onClick={() => set('channel', 'sms')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 2.5, bgcolor: a.channel === 'sms' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'sms' ? c.accent : c.border}` }}>

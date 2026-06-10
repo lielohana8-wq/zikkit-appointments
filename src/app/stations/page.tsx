@@ -49,14 +49,14 @@ export default function StationsPage() {
         <Box sx={{ width: 80 }} />
       </Box>
 
-      <Box sx={{ maxWidth: 500, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 500, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Box sx={{ fontSize: 56, mb: 2 }}>💺</Box>
           <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.text, mb: 1 }}>כמה עמדות יש בעסק?</Typography>
           <Typography sx={{ fontSize: 14, color: c.text2 }}>דנה תוכל לקבוע עד {stations} תורים במקביל באותה שעה</Typography>
         </Box>
 
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 4 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Typography sx={{ fontSize: 56, fontWeight: 800, color: c.accent }}>{stations}</Typography>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>כיסאות / עמדות / מטפלים</Typography>

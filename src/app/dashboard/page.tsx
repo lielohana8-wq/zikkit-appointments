@@ -100,8 +100,9 @@ export default function DashboardPage() {
       {/* Header */}
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <ZikkitLogo size={34} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
+          <Button onClick={() => router.push('/settings')} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>⚙️</Button>
           <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
         </Box>
       </Box>
@@ -184,6 +185,7 @@ export default function DashboardPage() {
             { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
             { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
             { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
+            { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
           ].filter((t) => user?.role !== 'staff' || t.staff)).map((t) => (
             <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', boxShadow: c.shadowSm, '&:hover': { transform: 'translateY(-3px)', boxShadow: c.shadowMd, borderColor: c.border2 }, '&:active': { transform: 'translateY(-1px)' } }}>
               <Box sx={{ fontSize: 26, mb: 1 }}>{t.icon}</Box>

@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField } from '@mui/mater
 import { useParams } from 'next/navigation';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; }
 interface BizInfo {
   enabled: boolean;
   reason?: string;
@@ -76,7 +76,8 @@ export default function PublicBookingPage() {
   }, [info, selectedService]);
 
   const submit = async () => {
-    if (!info || !selectedService || !form.name || !form.phone) return;
+    if (!info || !selectedService || !form.name) return;
+    if (info.branding.requirePhone !== false && !form.phone) return;
     setBooking(true);
     try {
       const res = await fetch('/api/public-booking', {
@@ -258,9 +259,9 @@ export default function PublicBookingPage() {
               </Box>
             </Box>
             <TextField fullWidth placeholder="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />
-            <TextField fullWidth placeholder="מספר טלפון" type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 1.75 : 3, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />
+            <TextField fullWidth placeholder={info.branding.requirePhone !== false ? "מספר טלפון" : "מספר טלפון (אופציונלי)"} type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 1.75 : 3, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />
             {info.branding.requireEmail && <TextField fullWidth placeholder="אימייל" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />}
-            <Button onClick={submit} disabled={!form.name || !form.phone || booking} fullWidth sx={{ py: 1.85, borderRadius: 3, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
+            <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking} fullWidth sx={{ py: 1.85, borderRadius: 3, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
               {booking ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : '✓ אישור התור'}
             </Button>
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 11.5, color: '#A8A29E', textAlign: 'center', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}

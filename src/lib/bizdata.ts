@@ -258,6 +258,7 @@ export interface BookingBranding {
   showPrices: boolean;
   showDuration: boolean;
   requireEmail: boolean;
+  requirePhone: boolean;
   address: string;
   phone: string;
   instagram: string;
@@ -281,6 +282,7 @@ export async function getBranding(bizId: string): Promise<BookingBranding> {
     showPrices: b.showPrices !== false,
     showDuration: b.showDuration !== false,
     requireEmail: b.requireEmail === true,
+    requirePhone: b.requirePhone !== false,
     address: b.address || '',
     phone: b.phone || '',
     instagram: b.instagram || '',
@@ -412,6 +414,59 @@ export async function setHours(bizId: string, hours: BizHours): Promise<void> {
   const biz = await loadBiz(bizId);
   await patchBiz(bizId, { cfg: { ...(biz.cfg || {}), hours } });
 }
+
+// ---------- Business settings ----------
+export interface BizSettings {
+  businessName: string;
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail: string;
+  businessType: string;
+  address: string;
+  city: string;
+  logo: string;
+  currency: string;
+  defaultDuration: number;
+  cancellationPolicy: string;
+}
+
+export async function getBizSettings(bizId: string): Promise<BizSettings> {
+  const biz = await loadBiz(bizId);
+  const cfg = (biz.cfg as Record<string, unknown>) || {};
+  const s = ((biz as Record<string, unknown>).settings as Partial<BizSettings>) || {};
+  return {
+    businessName: s.businessName || (cfg.biz_name as string) || '',
+    ownerName: s.ownerName || (cfg.contact_name as string) || '',
+    ownerPhone: s.ownerPhone || (cfg.owner_phone as string) || '',
+    ownerEmail: s.ownerEmail || (cfg.owner_email as string) || '',
+    businessType: s.businessType || (cfg.business_type as string) || '',
+    address: s.address || '',
+    city: s.city || '',
+    logo: s.logo || ((biz as Record<string, unknown>).booking as Record<string, unknown>)?.logo as string || '',
+    currency: s.currency || 'ILS',
+    defaultDuration: s.defaultDuration || 30,
+    cancellationPolicy: s.cancellationPolicy || '',
+  };
+}
+
+export async function saveBizSettings(bizId: string, settings: BizSettings): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const cfg = (biz.cfg as Record<string, unknown>) || {};
+  // Save to both settings and cfg (so Dana, booking page, reports all see updated info)
+  await patchBiz(bizId, {
+    settings: { ...((biz as Record<string, unknown>).settings || {}), ...settings },
+    cfg: {
+      ...cfg,
+      biz_name: settings.businessName,
+      contact_name: settings.ownerName,
+      owner_phone: settings.ownerPhone,
+      owner_email: settings.ownerEmail,
+      business_type: settings.businessType,
+    },
+  });
+}
+
+// ---------- Business settings end ----------
 
 // ---------- Documents (receipts & quotes) ----------
 export interface BizDocLineItem { description: string; qty: number; price: number; }

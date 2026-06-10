@@ -151,6 +151,7 @@ export default function BookingPageSettings() {
           {[
             { key: 'showPrices' as const, label: 'הצג מחירים' },
             { key: 'showDuration' as const, label: 'הצג משך טיפול' },
+            { key: 'requirePhone' as const, label: 'דרוש טלפון מהלקוח' },
             { key: 'requireEmail' as const, label: 'דרוש אימייל מהלקוח' },
           ].map((o) => (
             <Box key={o.key} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>

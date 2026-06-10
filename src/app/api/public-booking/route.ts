@@ -76,6 +76,7 @@ export async function GET(req: NextRequest) {
         showPrices: booking.showPrices !== false,
         showDuration: booking.showDuration !== false,
         requireEmail: booking.requireEmail === true,
+        requirePhone: booking.requirePhone !== false,
       },
     });
   } catch (e) {

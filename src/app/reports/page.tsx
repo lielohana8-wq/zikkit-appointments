@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, Chip } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBookings, computeReport, bookingsToCSV, type Booking, type ReportData } from '@/lib/bizdata';
+import { getBookings, computeReport, bookingsToCSV, getServices, type Booking, type ReportData, type Service } from '@/lib/bizdata';
 import { zikkitColors as c } from '@/styles/theme';
 
 type Range = 'today' | 'week' | 'month' | 'all';
@@ -13,6 +13,7 @@ export default function ReportsPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [report, setReport] = useState<ReportData | null>(null);
   const [range, setRange] = useState<Range>('month');
   const [dataLoading, setDataLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function ReportsPage() {
 
   const load = useCallback(async () => {
     if (!bizId) return;
-    try { setBookings(await getBookings(bizId)); } finally { setDataLoading(false); }
+    try { setBookings(await getBookings(bizId)); setServices(await getServices(bizId)); } finally { setDataLoading(false); }
   }, [bizId]);
 
   useEffect(() => { load(); }, [load]);
@@ -35,8 +36,8 @@ export default function ReportsPage() {
     else from = new Date('2020-01-01');
     const fromStr = from.toISOString().split('T')[0];
     const toStr = today.toISOString().split('T')[0];
-    setReport(computeReport(bookings, fromStr, toStr));
-  }, [bookings, range]);
+    setReport(computeReport(bookings, fromStr, toStr, services));
+  }, [bookings, range, services]);
 
   const exportCSV = () => {
     const csv = bookingsToCSV(bookings);
@@ -53,52 +54,54 @@ export default function ReportsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.surface1 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontFamily: 'Sora, sans-serif', fontSize: 18, fontWeight: 800, color: c.text }}>דוחות כספיים</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>דוחות כספיים</Typography>
         <Button onClick={exportCSV} size="small" sx={{ color: c.accent, fontWeight: 700 }}>⬇ CSV</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-        {/* Range selector */}
-        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+      <Box sx={{ maxWidth: 820, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 4 } }}>
+        {/* Range selector — segmented control */}
+        <Box sx={{ display: 'flex', gap: 0.5, mb: 4, bgcolor: c.surface3, p: 0.5, borderRadius: 99, width: 'fit-content', mx: 'auto' }}>
           {([['today', 'היום'], ['week', 'שבוע'], ['month', 'חודש'], ['all', 'הכל']] as [Range, string][]).map(([r, label]) => (
-            <Button key={r} onClick={() => setRange(r)} sx={{ flex: 1, borderRadius: 99, fontWeight: 700, bgcolor: range === r ? c.accent : c.surface1, color: range === r ? '#fff' : c.text2, border: `1px solid ${range === r ? c.accent : c.border}`, '&:hover': { bgcolor: range === r ? c.accent : c.surface2 } }}>{label}</Button>
+            <Button key={r} onClick={() => setRange(r)} sx={{ borderRadius: 99, fontWeight: 600, fontSize: 14, px: 2.5, py: 0.75, minWidth: 64, bgcolor: range === r ? c.surface1 : 'transparent', color: range === r ? c.text : c.text3, boxShadow: range === r ? c.shadowSm : 'none', '&:hover': { bgcolor: range === r ? c.surface1 : 'transparent' } }}>{label}</Button>
           ))}
         </Box>
 
         {report && (
           <>
-            {/* KPI cards */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mb: 3 }}>
-              <Box sx={{ bgcolor: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, borderRadius: 4, p: 3, color: '#fff' }}>
-                <Typography sx={{ fontSize: 13, opacity: 0.9 }}>הכנסה כוללת</Typography>
-                <Typography sx={{ fontSize: 32, fontWeight: 800 }}>₪{report.totalRevenue.toLocaleString()}</Typography>
-              </Box>
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3 }}>
-                <Typography sx={{ fontSize: 13, color: c.text3 }}>תורים שהושלמו</Typography>
-                <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.text }}>{report.completed}</Typography>
-              </Box>
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3 }}>
-                <Typography sx={{ fontSize: 13, color: c.text3 }}>ממוצע לתור</Typography>
-                <Typography sx={{ fontSize: 28, fontWeight: 800, color: c.text }}>₪{report.avgTicket}</Typography>
-              </Box>
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3 }}>
-                <Typography sx={{ fontSize: 13, color: c.text3 }}>ביטולים</Typography>
-                <Typography sx={{ fontSize: 28, fontWeight: 800, color: c.hot }}>{report.cancelled}</Typography>
-              </Box>
+            {/* Hero revenue card */}
+            <Box sx={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, borderRadius: 6, p: { xs: 3, sm: 4 }, color: '#fff', mb: 2.5, position: 'relative', overflow: 'hidden', boxShadow: c.shadowAccent }}>
+              <Box sx={{ position: 'absolute', top: -30, left: -30, width: 160, height: 160, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
+              <Typography sx={{ fontSize: 14, opacity: 0.85, fontWeight: 500, position: 'relative' }}>הכנסה כוללת</Typography>
+              <Typography sx={{ fontSize: { xs: 42, sm: 52 }, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, position: 'relative' }}>₪{report.totalRevenue.toLocaleString()}</Typography>
+              <Typography sx={{ fontSize: 13, opacity: 0.8, mt: 0.5, position: 'relative' }}>{report.completed} תורים · ₪{report.avgTicket} בממוצע לתור</Typography>
             </Box>
 
-            {/* Revenue by day - simple bar chart */}
-            {report.byDay.length > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3, mb: 3 }}>
-                <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 2 }}>הכנסה לפי יום</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, height: 140, overflowX: 'auto' }}>
+            {/* KPI mini cards */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: { xs: 1.5, sm: 2 }, mb: 3 }}>
+              {[
+                { label: 'תורים', value: report.completed, color: c.text },
+                { label: 'ממוצע', value: `₪${report.avgTicket}`, color: c.text },
+                { label: 'ביטולים', value: report.cancelled, color: report.cancelled > 0 ? c.hot : c.text },
+              ].map((k, i) => (
+                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: { xs: 2, sm: 2.5 }, boxShadow: c.shadowSm }}>
+                  <Typography sx={{ fontSize: { xs: 22, sm: 26 }, fontWeight: 800, color: k.color, letterSpacing: '-0.02em' }}>{k.value}</Typography>
+                  <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>{k.label}</Typography>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Revenue by day */}
+            {report.byDay.length > 0 && report.totalRevenue > 0 && (
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>הכנסה לפי יום</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.75, height: 150 }}>
                   {report.byDay.slice(-14).map((d) => (
-                    <Box key={d.date} sx={{ flex: 1, minWidth: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                      <Typography sx={{ fontSize: 9, color: c.text3 }}>₪{d.revenue}</Typography>
-                      <Box sx={{ width: '100%', height: `${(d.revenue / maxDayRev) * 100}px`, minHeight: 4, bgcolor: c.accent, borderRadius: 1, transition: 'height 0.3s' }} />
-                      <Typography sx={{ fontSize: 8, color: c.text3, transform: 'rotate(-45deg)', whiteSpace: 'nowrap' }}>{d.date.slice(5)}</Typography>
+                    <Box key={d.date} sx={{ flex: 1, minWidth: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, height: '100%', justifyContent: 'flex-end' }}>
+                      <Typography sx={{ fontSize: 9.5, color: c.text3, fontWeight: 600 }}>{d.revenue > 0 ? `₪${d.revenue}` : ''}</Typography>
+                      <Box sx={{ width: '100%', height: `${Math.max((d.revenue / maxDayRev) * 110, 3)}px`, background: `linear-gradient(to top, ${c.accent}, ${c.accent2})`, borderRadius: 1.5, transition: 'height 0.4s cubic-bezier(0.22,1,0.36,1)' }} />
+                      <Typography sx={{ fontSize: 9, color: c.text3 }}>{d.date.slice(5)}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -107,17 +110,21 @@ export default function ReportsPage() {
 
             {/* By service */}
             {report.byService.length > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 3 }}>
-                <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 2 }}>פילוח לפי שירות</Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>פילוח לפי שירות</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {report.byService.map((s) => (
-                    <Box key={s.service} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text, minWidth: 100 }}>{s.service}</Typography>
-                      <Box sx={{ flex: 1, height: 8, bgcolor: c.surface3, borderRadius: 99, overflow: 'hidden' }}>
-                        <Box sx={{ width: `${(s.revenue / report.totalRevenue) * 100}%`, height: '100%', bgcolor: c.accent }} />
+                    <Box key={s.service}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text }}>{s.service}</Typography>
+                          <Box sx={{ bgcolor: c.accentDim, color: c.accent, fontWeight: 700, fontSize: 10.5, borderRadius: 99, px: 1, py: 0.1 }}>{s.count}</Box>
+                        </Box>
+                        <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>₪{s.revenue.toLocaleString()}</Typography>
                       </Box>
-                      <Chip label={`${s.count}`} size="small" sx={{ bgcolor: c.accentDim, color: c.accent, fontWeight: 700, fontSize: 10 }} />
-                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.accent, minWidth: 60, textAlign: 'left' }}>₪{s.revenue}</Typography>
+                      <Box sx={{ height: 7, bgcolor: c.surface3, borderRadius: 99, overflow: 'hidden' }}>
+                        <Box sx={{ width: `${report.totalRevenue ? (s.revenue / report.totalRevenue) * 100 : 0}%`, height: '100%', background: `linear-gradient(to right, ${c.accent}, ${c.accent2})`, borderRadius: 99, transition: 'width 0.5s' }} />
+                      </Box>
                     </Box>
                   ))}
                 </Box>
@@ -125,8 +132,8 @@ export default function ReportsPage() {
             )}
 
             {report.totalBookings === 0 && (
-              <Box sx={{ textAlign: 'center', py: 6 }}>
-                <Box sx={{ fontSize: 48, mb: 2 }}>📊</Box>
+              <Box sx={{ textAlign: 'center', py: 7 }}>
+                <Box sx={{ fontSize: 44, mb: 1.5, opacity: 0.5 }}>📊</Box>
                 <Typography sx={{ color: c.text3 }}>אין נתונים בתקופה זו</Typography>
               </Box>
             )}

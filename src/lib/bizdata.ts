@@ -84,6 +84,13 @@ export async function getBookings(bizId: string): Promise<Booking[]> {
 export async function addBooking(bizId: string, booking: Partial<Booking>): Promise<Booking> {
   const biz = await loadBiz(bizId);
   const bookings = biz.appointments?.bookings || [];
+  // Resolve price: explicit price, else look it up from the service catalog by name.
+  let resolvedPrice = booking.price || 0;
+  if (!resolvedPrice && booking.service) {
+    const svcs = (biz.dana?.services as Array<{ name: string; price?: number | string }>) || [];
+    const match = svcs.find((s) => s.name === booking.service);
+    if (match) resolvedPrice = typeof match.price === 'number' ? match.price : parseInt(String(match.price || 0)) || 0;
+  }
   const newBooking: Booking = {
     id: 'apt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
     source: booking.source || 'manual',
@@ -97,7 +104,7 @@ export async function addBooking(bizId: string, booking: Partial<Booking>): Prom
     station: booking.station || null,
     notes: booking.notes || '',
     status: 'confirmed',
-    price: booking.price || 0,
+    price: resolvedPrice,
     reminded: false,
     createdAt: new Date().toISOString(),
   };
@@ -406,6 +413,78 @@ export async function setHours(bizId: string, hours: BizHours): Promise<void> {
   await patchBiz(bizId, { cfg: { ...(biz.cfg || {}), hours } });
 }
 
+// ---------- Documents (receipts & quotes) ----------
+export interface BizDocLineItem { description: string; qty: number; price: number; }
+export interface BizDocument {
+  id: string;
+  type: 'receipt' | 'quote';   // קבלה / הצעת מחיר
+  number: string;              // doc number e.g. "001"
+  customerName: string;
+  customerPhone: string;
+  date: string;
+  items: BizDocLineItem[];
+  discount: number;            // amount
+  taxRate: number;             // % (0 if not charging VAT)
+  notes: string;
+  status: string;              // 'draft' | 'sent' | 'paid' | 'accepted'
+  createdAt: string;
+}
+
+export interface DocBranding {
+  logo: string;
+  businessName: string;
+  businessId: string;          // ע.מ / ח.פ
+  address: string;
+  phone: string;
+  email: string;
+  footer: string;
+  accentColor: string;
+}
+
+export async function getDocBranding(bizId: string): Promise<DocBranding> {
+  const biz = await loadBiz(bizId);
+  const d = ((biz as Record<string, unknown>).docBranding as Partial<DocBranding>) || {};
+  const cfg = (biz.cfg as Record<string, unknown>) || {};
+  return {
+    logo: d.logo || ((biz as Record<string, unknown>).booking as Record<string, unknown>)?.logo as string || '',
+    businessName: d.businessName || (cfg.biz_name as string) || '',
+    businessId: d.businessId || '',
+    address: d.address || '',
+    phone: d.phone || (cfg.owner_phone as string) || '',
+    email: d.email || '',
+    footer: d.footer || 'תודה שבחרתם בנו!',
+    accentColor: d.accentColor || '#7C3AED',
+  };
+}
+
+export async function saveDocBranding(bizId: string, branding: DocBranding): Promise<void> {
+  const biz = await loadBiz(bizId);
+  await patchBiz(bizId, { docBranding: { ...((biz as Record<string, unknown>).docBranding || {}), ...branding } });
+}
+
+export async function getDocuments(bizId: string): Promise<BizDocument[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).documents as { items?: BizDocument[] })?.items || [];
+}
+
+export async function saveDocument(bizId: string, document: BizDocument): Promise<void> {
+  const docs = await getDocuments(bizId);
+  const existing = docs.findIndex((d) => d.id === document.id);
+  const next = existing >= 0 ? docs.map((d) => (d.id === document.id ? document : d)) : [document, ...docs];
+  await patchBiz(bizId, { documents: { items: next } });
+}
+
+export async function deleteDocument(bizId: string, id: string): Promise<void> {
+  const docs = await getDocuments(bizId);
+  await patchBiz(bizId, { documents: { items: docs.filter((d) => d.id !== id) } });
+}
+
+export function docTotal(doc: BizDocument): { subtotal: number; tax: number; total: number } {
+  const subtotal = doc.items.reduce((s, i) => s + i.qty * i.price, 0) - (doc.discount || 0);
+  const tax = doc.taxRate ? subtotal * (doc.taxRate / 100) : 0;
+  return { subtotal, tax, total: subtotal + tax };
+}
+
 // ---------- Automations ----------
 export interface AutomationSettings {
   // SMS/WhatsApp automations — independent of Dana voice
@@ -479,18 +558,27 @@ export interface ReportData {
   avgTicket: number;
 }
 
-export function computeReport(bookings: Booking[], fromDate: string, toDate: string): ReportData {
+export function computeReport(bookings: Booking[], fromDate: string, toDate: string, services?: Array<{ name: string; price?: number | string }>): ReportData {
+  // Backfill price for bookings that were saved without one (look up by service name)
+  const priceOf = (b: Booking): number => {
+    if (b.price && b.price > 0) return b.price;
+    if (services && b.service) {
+      const m = services.find((s) => s.name === b.service);
+      if (m) return typeof m.price === 'number' ? m.price : parseInt(String(m.price || 0)) || 0;
+    }
+    return 0;
+  };
   const inRange = bookings.filter((b) => b.date >= fromDate && b.date <= toDate);
   const completed = inRange.filter((b) => b.status === 'confirmed' || b.status === 'completed');
   const cancelled = inRange.filter((b) => b.status === 'cancelled').length;
   const noShows = inRange.filter((b) => b.status === 'no_show').length;
-  const totalRevenue = completed.reduce((s, b) => s + (b.price || 0), 0);
+  const totalRevenue = completed.reduce((s, b) => s + priceOf(b), 0);
 
   const serviceMap = new Map<string, { count: number; revenue: number }>();
   completed.forEach((b) => {
     const key = b.service || 'אחר';
     const cur = serviceMap.get(key) || { count: 0, revenue: 0 };
-    cur.count++; cur.revenue += b.price || 0;
+    cur.count++; cur.revenue += priceOf(b);
     serviceMap.set(key, cur);
   });
   const byService = Array.from(serviceMap.entries())
@@ -500,7 +588,7 @@ export function computeReport(bookings: Booking[], fromDate: string, toDate: str
   const dayMap = new Map<string, { revenue: number; count: number }>();
   completed.forEach((b) => {
     const cur = dayMap.get(b.date) || { revenue: 0, count: 0 };
-    cur.revenue += b.price || 0; cur.count++;
+    cur.revenue += priceOf(b); cur.count++;
     dayMap.set(b.date, cur);
   });
   const byDay = Array.from(dayMap.entries())

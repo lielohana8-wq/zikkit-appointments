@@ -176,6 +176,7 @@ export default function DashboardPage() {
             { icon: '📋', label: 'מחירון', path: '/services', staff: false },
             { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
             { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
+            { icon: '🧾', label: 'קבלות', path: '/documents', staff: false },
             { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
             { icon: '📞', label: 'דנה', path: '/setup', staff: false },
             { icon: '🕐', label: 'שעות', path: '/hours', staff: false },

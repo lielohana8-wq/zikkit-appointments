@@ -121,7 +121,7 @@ export default function DocumentsPage() {
       </Box>
 
       {/* Editor dialog */}
-      <Dialog open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 520, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
+      <Dialog scroll="body" open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 520, width: '100%' } }}>
         {editor && (
           <>
             <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editor.type === 'receipt' ? 'קבלה' : 'הצעת מחיר'} #{editor.number}</Typography>
@@ -165,7 +165,7 @@ export default function DocumentsPage() {
       </Dialog>
 
       {/* Branding dialog — deep design */}
-      <Dialog open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 480, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
+      <Dialog scroll="body" open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 480, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>עיצוב המסמכים שלך</Typography>
 
         {/* Template chooser */}
@@ -227,7 +227,7 @@ export default function DocumentsPage() {
       </Dialog>
 
       {/* Preview dialog — the actual branded document */}
-      <Dialog open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 4, maxWidth: 520, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
+      <Dialog scroll="body" open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 4, maxWidth: 520, width: '100%' } }}>
         {preview && branding && <DocPreview doc={preview} branding={branding} />}
       </Dialog>
     </Box>

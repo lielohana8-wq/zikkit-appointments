@@ -190,7 +190,7 @@ export default function TeamPage() {
       </Box>
 
       {/* Add/Edit dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editId ? 'עריכת חבר צוות' : 'חבר צוות חדש'}</Typography>
 
         {/* Photo */}

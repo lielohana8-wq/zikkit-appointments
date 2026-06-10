@@ -88,7 +88,7 @@ export default function CoursesPage() {
         )}
       </Box>
 
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>פריט חדש</Typography>
         <TextField select fullWidth label="סוג" value={draft.type} onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value as 'course' | 'package' | 'physical' }))} sx={{ mb: 2 }}>
           {TYPES.map((t) => <MenuItem key={t.id} value={t.id}>{t.label}</MenuItem>)}

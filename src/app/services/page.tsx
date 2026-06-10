@@ -154,7 +154,7 @@ export default function ServicesPage() {
         )}
       </Box>
 
-      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>{editId ? 'עריכת שירות' : 'שירות חדש'}</Typography>
         <TextField fullWidth label="שם השירות" value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="קטגוריה (למשל: תספורות, צבע)" value={draft.category} onChange={(e) => setDraft((p) => ({ ...p, category: e.target.value }))} sx={{ mb: 2 }} />

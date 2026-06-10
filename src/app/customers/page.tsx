@@ -90,7 +90,7 @@ export default function CustomersPage() {
         )}
       </Box>
 
-      <Dialog open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+      <Dialog open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>לקוח חדש</Typography>
         <TextField fullWidth label="שם" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 2 }} />

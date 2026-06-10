@@ -143,7 +143,7 @@ export default function CalendarPage() {
         )}
       </Box>
 
-      <Dialog open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
+      <Dialog open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%', maxHeight: '90vh', overflowY: 'auto' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>תור חדש</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{selectedDate}</Typography>
         <TextField fullWidth label="שם הלקוח" value={form.customerName} onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))} sx={{ mb: 2 }} />

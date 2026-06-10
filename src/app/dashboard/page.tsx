@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, type AppNotification } from '@/lib/bizdata';
+import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -97,92 +98,108 @@ export default function DashboardPage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       {/* Header */}
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.surface1 }}>
-        <Box>
-          <Typography sx={{ fontFamily: 'Sora, sans-serif', fontSize: 18, fontWeight: 800, color: c.text }}>{bizName || 'הדאשבורד שלי'}</Typography>
-          <Typography sx={{ fontSize: 12, color: c.text3 }}>ZikkitAppointments</Typography>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <ZikkitLogo size={34} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
+          <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
         </Box>
-        <Button onClick={() => logout()} sx={{ color: c.text2, fontWeight: 600 }}>יציאה</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 900, mx: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 940, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 5 } }}>
+        {/* Greeting */}
+        <Box sx={{ mb: 4 }}>
+          <Typography sx={{ fontSize: { xs: 28, sm: 34 }, fontWeight: 800, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+            {(() => { const h = new Date().getHours(); return h < 12 ? 'בוקר טוב' : h < 18 ? 'צהריים טובים' : 'ערב טוב'; })()} 👋
+          </Typography>
+          <Typography sx={{ fontSize: 16, color: c.text3, mt: 0.5 }}>{todayBookings.length > 0 ? `יש לך ${todayBookings.length} תורים היום` : 'אין תורים היום — זמן טוב לקדם את העסק'}</Typography>
+        </Box>
+
         {/* New booking notifications */}
         {notifs.filter((n) => !n.read).length > 0 && (
-          <Box sx={{ bgcolor: c.accentDim, border: `1px solid ${c.accent}`, borderRadius: 4, p: 2.5, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.accent }}>🔔 {notifs.filter((n) => !n.read).length} התראות חדשות</Typography>
-              <Button size="small" onClick={async () => { if (bizId) { await markNotificationsRead(bizId); setNotifs((p) => p.map((n) => ({ ...n, read: true }))); } }} sx={{ fontSize: 12, color: c.text2 }}>סמן הכל כנקרא</Button>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 2.5, mb: 3, boxShadow: c.shadowSm }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.accent, animation: 'pulse 2s infinite' }} />
+                <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>{notifs.filter((n) => !n.read).length} התראות חדשות</Typography>
+              </Box>
+              <Button size="small" onClick={async () => { if (bizId) { await markNotificationsRead(bizId); setNotifs((p) => p.map((n) => ({ ...n, read: true }))); } }} sx={{ fontSize: 12.5, color: c.text3 }}>סמן הכל כנקרא</Button>
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {notifs.filter((n) => !n.read).slice(0, 5).map((n) => (
-                <Typography key={n.id} sx={{ fontSize: 13, color: c.text, bgcolor: c.surface1, borderRadius: 2, px: 1.5, py: 1 }}>{n.text}</Typography>
+                <Typography key={n.id} sx={{ fontSize: 13.5, color: c.text2, bgcolor: c.surface2, borderRadius: 2.5, px: 1.75, py: 1.25 }}>{n.text}</Typography>
               ))}
             </Box>
           </Box>
         )}
 
-        {/* Dana number card (optional add-on) */}
-        {danaPhone ? (
-          <Box sx={{ bgcolor: c.surface1, border: `2px solid ${c.accent}`, borderRadius: 4, p: 3, mb: 3, textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 12, color: c.text3, fontWeight: 700, mb: 1 }}>📞 מספר דנה (עונה אוטומטית)</Typography>
-            <Typography sx={{ fontSize: 28, fontWeight: 800, color: c.accent, fontFamily: 'monospace' }}>{danaPhone}</Typography>
-          </Box>
-        ) : (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ fontSize: 28 }}>📞</Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>דנה — מענה טלפוני אוטומטי (אופציונלי)</Typography>
-              <Typography sx={{ fontSize: 12.5, color: c.text3 }}>רוצה שמישהי תענה לטלפון ותקבע תורים? הפעל את דנה. לא חובה.</Typography>
-            </Box>
-            <Button onClick={() => router.push('/setup')} variant="outlined" size="small" sx={{ borderRadius: 3, fontWeight: 700, whiteSpace: 'nowrap' }}>הפעל דנה</Button>
-          </Box>
-        )}
-
-        {/* Feature navigation */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1.5, mb: 3 }}>
-          {([
-            { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
-            { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
-            { icon: '📋', label: 'מחירון ושירותים', path: '/services', staff: false },
-            { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
-            { icon: '📊', label: 'דוחות כספיים', path: '/reports', staff: false },
-            { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
-            { icon: '📞', label: 'דנה (טלפון)', path: '/setup', staff: false },
-            { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: false },
-            { icon: '🎓', label: 'קורסים ומוצרים', path: '/courses', staff: false },
-            { icon: '🖼️', label: 'גלריית עבודות', path: '/gallery', staff: false },
-            { icon: '🧑‍🤝‍🧑', label: 'צוות ועמדות', path: '/team', staff: false },
-            { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
-          ].filter((t) => user?.role !== 'staff' || t.staff)).map((t) => (
-            <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 2, textAlign: 'center', transition: 'all 0.2s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' } }}>
-              <Box sx={{ fontSize: 28, mb: 0.5 }}>{t.icon}</Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text }}>{t.label}</Typography>
+        {/* Stats — premium cards */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: { xs: 1.5, sm: 2 }, mb: 4 }}>
+          {[
+            { label: 'תורים היום', value: todayBookings.length, accent: true },
+            { label: 'תורים קרובים', value: upcoming.length, accent: false },
+            { label: 'סה"כ תורים', value: bookings.length, accent: false },
+          ].map((s, i) => (
+            <Box key={i} sx={{ bgcolor: s.accent ? c.accent : c.surface1, border: `1px solid ${s.accent ? c.accent : c.border}`, borderRadius: 5, p: { xs: 2, sm: 3 }, boxShadow: c.shadowSm }}>
+              <Typography sx={{ fontSize: { xs: 30, sm: 38 }, fontWeight: 800, color: s.accent ? '#fff' : c.text, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</Typography>
+              <Typography sx={{ fontSize: 13, color: s.accent ? 'rgba(255,255,255,0.85)' : c.text3, mt: 0.5, fontWeight: 500 }}>{s.label}</Typography>
             </Box>
           ))}
         </Box>
 
-        {/* Stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
-          {[
-            { label: 'תורים היום', value: todayBookings.length },
-            { label: 'תורים קרובים', value: upcoming.length },
-            { label: 'סה"כ תורים', value: bookings.length },
-          ].map((s, i) => (
-            <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 3, textAlign: 'center' }}>
-              <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.accent }}>{s.value}</Typography>
-              <Typography sx={{ fontSize: 13, color: c.text2 }}>{s.label}</Typography>
+        {/* Dana add-on (subtle) */}
+        {danaPhone ? (
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontSize: 12, color: c.text3, fontWeight: 600 }}>מספר דנה — מענה אוטומטי</Typography>
+              <Typography sx={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'monospace', letterSpacing: '-0.02em' }}>{danaPhone}</Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>דנה — מענה טלפוני אוטומטי</Typography>
+              <Typography sx={{ fontSize: 12.5, color: c.text3 }}>אופציונלי · מישהי שעונה לטלפון וקובעת תורים 24/7</Typography>
+            </Box>
+            <Button onClick={() => router.push('/setup')} variant="outlined" size="small" sx={{ borderRadius: 2.5, fontWeight: 600, whiteSpace: 'nowrap' }}>הפעל</Button>
+          </Box>
+        )}
+
+        {/* Feature navigation — premium tiles */}
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ניהול העסק</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 1.5, sm: 2 }, mb: 5 }}>
+          {([
+            { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
+            { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
+            { icon: '📋', label: 'מחירון', path: '/services', staff: false },
+            { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
+            { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
+            { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
+            { icon: '📞', label: 'דנה', path: '/setup', staff: false },
+            { icon: '🕐', label: 'שעות', path: '/hours', staff: false },
+            { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
+            { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
+            { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
+            { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
+          ].filter((t) => user?.role !== 'staff' || t.staff)).map((t) => (
+            <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', boxShadow: c.shadowSm, '&:hover': { transform: 'translateY(-3px)', boxShadow: c.shadowMd, borderColor: c.border2 }, '&:active': { transform: 'translateY(-1px)' } }}>
+              <Box sx={{ fontSize: 26, mb: 1 }}>{t.icon}</Box>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: c.text }}>{t.label}</Typography>
             </Box>
           ))}
         </Box>
 
         {/* Today */}
-        <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text, mb: 2 }}>התורים של היום</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>
         {todayBookings.length === 0 ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 3, p: 4, textAlign: 'center' }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 5, textAlign: 'center', boxShadow: c.shadowSm }}>
+            <Box sx={{ fontSize: 32, mb: 1, opacity: 0.5 }}>☕</Box>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>אין תורים היום</Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 4 }}>
             {todayBookings.sort((a, b) => a.time.localeCompare(b.time)).map((b) => (
               <BookingRow key={b.id} booking={b} />
             ))}
@@ -192,8 +209,8 @@ export default function DashboardPage() {
         {/* Upcoming */}
         {upcoming.length > 0 && (
           <>
-            <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text, mb: 2, mt: 4 }}>תורים קרובים</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, mt: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תורים קרובים</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {upcoming.map((b) => <BookingRow key={b.id} booking={b} showDate />)}
             </Box>
           </>
@@ -205,14 +222,14 @@ export default function DashboardPage() {
 
 function BookingRow({ booking, showDate }: { booking: Booking; showDate?: boolean }) {
   return (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.accent}`, borderRadius: 3, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Box sx={{ textAlign: 'center', minWidth: 60 }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.accent }}>{booking.time}</Typography>
-        {showDate && <Typography sx={{ fontSize: 11, color: c.text3 }}>{booking.date}</Typography>}
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+      <Box sx={{ textAlign: 'center', minWidth: 56, bgcolor: c.accentDim, borderRadius: 3, py: 1, px: 1.25 }}>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{booking.time}</Typography>
+        {showDate && <Typography sx={{ fontSize: 10.5, color: c.accent, opacity: 0.7 }}>{booking.date?.slice(5)}</Typography>}
       </Box>
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{booking.customerName}</Typography>
-        <Typography sx={{ fontSize: 13, color: c.text2 }}>{booking.service} · {booking.duration} דק'</Typography>
+        <Typography sx={{ fontSize: 13, color: c.text3 }}>{booking.service || 'טיפול'}{booking.staff ? ` · ${booking.staff}` : ''} · {booking.duration} דק'</Typography>
       </Box>
     </Box>
   );

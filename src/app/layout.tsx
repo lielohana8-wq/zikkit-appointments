@@ -20,14 +20,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Assistant:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
         <style>{`
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Assistant', system-ui, sans-serif; background: #FCFBF9; }
+          * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+          body { font-family: 'Heebo', 'Assistant', -apple-system, system-ui, sans-serif; background: #FAFAFA; -webkit-font-smoothing: antialiased; }
+          ::selection { background: rgba(124,58,237,0.18); }
+          ::-webkit-scrollbar { width: 10px; height: 10px; }
+          ::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 99px; border: 2px solid #FAFAFA; }
+          ::-webkit-scrollbar-thumb:hover { background: #B4B4BB; }
           .zk-fade-up { animation: zkFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
           @keyframes zkFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         `}</style>
       </head>
       <body>

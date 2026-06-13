@@ -541,6 +541,113 @@ export function computeInsights(bookings: Booking[]): string[] {
   return insights.length > 0 ? insights : ['המשך לקבל תורים כדי לראות תובנות.'];
 }
 
+// ---------- Expenses & profitability ----------
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;       // שכירות, מוצרים, שכר, שיווק, ציוד, אחר
+  date: string;
+  recurring: boolean;     // monthly recurring?
+  createdAt: string;
+}
+
+export const EXPENSE_CATEGORIES = ['שכירות', 'מוצרים וחומרים', 'שכר עובדים', 'שיווק ופרסום', 'ציוד', 'חשבונות', 'אחר'];
+
+export async function getExpenses(bizId: string): Promise<Expense[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).expenses as { items?: Expense[] })?.items || [];
+}
+
+export async function addExpense(bizId: string, expense: Partial<Expense>): Promise<void> {
+  const items = await getExpenses(bizId);
+  const newExpense: Expense = {
+    id: 'exp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    description: expense.description || '',
+    amount: expense.amount || 0,
+    category: expense.category || 'אחר',
+    date: expense.date || new Date().toISOString().split('T')[0],
+    recurring: expense.recurring || false,
+    createdAt: new Date().toISOString(),
+  };
+  await patchBiz(bizId, { expenses: { items: [newExpense, ...items] } });
+}
+
+export async function deleteExpense(bizId: string, id: string): Promise<void> {
+  const items = await getExpenses(bizId);
+  await patchBiz(bizId, { expenses: { items: items.filter((e) => e.id !== id) } });
+}
+
+// Profitability: revenue (from bookings) minus expenses in a date range
+export function computeProfit(bookings: Booking[], expenses: Expense[], fromDate: string, toDate: string, services?: Array<{ name: string; price?: number | string }>): { revenue: number; expenses: number; profit: number; margin: number; byCategory: Array<{ category: string; amount: number }> } {
+  const priceOf = (b: Booking): number => {
+    if (b.price && b.price > 0) return b.price;
+    if (services && b.service) { const m = services.find((s) => s.name === b.service); if (m) return typeof m.price === 'number' ? m.price : parseInt(String(m.price || 0)) || 0; }
+    return 0;
+  };
+  const revenue = bookings.filter((b) => b.date >= fromDate && b.date <= toDate && b.status !== 'cancelled').reduce((s, b) => s + priceOf(b), 0);
+  const inRange = expenses.filter((e) => e.date >= fromDate && e.date <= toDate);
+  const totalExpenses = inRange.reduce((s, e) => s + e.amount, 0);
+  const catMap = new Map<string, number>();
+  inRange.forEach((e) => catMap.set(e.category, (catMap.get(e.category) || 0) + e.amount));
+  const byCategory = Array.from(catMap.entries()).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
+  const profit = revenue - totalExpenses;
+  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+  return { revenue, expenses: totalExpenses, profit, margin, byCategory };
+}
+
+// ---------- Customer reviews ----------
+export interface Review {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  rating: number;        // 1-5
+  text: string;
+  service?: string;
+  date: string;
+  published: boolean;    // owner approved to show publicly
+  createdAt: string;
+}
+
+export async function getReviews(bizId: string): Promise<Review[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).reviews as { items?: Review[] })?.items || [];
+}
+
+export async function addReview(bizId: string, review: Partial<Review>): Promise<void> {
+  const items = await getReviews(bizId);
+  const newReview: Review = {
+    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    customerName: review.customerName || '',
+    customerPhone: review.customerPhone || '',
+    rating: review.rating || 5,
+    text: review.text || '',
+    service: review.service || '',
+    date: review.date || new Date().toISOString().split('T')[0],
+    published: review.published || false,
+    createdAt: new Date().toISOString(),
+  };
+  await patchBiz(bizId, { reviews: { items: [newReview, ...items] } });
+}
+
+export async function updateReview(bizId: string, id: string, changes: Partial<Review>): Promise<void> {
+  const items = (await getReviews(bizId)).map((r) => (r.id === id ? { ...r, ...changes } : r));
+  await patchBiz(bizId, { reviews: { items } });
+}
+
+export async function deleteReview(bizId: string, id: string): Promise<void> {
+  const items = (await getReviews(bizId)).filter((r) => r.id !== id);
+  await patchBiz(bizId, { reviews: { items } });
+}
+
+export function reviewStats(reviews: Review[]): { avg: number; count: number; distribution: number[] } {
+  if (reviews.length === 0) return { avg: 0, count: 0, distribution: [0, 0, 0, 0, 0] };
+  const distribution = [0, 0, 0, 0, 0];
+  reviews.forEach((r) => { if (r.rating >= 1 && r.rating <= 5) distribution[r.rating - 1]++; });
+  const avg = Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10;
+  return { avg, count: reviews.length, distribution };
+}
+
 // ---------- Documents (receipts & quotes) ----------
 export interface BizDocLineItem { description: string; qty: number; price: number; }
 export interface BizDocument {

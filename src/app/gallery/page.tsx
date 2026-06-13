@@ -57,28 +57,31 @@ export default function GalleryPage() {
       </Box>
 
       <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <Typography sx={{ fontSize: 14, color: c.text2, mb: 3 }}>
-          התמונות שתעלה כאן יופיעו בדף הנחיתה האוטומטי של העסק. (עד 12 תמונות)
-        </Typography>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
+          <Box sx={{ fontSize: 22 }}>🖼️</Box>
+          <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5, flex: 1 }}>
+            התמונות שתעלה כאן יופיעו בדף הנחיתה האוטומטי של העסק (עד 12).
+          </Typography>
+        </Box>
 
-        <Button component="label" variant="contained" disabled={uploading || images.length >= 12} sx={{ borderRadius: 3, fontWeight: 700, mb: 3 }}>
-          {uploading ? <><CircularProgress size={16} sx={{ color: '#fff', mr: 1 }} />מעלה...</> : '📷 העלה תמונה'}
+        <Button component="label" variant="contained" disabled={uploading || images.length >= 12} fullWidth sx={{ borderRadius: 3, fontWeight: 700, mb: 3, py: 1.4, borderStyle: 'dashed' }}>
+          {uploading ? <><CircularProgress size={16} sx={{ color: '#fff', mr: 1 }} />מעלה...</> : `📷 העלה תמונה (${images.length}/12)`}
           <input type="file" accept="image/*" hidden onChange={handleFile} />
         </Button>
 
         {images.length > 0 ? (
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1.5 }}>
             {images.map((img, i) => (
-              <Box key={i} sx={{ position: 'relative', '&:hover .del': { opacity: 1 } }}>
+              <Box key={i} sx={{ position: 'relative', boxShadow: c.shadowSm, borderRadius: 3, '&:hover .del': { opacity: 1 } }}>
                 <Box component="img" src={img} sx={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 3 }} />
-                <Button onClick={() => remove(i)} className="del" sx={{ position: 'absolute', top: 4, left: 4, minWidth: 'auto', width: 28, height: 28, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', opacity: 0, transition: 'opacity 0.2s', '&:hover': { bgcolor: c.hot } }}>✕</Button>
+                <Button onClick={() => remove(i)} className="del" sx={{ position: 'absolute', top: 6, left: 6, minWidth: 'auto', width: 28, height: 28, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', opacity: 0, transition: 'opacity 0.2s', '&:hover': { bgcolor: c.hot } }}>✕</Button>
               </Box>
             ))}
           </Box>
         ) : (
-          <Box sx={{ textAlign: 'center', py: 6, color: c.text3 }}>
-            <Box sx={{ fontSize: 48, mb: 1 }}>🖼️</Box>
-            <Typography>עדיין אין תמונות בגלריה</Typography>
+          <Box sx={{ textAlign: 'center', py: 7, color: c.text3 }}>
+            <Box sx={{ fontSize: 40, mb: 1, opacity: 0.5 }}>🖼️</Box>
+            <Typography sx={{ fontSize: 14 }}>עדיין אין תמונות בגלריה</Typography>
           </Box>
         )}
       </Box>

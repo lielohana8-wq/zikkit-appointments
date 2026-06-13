@@ -41,10 +41,8 @@ export function ZikkitLogo({
           <rect x="29.6" y="6" width="3.4" height="8" rx="1.7" fill="url(#zikGrad)" />
           {/* Calendar body — rounded square outline */}
           <rect x="8.5" y="10.5" width="31" height="31" rx="9" stroke="url(#zikGrad)" strokeWidth="3.4" fill="none" />
-          {/* Integrated Z */}
-          <path d="M17 20H31L20 33H31" stroke="url(#zikGrad)" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
-          {/* appointment dot */}
-          <circle cx="31" cy="20" r="2.3" fill="url(#zikGrad)" />
+          {/* Z in Heebo — same typeface as the wordmark */}
+          <text x="24" y="33.5" textAnchor="middle" fill="url(#zikGrad)" fontFamily="'Heebo', sans-serif" fontWeight="800" fontSize="22" letterSpacing="-0.02em">Z</text>
         </svg>
       </Box>
       {showText && (

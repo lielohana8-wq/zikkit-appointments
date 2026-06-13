@@ -384,13 +384,14 @@ export async function getTeam(bizId: string): Promise<TeamMember[]> {
   return ((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || [];
 }
 
-export async function addTeamMember(bizId: string, member: Partial<TeamMember>): Promise<void> {
+export async function addTeamMember(bizId: string, member: Partial<TeamMember>): Promise<string> {
   const biz = await loadBiz(bizId);
   const members = ((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || [];
   const defaultHours: TeamMember['hours'] = {};
   for (let i = 0; i < 7; i++) defaultHours[i] = { open: i !== 6, start: '09:00', end: i === 5 ? '14:00' : '19:00' };
+  const id = 'team_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
   const newMember: TeamMember = {
-    id: 'team_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    id,
     name: member.name || '',
     role: member.role || '',
     photo: member.photo || '',
@@ -399,10 +400,12 @@ export async function addTeamMember(bizId: string, member: Partial<TeamMember>):
     station: member.station ?? null,
     color: member.color || MEMBER_COLORS[members.length % MEMBER_COLORS.length],
     hours: member.hours || defaultHours,
+    loginEmail: member.loginEmail || '',
     active: true,
     createdAt: new Date().toISOString(),
   };
   await patchBiz(bizId, { team: { members: [...members, newMember] } });
+  return id;
 }
 
 export async function updateTeamMember(bizId: string, id: string, changes: Partial<TeamMember>): Promise<void> {

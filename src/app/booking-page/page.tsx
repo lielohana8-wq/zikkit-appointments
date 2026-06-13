@@ -17,6 +17,8 @@ export default function BookingPageSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => { if (!loading && !firebaseUser) router.push('/login'); }, [loading, firebaseUser, router]);
   useEffect(() => { if (typeof window !== 'undefined') setBaseUrl(window.location.origin); }, []);
@@ -28,6 +30,35 @@ export default function BookingPageSettings() {
   useEffect(() => { load(); }, [load]);
 
   const set = <K extends keyof BookingBranding>(key: K, val: BookingBranding[K]) => setB((p) => p ? { ...p, [key]: val } : p);
+
+  const runAiDesign = async () => {
+    if (!aiPrompt || !b) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch('/api/ai/design-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt, businessType: '' }),
+      });
+      const data = await res.json();
+      if (data.design) {
+        const d = data.design;
+        setB((p) => p ? {
+          ...p,
+          brandColor: d.brandColor || p.brandColor,
+          headerStyle: d.headerStyle || p.headerStyle,
+          welcomeText: d.welcomeText || p.welcomeText,
+          thankYouMessage: d.thankYouMessage || p.thankYouMessage,
+          cancellationNote: d.cancellationNote || p.cancellationNote,
+        } : p);
+        setAiPrompt('');
+      } else {
+        alert(data.error || 'לא הצלחתי לעצב — נסה שוב');
+      }
+    } catch (e) {
+      alert('שגיאה: ' + (e as Error).message);
+    } finally { setAiLoading(false); }
+  };
 
   const handleImage = (field: 'logo' | 'banner', maxW: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,6 +132,19 @@ export default function BookingPageSettings() {
         )}
 
         <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 2, mt: 1 }}>🎨 עיצוב</Typography>
+
+        {/* AI design prompt */}
+        <Box sx={{ bgcolor: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, background: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, border: `1px solid ${c.accentMid}`, borderRadius: 4, p: 2.5, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Box sx={{ fontSize: 20 }}>✨</Box>
+            <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>עיצוב עם AI</Typography>
+          </Box>
+          <Typography sx={{ fontSize: 12.5, color: c.text2, mb: 1.5 }}>תאר איך אתה רוצה שדף ההזמנות ירגיש, וה-AI יעצב אותו עבורך.</Typography>
+          <TextField fullWidth size="small" value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} placeholder="למשל: יוקרתי ומפנק, צבעים חמים, אווירה רגועה" multiline rows={2} sx={{ mb: 1.5, bgcolor: '#fff', borderRadius: 2 }} />
+          <Button onClick={runAiDesign} disabled={aiLoading || !aiPrompt} variant="contained" fullWidth sx={{ borderRadius: 2.5, fontWeight: 700 }}>
+            {aiLoading ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : '✨ עצב לי את הדף'}
+          </Button>
+        </Box>
 
         {/* Images */}
         <Section title="לוגו ותמונת רקע">

@@ -78,18 +78,24 @@ export default function TeamPage() {
     setSaving(true);
     try {
       const { createLogin, loginPassword, ...memberData } = draft;
+      let memberId = editId;
       if (editId) {
         await updateTeamMember(bizId, editId, memberData);
       } else {
         // Create the team member first to get an id
-        await addTeamMember(bizId, memberData);
+        memberId = await addTeamMember(bizId, memberData);
       }
       // If owner asked to create a login for this member
       if (createLogin && draft.loginEmail && loginPassword) {
+        if (loginPassword.length < 6) {
+          alert('הסיסמה חייבת להיות לפחות 6 תווים');
+          setSaving(false);
+          return;
+        }
         // Find the member id (just created or being edited)
         const members = await getTeam(bizId);
-        const member = editId
-          ? members.find((m) => m.id === editId)
+        const member = memberId
+          ? members.find((m) => m.id === memberId)
           : members.find((m) => m.name === draft.name && m.loginEmail === draft.loginEmail);
         if (member) {
           const result = await createStaffAccount({
@@ -100,10 +106,13 @@ export default function TeamPage() {
             password: loginPassword,
           });
           if (!result.success) {
-            alert('חבר הצוות נשמר, אבל יצירת ההתחברות נכשלה: ' + result.error);
+            alert('חבר הצוות נשמר, אבל יצירת ההתחברות נכשלה:\n' + result.error);
           } else {
             await updateTeamMember(bizId, member.id, { loginEmail: draft.loginEmail, staffUid: result.uid });
+            alert('✓ חשבון נוצר! חבר הצוות יכול להתחבר עם:\n' + draft.loginEmail);
           }
+        } else {
+          alert('שגיאה: לא נמצא חבר הצוות אחרי השמירה. נסה שוב.');
         }
       }
       setOpen(false); await load();

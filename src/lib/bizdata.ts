@@ -49,6 +49,9 @@ export interface Customer {
   lastVisit?: string;
   notes?: string;
   totalSpent: number;
+  tags?: string[];        // e.g. "VIP", "חדש", "קבוע"
+  vip?: boolean;
+  birthday?: string;      // MM-DD
   createdAt: string;
 }
 
@@ -187,6 +190,28 @@ export async function upsertCustomer(bizId: string, data: { name: string; phone:
     });
   }
   await patchBiz(bizId, { customers: { items } });
+}
+
+export async function updateCustomer(bizId: string, id: string, changes: Partial<Customer>): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const items = (biz.customers?.items || []).map((cu) => (cu.id === id ? { ...cu, ...changes } : cu));
+  await patchBiz(bizId, { customers: { items } });
+}
+
+export async function deleteCustomer(bizId: string, id: string): Promise<void> {
+  const biz = await loadBiz(bizId);
+  const items = (biz.customers?.items || []).filter((cu) => cu.id !== id);
+  await patchBiz(bizId, { customers: { items } });
+}
+
+// Get a customer's full booking history + computed stats
+export function getCustomerHistory(bookings: Booking[], phone: string): { history: Booking[]; totalSpent: number; lastService: string } {
+  const history = bookings
+    .filter((b) => b.customerPhone === phone)
+    .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+  const totalSpent = history.filter((b) => b.status !== 'cancelled').reduce((s, b) => s + (b.price || 0), 0);
+  const lastService = history[0]?.service || '';
+  return { history, totalSpent, lastService };
 }
 
 // ---------- Services / Pricing ----------
@@ -467,6 +492,51 @@ export async function saveBizSettings(bizId: string, settings: BizSettings): Pro
 }
 
 // ---------- Business settings end ----------
+
+// ---------- Business insights ----------
+export function computeInsights(bookings: Booking[]): string[] {
+  const insights: string[] = [];
+  const active = bookings.filter((b) => b.status !== 'cancelled');
+  if (active.length === 0) return ['התחל לקבל תורים כדי לראות תובנות חכמות על העסק שלך.'];
+
+  // Busiest day of week
+  const dayCount = new Array(7).fill(0);
+  active.forEach((b) => { dayCount[new Date(b.date).getDay()]++; });
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  const busiestDay = dayCount.indexOf(Math.max(...dayCount));
+  if (Math.max(...dayCount) > 0) insights.push(`📊 יום ${days[busiestDay]} הוא היום העמוס ביותר שלך`);
+
+  // Most popular service
+  const svcCount = new Map<string, number>();
+  active.forEach((b) => { if (b.service) svcCount.set(b.service, (svcCount.get(b.service) || 0) + 1); });
+  if (svcCount.size > 0) {
+    const top = Array.from(svcCount.entries()).sort((a, b) => b[1] - a[1])[0];
+    insights.push(`⭐ "${top[0]}" הוא השירות המבוקש ביותר (${top[1]} תורים)`);
+  }
+
+  // Cancellation rate
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').length;
+  if (bookings.length > 5) {
+    const rate = Math.round((cancelled / bookings.length) * 100);
+    if (rate > 15) insights.push(`⚠️ אחוז הביטולים שלך ${rate}% — שקול תזכורות אוטומטיות`);
+    else if (rate < 5 && cancelled >= 0) insights.push(`✅ אחוז ביטולים נמוך (${rate}%) — לקוחות מרוצים!`);
+  }
+
+  // Revenue trend (last 7 vs previous 7 days)
+  const today = new Date();
+  const week1Start = new Date(today); week1Start.setDate(today.getDate() - 7);
+  const week2Start = new Date(today); week2Start.setDate(today.getDate() - 14);
+  const s = (d: Date) => d.toISOString().split('T')[0];
+  const rev1 = active.filter((b) => b.date >= s(week1Start)).reduce((sum, b) => sum + (b.price || 0), 0);
+  const rev2 = active.filter((b) => b.date >= s(week2Start) && b.date < s(week1Start)).reduce((sum, b) => sum + (b.price || 0), 0);
+  if (rev2 > 0) {
+    const change = Math.round(((rev1 - rev2) / rev2) * 100);
+    if (change > 0) insights.push(`📈 ההכנסה השבוע עלתה ב-${change}% לעומת שבוע שעבר`);
+    else if (change < 0) insights.push(`📉 ההכנסה השבוע ירדה ב-${Math.abs(change)}% — זמן לקדם`);
+  }
+
+  return insights.length > 0 ? insights : ['המשך לקבל תורים כדי לראות תובנות.'];
+}
 
 // ---------- Documents (receipts & quotes) ----------
 export interface BizDocLineItem { description: string; qty: number; price: number; }

@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
-import { getNotifications, markNotificationsRead, type AppNotification } from '@/lib/bizdata';
+import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { zikkitColors as c } from '@/styles/theme';
 
@@ -94,6 +94,7 @@ export default function DashboardPage() {
   const today = new Date().toISOString().split('T')[0];
   const todayBookings = bookings.filter((b) => b.date === today);
   const upcoming = bookings.filter((b) => b.date > today).slice(0, 10);
+  const insights = user?.role !== 'staff' ? computeInsights(bookings as never) : [];
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
@@ -165,6 +166,20 @@ export default function DashboardPage() {
               <Typography sx={{ fontSize: 12.5, color: c.text3 }}>אופציונלי · מישהי שעונה לטלפון וקובעת תורים 24/7</Typography>
             </Box>
             <Button onClick={() => router.push('/setup')} variant="outlined" size="small" sx={{ borderRadius: 2.5, fontWeight: 600, whiteSpace: 'nowrap' }}>הפעל</Button>
+          </Box>
+        )}
+
+        {/* Smart insights */}
+        {user?.role !== 'staff' && insights.length > 0 && (
+          <Box sx={{ mb: 4 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תובנות חכמות</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {insights.slice(0, 3).map((ins, i) => (
+                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, boxShadow: c.shadowSm }}>
+                  <Typography sx={{ fontSize: 13.5, color: c.text, fontWeight: 500 }}>{ins}</Typography>
+                </Box>
+              ))}
+            </Box>
           </Box>
         )}
 

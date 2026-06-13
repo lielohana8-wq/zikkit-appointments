@@ -854,6 +854,112 @@ export function computeReport(bookings: Booking[], fromDate: string, toDate: str
   };
 }
 
+// ---------- Promotions & coupons ----------
+export interface Promo {
+  id: string;
+  code: string;
+  description: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  active: boolean;
+  expiresAt?: string;
+  usageCount: number;
+  maxUsage?: number;       // 0/undefined = unlimited
+  createdAt: string;
+}
+
+export async function getPromos(bizId: string): Promise<Promo[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).promos as { items?: Promo[] })?.items || [];
+}
+
+export async function addPromo(bizId: string, promo: Partial<Promo>): Promise<void> {
+  const items = await getPromos(bizId);
+  const newPromo: Promo = {
+    id: 'promo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    code: (promo.code || '').toUpperCase().trim(),
+    description: promo.description || '',
+    discountType: promo.discountType || 'percent',
+    discountValue: promo.discountValue || 0,
+    active: promo.active !== false,
+    expiresAt: promo.expiresAt || '',
+    usageCount: 0,
+    maxUsage: promo.maxUsage || 0,
+    createdAt: new Date().toISOString(),
+  };
+  await patchBiz(bizId, { promos: { items: [newPromo, ...items] } });
+}
+
+export async function updatePromo(bizId: string, id: string, changes: Partial<Promo>): Promise<void> {
+  const items = (await getPromos(bizId)).map((p) => (p.id === id ? { ...p, ...changes } : p));
+  await patchBiz(bizId, { promos: { items } });
+}
+
+export async function deletePromo(bizId: string, id: string): Promise<void> {
+  const items = (await getPromos(bizId)).filter((p) => p.id !== id);
+  await patchBiz(bizId, { promos: { items } });
+}
+
+// ---------- Loyalty program ----------
+export interface LoyaltySettings {
+  enabled: boolean;
+  visitsForReward: number;   // e.g. every 10 visits
+  rewardDescription: string; // e.g. "תספורת חינם"
+}
+
+export async function getLoyalty(bizId: string): Promise<LoyaltySettings> {
+  const biz = await loadBiz(bizId);
+  const l = ((biz as Record<string, unknown>).loyalty as Partial<LoyaltySettings>) || {};
+  return {
+    enabled: l.enabled === true,
+    visitsForReward: l.visitsForReward || 10,
+    rewardDescription: l.rewardDescription || 'הטבה מיוחדת',
+  };
+}
+
+export async function saveLoyalty(bizId: string, settings: LoyaltySettings): Promise<void> {
+  await patchBiz(bizId, { loyalty: settings });
+}
+
+// Compute loyalty status for each customer
+export function loyaltyStatus(customer: Customer, settings: LoyaltySettings): { progress: number; visitsToReward: number; earnedRewards: number } {
+  if (!settings.enabled || settings.visitsForReward <= 0) return { progress: 0, visitsToReward: 0, earnedRewards: 0 };
+  const visits = customer.visits || 0;
+  const earnedRewards = Math.floor(visits / settings.visitsForReward);
+  const progress = visits % settings.visitsForReward;
+  const visitsToReward = settings.visitsForReward - progress;
+  return { progress, visitsToReward, earnedRewards };
+}
+
+// ---------- Advanced exports ----------
+export function customersToCSV(customers: Customer[]): string {
+  const header = 'שם,טלפון,אימייל,ביקורים,סהכ הוצאה,ביקור אחרון,תגיות,הערות';
+  const rows = customers.map((cu) =>
+    [cu.name, cu.phone, cu.email || '', cu.visits || 0, cu.totalSpent || 0, cu.lastVisit || '', (cu.tags || []).join(';'), cu.notes || '']
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
+  );
+  return '\uFEFF' + [header, ...rows].join('\n');
+}
+
+export function expensesToCSV(expenses: Expense[]): string {
+  const header = 'תאריך,תיאור,קטגוריה,סכום,קבוע';
+  const rows = expenses.map((e) =>
+    [e.date, e.description, e.category, e.amount, e.recurring ? 'כן' : 'לא']
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
+  );
+  return '\uFEFF' + [header, ...rows].join('\n');
+}
+
+export function downloadCSV(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function bookingsToCSV(bookings: Booking[]): string {
   const header = 'תאריך,שעה,לקוח,טלפון,שירות,משך,מחיר,סטטוס,מקור';
   const rows = bookings.map((b) =>

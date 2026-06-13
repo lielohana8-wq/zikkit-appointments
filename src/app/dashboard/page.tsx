@@ -223,33 +223,64 @@ export default function DashboardPage() {
           </Box>
         )}
 
-        {/* Feature navigation — premium tiles */}
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ניהול העסק</Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 1.5, sm: 2 }, mb: 5 }}>
-          {([
-            { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
-            { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
-            { icon: '📋', label: 'מחירון', path: '/services', staff: false },
-            { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
-            { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
-            { icon: '💰', label: 'רווחיות', path: '/expenses', staff: false },
-            { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
-            { icon: '🧾', label: 'קבלות', path: '/documents', staff: false },
-            { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
-            { icon: '📞', label: 'דנה', path: '/setup', staff: false },
-            { icon: '🕐', label: 'שעות', path: '/hours', staff: false },
-            { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
-            { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
-            { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
-            { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
-            { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
-          ].filter((t) => user?.role !== 'staff' || t.staff)).map((t) => (
-            <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', boxShadow: c.shadowSm, '&:hover': { transform: 'translateY(-3px)', boxShadow: c.shadowMd, borderColor: c.border2 }, '&:active': { transform: 'translateY(-1px)' } }}>
-              <Box sx={{ fontSize: 26, mb: 1 }}>{t.icon}</Box>
-              <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: c.text }}>{t.label}</Typography>
+        {/* Feature navigation — organized by category */}
+        {([
+          {
+            title: 'יומיומי',
+            items: [
+              { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
+              { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
+              { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
+              { icon: '📋', label: 'מחירון', path: '/services', staff: false },
+            ],
+          },
+          {
+            title: 'כספים',
+            items: [
+              { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
+              { icon: '💰', label: 'רווחיות', path: '/expenses', staff: false },
+              { icon: '🧾', label: 'קבלות', path: '/documents', staff: false },
+              { icon: '📤', label: 'ייצוא', path: '/export-data', staff: false },
+            ],
+          },
+          {
+            title: 'שיווק וצמיחה',
+            items: [
+              { icon: '🎟️', label: 'מבצעים', path: '/promos', staff: false },
+              { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
+              { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
+              { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
+            ],
+          },
+          {
+            title: 'הגדרות העסק',
+            items: [
+              { icon: '📞', label: 'דנה', path: '/setup', staff: false },
+              { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
+              { icon: '🕐', label: 'שעות', path: '/hours', staff: false },
+              { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
+              { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
+              { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
+            ],
+          },
+        ] as const).map((section) => {
+          const visible = section.items.filter((t) => user?.role !== 'staff' || t.staff);
+          if (visible.length === 0) return null;
+          return (
+            <Box key={section.title} sx={{ mb: 3.5 }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{section.title}</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 1.5, sm: 2 } }}>
+                {visible.map((t) => (
+                  <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', boxShadow: c.shadowSm, '&:hover': { transform: 'translateY(-3px)', boxShadow: c.shadowMd, borderColor: c.border2 }, '&:active': { transform: 'translateY(-1px)' } }}>
+                    <Box sx={{ fontSize: 26, mb: 1 }}>{t.icon}</Box>
+                    <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: c.text }}>{t.label}</Typography>
+                  </Box>
+                ))}
+              </Box>
             </Box>
-          ))}
-        </Box>
+          );
+        })}
+        <Box sx={{ mb: 2 }} />
 
         {/* Today */}
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>

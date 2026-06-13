@@ -8,13 +8,13 @@ import { getBiz, setBizField } from '@/lib/firestore-admin';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bizId, businessName, industry, services = [], contactPhone } = body;
+    const { bizId, businessName, industry, services = [], contactPhone, vibe, audience, highlights, extraPrompt } = body;
     if (!businessName) return NextResponse.json({ error: 'חסר שם עסק' }, { status: 400 });
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: 'AI לא זמין כרגע' }, { status: 500 });
 
     const servicesText = services.map((s: Record<string, unknown>) => `${s.name}${s.price ? ` (₪${s.price})` : ''}`).join(', ');
-    const systemPrompt = `אתה קופירייטר מומחה לדפי נחיתה לעסקי תור בישראל (מספרות, קוסמטיקה, קליניקות). צור תוכן מלא ומשכנע.
+    const systemPrompt = `אתה קופירייטר מומחה לדפי נחיתה לעסקי תור בישראל (מספרות, קוסמטיקה, קליניקות). צור תוכן מלא ומשכנע שמתאים בדיוק לאופי ולאווירה שהעסק ביקש. התאם את הטון, הכותרות והצבע לאווירה המבוקשת.
 
 החזר JSON בלבד:
 {
@@ -22,9 +22,16 @@ export async function POST(req: NextRequest) {
   "ctaText":"טקסט כפתור (למשל: קבע תור)","about":"פסקת עלינו",
   "whyUs":[{"icon":"אימוג'י","title":"כותרת","desc":"תיאור"}],
   "servicesIntro":"משפט מקדים","testimonialPlaceholder":"המלצה לדוגמה",
-  "ctaSection":"קריאה לפעולה","colorTheme":"#9333EA","seoDescription":"תיאור SEO"
+  "ctaSection":"קריאה לפעולה","colorTheme":"#hex שמתאים לאווירה","seoDescription":"תיאור SEO"
 }`;
-    const userMsg = `שם: ${businessName}\nתחום: ${industry || 'עסק תורים'}\nשירותים: ${servicesText || 'טיפולים'}\n${contactPhone ? `טלפון: ${contactPhone}` : ''}`;
+    const userMsg = `שם: ${businessName}
+תחום: ${industry || 'עסק תורים'}
+אווירה רצויה: ${vibe || 'חם ומזמין'}
+קהל יעד: ${audience || 'כללי'}
+מה שמייחד את העסק: ${highlights || 'שירות מקצועי ואיכותי'}
+שירותים: ${servicesText || 'טיפולים'}
+${contactPhone ? `טלפון: ${contactPhone}` : ''}
+${extraPrompt ? `בקשות נוספות: ${extraPrompt}` : ''}`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -42,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     if (bizId && process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       try {
-        await setBizField(bizId, ['landing'], { ...content, slug, businessName, industry: industry || '', services, contactPhone: contactPhone || '', generatedAt: new Date().toISOString() });
+        await setBizField(bizId, ['landing'], { ...content, slug, businessName, industry: industry || '', services, contactPhone: contactPhone || '', vibe: vibe || '', audience: audience || '', highlights: highlights || '', generatedAt: new Date().toISOString() });
       } catch (e) { console.warn('save failed', e); }
     }
     return NextResponse.json({ ...content, slug });

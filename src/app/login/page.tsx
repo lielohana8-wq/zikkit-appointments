@@ -59,7 +59,7 @@ function AuthPage() {
         <Box className="zk-fade-up" sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           {/* Top bar */}
           <Box sx={{ px: { xs: 3, sm: 6 }, py: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <ZikkitLogo size={38} />
+            <ZikkitLogo useImage size={28} />
             <Button onClick={() => goTo('login')} sx={{ fontWeight: 600, color: c.text2 }}>כניסה</Button>
           </Box>
 
@@ -103,7 +103,7 @@ function AuthPage() {
             {/* Back + logo */}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', mb: 3 }}>
               <IconButton onClick={() => goTo('landing')} sx={{ position: 'absolute', right: 0, color: c.text3 }}>→</IconButton>
-              <ZikkitLogo size={46} />
+              <ZikkitLogo useImage size={40} />
             </Box>
 
             <Box sx={{ bgcolor: c.surface1, borderRadius: 6, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border}` }}>

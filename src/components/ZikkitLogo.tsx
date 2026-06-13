@@ -4,32 +4,60 @@ import { Box, Typography } from '@mui/material';
 import { zikkitColors as c } from '@/styles/theme';
 
 /**
- * Zikkit logo — a minimalist "Z" mark in a rounded squircle,
- * inspired by premium app icons (Apple-style).
+ * Zikkit logo — a calendar mark with an integrated "Z", matching the brand.
+ * Set `useImage` to render the uploaded PNG from /public/logo.png instead of the SVG.
  */
-export function ZikkitLogo({ size = 32, showText = true, textColor }: { size?: number; showText?: boolean; textColor?: string }) {
+export function ZikkitLogo({
+  size = 32,
+  showText = true,
+  textColor,
+  subtitle = false,
+  useImage = false,
+}: {
+  size?: number;
+  showText?: boolean;
+  textColor?: string;
+  subtitle?: boolean;
+  useImage?: boolean;
+}) {
+  if (useImage) {
+    // Full uploaded lockup (icon + text together)
+    return <Box component="img" src="/logo.png" alt="Zikkit Appointments" sx={{ height: size * 1.4, width: 'auto', display: 'block' }} />;
+  }
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
       <Box sx={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
-        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="zikGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#9061F9" />
-              <stop offset="1" stopColor="#6D28D9" />
+            <linearGradient id="zikGrad" x1="6" y1="8" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#A78BFA" />
+              <stop offset="0.5" stopColor="#7C3AED" />
+              <stop offset="1" stopColor="#5B21B6" />
             </linearGradient>
           </defs>
-          {/* Squircle */}
-          <rect width="40" height="40" rx="11" fill="url(#zikGrad)" />
-          {/* Stylized Z — sharp, geometric */}
-          <path d="M13 13.5H27L15 24.5H27" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-          {/* subtle dot — the appointment "moment" */}
-          <circle cx="27" cy="27.5" r="2.2" fill="white" />
+          {/* Calendar tabs on top */}
+          <rect x="15" y="6" width="3.4" height="8" rx="1.7" fill="url(#zikGrad)" />
+          <rect x="29.6" y="6" width="3.4" height="8" rx="1.7" fill="url(#zikGrad)" />
+          {/* Calendar body — rounded square outline */}
+          <rect x="8.5" y="10.5" width="31" height="31" rx="9" stroke="url(#zikGrad)" strokeWidth="3.4" fill="none" />
+          {/* Integrated Z */}
+          <path d="M17 20H31L20 33H31" stroke="url(#zikGrad)" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
+          {/* appointment dot */}
+          <circle cx="31" cy="20" r="2.3" fill="url(#zikGrad)" />
         </svg>
       </Box>
       {showText && (
-        <Typography sx={{ fontFamily: "'Heebo', sans-serif", fontWeight: 800, fontSize: size * 0.56, letterSpacing: '-0.03em', color: textColor || c.text, lineHeight: 1 }}>
-          Zikkit
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+          <Typography sx={{ fontFamily: "'Heebo', sans-serif", fontWeight: 800, fontSize: size * 0.6, letterSpacing: '-0.03em', background: `linear-gradient(120deg, ${c.accent2}, ${c.accentDeep})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1 }}>
+            Zikkit
+          </Typography>
+          {subtitle && (
+            <Typography sx={{ fontFamily: "'Heebo', sans-serif", fontWeight: 600, fontSize: size * 0.26, letterSpacing: '0.18em', color: c.text3, mt: 0.3, textTransform: 'uppercase' }}>
+              Appointments
+            </Typography>
+          )}
+        </Box>
       )}
     </Box>
   );

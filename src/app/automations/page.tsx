@@ -35,22 +35,22 @@ export default function AutomationsPage() {
   if (loading || dataLoading || !a) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   const Row = ({ icon, title, desc, on, onToggle, children }: { icon: string; title: string; desc: string; on: boolean; onToggle: (v: boolean) => void; children?: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${on ? c.accent : c.border}`, borderRadius: 3, p: 2.5, mb: 2 }}>
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${on ? c.accentMid : c.border}`, borderRadius: 4, p: 2.5, mb: 2, boxShadow: c.shadowSm, transition: 'all 0.2s' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{ fontSize: 26 }}>{icon}</Box>
+        <Box sx={{ width: 46, height: 46, borderRadius: 3, bgcolor: on ? c.accentDim : c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, transition: 'all 0.2s' }}>{icon}</Box>
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{title}</Typography>
           <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{desc}</Typography>
         </Box>
         <Switch checked={on} onChange={(e) => onToggle(e.target.checked)} />
       </Box>
-      {on && children && <Box sx={{ mt: 2 }}>{children}</Box>}
+      {on && children && <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${c.border}` }}>{children}</Box>}
     </Box>
   );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.surface1, position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>אוטומציות</Typography>
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>

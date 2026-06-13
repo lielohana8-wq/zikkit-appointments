@@ -17,6 +17,7 @@ export default function CalendarPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
@@ -75,6 +76,11 @@ export default function CalendarPage() {
   const days = Array.from({ length: 14 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return d.toISOString().split('T')[0]; });
   const dayBookings = bookings.filter((b) => b.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time));
   const dayRevenue = dayBookings.reduce((sum, b) => sum + (b.price || 0), 0);
+  // Staff color lookup
+  const staffColor = (name?: string | null) => team.find((m) => m.name === name)?.color || c.accent;
+  // Week view: 7 days starting from selectedDate's week (Sunday)
+  const weekStart = (() => { const d = new Date(selectedDate); d.setDate(d.getDate() - d.getDay()); return d; })();
+  const weekDays = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(d.getDate() + i); return d.toISOString().split('T')[0]; });
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
@@ -84,7 +90,17 @@ export default function CalendarPage() {
         <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ תור</Button>
       </Box>
 
+      {/* View toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, py: 1.5, bgcolor: c.surface1, borderBottom: `1px solid ${c.border}` }}>
+        <Box sx={{ display: 'flex', gap: 0.5, bgcolor: c.surface3, p: 0.4, borderRadius: 99 }}>
+          {([['day', 'יום'], ['week', 'שבוע']] as [typeof viewMode, string][]).map(([v, label]) => (
+            <Button key={v} onClick={() => setViewMode(v)} sx={{ borderRadius: 99, fontWeight: 600, fontSize: 13.5, px: 3, py: 0.5, minWidth: 70, bgcolor: viewMode === v ? c.surface1 : 'transparent', color: viewMode === v ? c.text : c.text3, boxShadow: viewMode === v ? c.shadowSm : 'none', '&:hover': { bgcolor: viewMode === v ? c.surface1 : 'transparent' } }}>{label}</Button>
+          ))}
+        </Box>
+      </Box>
+
       {/* Day strip */}
+      {viewMode === 'day' && (
       <Box sx={{ display: 'flex', gap: 1, px: { xs: 2, sm: 3 }, py: 2, overflowX: 'auto', bgcolor: c.surface1, borderBottom: `1px solid ${c.border}`, '&::-webkit-scrollbar': { height: 0 } }}>
         {days.map((d, i) => {
           const dateObj = new Date(d);
@@ -100,7 +116,52 @@ export default function CalendarPage() {
           );
         })}
       </Box>
+      )}
 
+      {/* Week view */}
+      {viewMode === 'week' && (
+        <Box sx={{ maxWidth: 1000, mx: 'auto', px: { xs: 1.5, sm: 3 }, py: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
+            {weekDays.map((d) => {
+              const dateObj = new Date(d);
+              const dayBks = bookings.filter((b) => b.date === d).sort((a, b) => a.time.localeCompare(b.time));
+              const isToday = d === new Date().toISOString().split('T')[0];
+              return (
+                <Box key={d} sx={{ minHeight: 200 }}>
+                  <Box onClick={() => { setSelectedDate(d); setViewMode('day'); }} sx={{ cursor: 'pointer', textAlign: 'center', py: 1, borderRadius: 2.5, mb: 1, bgcolor: isToday ? c.accent : c.surface2, color: isToday ? '#fff' : c.text2 }}>
+                    <Typography sx={{ fontSize: 10.5, fontWeight: 600 }}>{HEBREW_DAYS[dateObj.getDay()]}</Typography>
+                    <Typography sx={{ fontSize: 16, fontWeight: 800, lineHeight: 1.1 }}>{dateObj.getDate()}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    {dayBks.length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 2, color: c.text3, fontSize: 10 }}>—</Box>
+                    ) : dayBks.map((b) => (
+                      <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75 }}>
+                        <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: staffColor(b.staff) }}>{b.time}</Typography>
+                        <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: c.text, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
+                        <Typography sx={{ fontSize: 9, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || 'טיפול'}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+          {/* Staff legend */}
+          {team.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 3, justifyContent: 'center' }}>
+              {team.map((m) => (
+                <Box key={m.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: m.color }} />
+                  <Typography sx={{ fontSize: 12, color: c.text2, fontWeight: 600 }}>{m.name}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {viewMode === 'day' && (
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {dayBookings.length > 0 && (
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
@@ -124,10 +185,10 @@ export default function CalendarPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {dayBookings.map((b) => (
-              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
-                <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: c.accentDim, borderRadius: 3, py: 1 }}>
-                  <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
-                  <Typography sx={{ fontSize: 9.5, color: c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>
+              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+                <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: b.staff ? `${staffColor(b.staff)}1A` : c.accentDim, borderRadius: 3, py: 1 }}>
+                  <Typography sx={{ fontSize: 16, fontWeight: 800, color: b.staff ? staffColor(b.staff) : c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
+                  <Typography sx={{ fontSize: 9.5, color: b.staff ? staffColor(b.staff) : c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{b.customerName}</Typography>
@@ -142,6 +203,7 @@ export default function CalendarPage() {
           </Box>
         )}
       </Box>
+      )}
 
       <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>תור חדש</Typography>

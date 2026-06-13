@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBookings, addBooking, deleteBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
+import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
 import { zikkitColors as c } from '@/styles/theme';
 
 const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -21,6 +21,8 @@ export default function CalendarPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
+  const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [reschedule, setReschedule] = useState({ date: '', time: '', staff: '' });
 
   useEffect(() => { if (!loading && !firebaseUser) router.push('/login'); }, [loading, firebaseUser, router]);
 
@@ -69,6 +71,21 @@ export default function CalendarPage() {
     if (!bizId) return;
     await deleteBooking(bizId, id);
     await load();
+  };
+
+  const openEdit = (b: Booking) => {
+    setEditBooking(b);
+    setReschedule({ date: b.date, time: b.time, staff: b.staff || '' });
+  };
+
+  const saveReschedule = async () => {
+    if (!bizId || !editBooking) return;
+    setSaving(true);
+    try {
+      await updateBooking(bizId, editBooking.id, { date: reschedule.date, time: reschedule.time, staff: reschedule.staff || null });
+      setEditBooking(null);
+      await load();
+    } finally { setSaving(false); }
   };
 
   if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
@@ -190,7 +207,7 @@ export default function CalendarPage() {
                   <Typography sx={{ fontSize: 16, fontWeight: 800, color: b.staff ? staffColor(b.staff) : c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
                   <Typography sx={{ fontSize: 9.5, color: b.staff ? staffColor(b.staff) : c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>
                 </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box onClick={() => openEdit(b)} sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }}>
                   <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{b.customerName}</Typography>
                   <Typography sx={{ fontSize: 13, color: c.text3 }}>{b.service || 'טיפול'}{b.staff ? ` · ${b.staff}` : ''}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</Typography>
                 </Box>
@@ -236,6 +253,33 @@ export default function CalendarPage() {
         <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'קבע תור'}
         </Button>
+      </Dialog>
+
+      {/* Reschedule / edit dialog */}
+      <Dialog scroll="body" open={!!editBooking} onClose={() => setEditBooking(null)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+        {editBooking && (
+          <>
+            <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>{editBooking.customerName}</Typography>
+            <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{editBooking.service || 'טיפול'}{editBooking.customerPhone ? ` · ${editBooking.customerPhone}` : ''}</Typography>
+
+            <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>שינוי מועד</Typography>
+            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+              <TextField label="תאריך" type="date" value={reschedule.date} onChange={(e) => setReschedule((p) => ({ ...p, date: e.target.value }))} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} size="small" />
+              <TextField label="שעה" type="time" value={reschedule.time} onChange={(e) => setReschedule((p) => ({ ...p, time: e.target.value }))} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} size="small" />
+            </Box>
+            {team.length > 0 && (
+              <TextField select fullWidth label="חבר צוות" value={reschedule.staff} onChange={(e) => setReschedule((p) => ({ ...p, staff: e.target.value }))} sx={{ mb: 2.5 }} size="small">
+                <MenuItem value="">ללא שיוך</MenuItem>
+                {team.map((m) => <MenuItem key={m.id} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</MenuItem>)}
+              </TextField>
+            )}
+
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Button onClick={async () => { if (editBooking) { await cancel(editBooking.id); setEditBooking(null); } }} variant="outlined" sx={{ flex: 1, borderRadius: 3, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>בטל תור</Button>
+              <Button onClick={saveReschedule} variant="contained" disabled={saving} sx={{ flex: 2, borderRadius: 3, fontWeight: 700 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שינויים'}</Button>
+            </Box>
+          </>
+        )}
       </Dialog>
     </Box>
   );

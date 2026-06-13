@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [bizName, setBizName] = useState('');
+  const [setupState, setSetupState] = useState({ hasServices: false, hasHours: false, bookingEnabled: false, hasBooking: false });
   const [danaPhone, setDanaPhone] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -43,6 +44,13 @@ export default function DashboardPage() {
           const data = snap.data();
           setBizName(data.cfg?.biz_name || '');
           setDanaPhone(data.dana?.phoneNumber || '');
+          // Onboarding checklist state
+          setSetupState({
+            hasServices: ((data.dana?.services as unknown[]) || []).length > 0,
+            hasHours: !!data.hours || !!data.cfg?.hours,
+            bookingEnabled: data.booking?.enabled === true,
+            hasBooking: ((data.appointments?.bookings as unknown[]) || []).length > 0,
+          });
           let bks = (data.appointments?.bookings || []) as Booking[];
           if (user?.role === 'staff' && staffName) {
             bks = bks.filter((b) => b.staff === staffName);
@@ -168,6 +176,38 @@ export default function DashboardPage() {
             <Button onClick={() => router.push('/setup')} variant="outlined" size="small" sx={{ borderRadius: 2.5, fontWeight: 600, whiteSpace: 'nowrap' }}>הפעל</Button>
           </Box>
         )}
+
+        {/* Onboarding checklist — only while incomplete */}
+        {user?.role !== 'staff' && (() => {
+          const steps = [
+            { done: setupState.hasServices, label: 'הוסף שירותים ומחירים', path: '/services', icon: '📋' },
+            { done: setupState.hasHours, label: 'הגדר שעות פעילות', path: '/hours', icon: '🕐' },
+            { done: setupState.bookingEnabled, label: 'הפעל דף הזמנות', path: '/booking-page', icon: '🔗' },
+            { done: setupState.hasBooking, label: 'קבל את התור הראשון', path: '/calendar', icon: '📅' },
+          ];
+          const doneCount = steps.filter((s) => s.done).length;
+          if (doneCount === steps.length) return null;
+          return (
+            <Box sx={{ mb: 4, bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>בוא נסיים את ההגדרה 🚀</Typography>
+                <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.accent }}>{doneCount}/{steps.length}</Typography>
+              </Box>
+              <Box sx={{ height: 6, bgcolor: c.surface3, borderRadius: 99, overflow: 'hidden', mb: 2.5 }}>
+                <Box sx={{ width: `${(doneCount / steps.length) * 100}%`, height: '100%', background: `linear-gradient(to right, ${c.accent}, ${c.accent2})`, borderRadius: 99, transition: 'width 0.5s' }} />
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {steps.map((s) => (
+                  <Box key={s.path} onClick={() => !s.done && router.push(s.path)} sx={{ cursor: s.done ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: 3, bgcolor: s.done ? 'transparent' : c.surface2, opacity: s.done ? 0.6 : 1, transition: 'all 0.2s', '&:hover': { bgcolor: s.done ? 'transparent' : c.surface3 } }}>
+                    <Box sx={{ width: 26, height: 26, borderRadius: '50%', bgcolor: s.done ? c.green : c.surface4, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{s.done ? '✓' : ''}</Box>
+                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text, textDecoration: s.done ? 'line-through' : 'none', flex: 1 }}>{s.label}</Typography>
+                    {!s.done && <Typography sx={{ fontSize: 18 }}>{s.icon}</Typography>}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          );
+        })()}
 
         {/* Smart insights */}
         {user?.role !== 'staff' && insights.length > 0 && (

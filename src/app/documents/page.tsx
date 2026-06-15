@@ -72,7 +72,7 @@ export default function DocumentsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>קבלות והצעות מחיר</Typography>
         <Button onClick={() => setBrandingOpen(true)} size="small" sx={{ color: c.text2, fontWeight: 600 }}>🎨 עיצוב</Button>
@@ -81,12 +81,12 @@ export default function DocumentsPage() {
       <Box sx={{ maxWidth: 720, mx: 'auto', p: 3 }}>
         {/* Create buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
-          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
+          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>🧾</Box>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>קבלה חדשה</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>תיעוד תשלום שהתקבל</Typography>
           </Box>
-          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
+          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>📄</Box>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>הצעת מחיר</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>הצעה מעוצבת ללקוח</Typography>
@@ -104,7 +104,7 @@ export default function DocumentsPage() {
             {docs.map((d) => {
               const { total } = docTotal(d);
               return (
-                <Box key={d.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
+                <Box key={d.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
                   <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{d.type === 'receipt' ? '🧾' : '📄'}</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{d.type === 'receipt' ? 'קבלה' : 'הצעה'} #{d.number} · {d.customerName || 'ללא שם'}</Typography>
@@ -219,7 +219,7 @@ export default function DocumentsPage() {
 
         {/* Live mini preview */}
         <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>תצוגה מקדימה חיה</Typography>
-        <Box sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${c.border}`, mb: 2.5, transform: 'scale(1)', transformOrigin: 'top' }}>
+        <Box sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${c.border2}`, mb: 2.5, transform: 'scale(1)', transformOrigin: 'top' }}>
           <DocPreview doc={sampleDoc} branding={branding} compact />
         </Box>
 
@@ -321,7 +321,7 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
         </Box>
 
         {/* Items */}
-        <Box sx={{ border: `1px solid ${c.border}`, borderRadius: 2.5, overflow: 'hidden', mb: 2 }}>
+        <Box sx={{ border: `1px solid ${c.border2}`, borderRadius: 2.5, overflow: 'hidden', mb: 2 }}>
           <Box sx={{ display: 'flex', bgcolor: tmpl === 'minimal' ? c.surface2 : `${ac}12`, px: 1.5, py: 1, fontSize: 11.5, fontWeight: 700, color: tmpl === 'minimal' ? c.text2 : ac }}>
             <Box sx={{ flex: 2 }}>תיאור</Box><Box sx={{ width: 45, textAlign: 'center' }}>כמות</Box><Box sx={{ width: 60, textAlign: 'left' }}>מחיר</Box><Box sx={{ width: 70, textAlign: 'left' }}>סה״כ</Box>
           </Box>

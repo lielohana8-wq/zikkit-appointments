@@ -94,14 +94,14 @@ export default function ServicesPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>מחירון ושירותים</Typography>
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ שירות</Button>
       </Box>
 
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
           <Box sx={{ fontSize: 22 }}>🤖</Box>
           <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5 }}>
             דנה והיומן משתמשים במחירון הזה כדי לדעת אילו שירותים יש, כמה זמן וכמה הם עולים.
@@ -131,7 +131,7 @@ export default function ServicesPage() {
                 <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cat}</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   {services.filter((s) => (s.category || 'כללי') === cat).map((s) => (
-                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: c.text }}>{s.name}</Typography>
                         {s.description && <Typography sx={{ fontSize: 12.5, color: c.text3, mt: 0.25 }}>{s.description}</Typography>}

@@ -310,7 +310,7 @@ export default function AppointmentsSetupWizard() {
               <Typography sx={{ fontSize: 15, color: c.text2 }}>{'כמה אפשר לטפל במקביל'}</Typography>
             </Box>
             <Box sx={{ maxWidth: 480, mx: 'auto' }}>
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                   <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{'כמה עמדות / כיסאות?'}</Typography>
                   <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{config.stations}</Typography>
@@ -425,7 +425,7 @@ export default function AppointmentsSetupWizard() {
               {iconCircle('✨')}
               <Typography sx={{ fontSize: 32, fontWeight: 800, color: c.text, mb: 1 }}>{'בדיקה אחרונה'}</Typography>
             </Box>
-            <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
+            <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
               {[
                 { label: 'עסק', value: config.businessName, icon: '💈' },
                 { label: 'תחום', value: config.industry || '—', icon: '🎯' },
@@ -462,7 +462,7 @@ export default function AppointmentsSetupWizard() {
             {errorMsg && <Box sx={{ bgcolor: c.hotDim, border: `1px solid ${c.hot}`, borderRadius: 3, p: 2.5, mb: 3, maxWidth: 460, mx: 'auto' }}><Typography sx={{ fontSize: 13, color: c.hot, fontWeight: 600 }}>{errorMsg}</Typography></Box>}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: 420, mx: 'auto' }}>
               {['יוצר סוכן AI לתורים', 'מקצה מספר טלפון', 'מחבר את ' + config.voiceName, 'משלים הגדרות'].map((s, i) => (
-                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: c.surface1, borderRadius: 2.5, border: `1px solid ${c.border}` }}>
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: c.surface1, borderRadius: 2.5, border: `1px solid ${c.border2}` }}>
                   {provisioning ? <CircularProgress size={18} sx={{ color: c.accent }} /> : <Box sx={{ color: c.text3, fontSize: 18 }}>{'○'}</Box>}
                   <Typography sx={{ fontSize: 14, color: c.text, fontWeight: 600 }}>{s}</Typography>
                 </Box>
@@ -516,7 +516,7 @@ export default function AppointmentsSetupWizard() {
 function AptServiceCard({ service, index, onChange, onDelete }: { service: AptService; index: number; onChange: (s: AptService) => void; onDelete: () => void }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.accent}`, borderRadius: 3, p: 2.5 }}>
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderLeft: `4px solid ${c.accent}`, borderRadius: 3, p: 2.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: expanded ? 2 : 0 }}>
         <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: c.accentDim, color: c.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>{index + 1}</Box>
         <TextField placeholder="שם הטיפול" value={service.name} onChange={(e) => onChange({ ...service, name: e.target.value })} variant="standard" fullWidth InputProps={{ disableUnderline: true, sx: { fontWeight: 700, fontSize: 15 } }} />

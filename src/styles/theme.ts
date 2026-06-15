@@ -2,9 +2,8 @@
 
 import { createTheme } from '@mui/material/styles';
 
-// ZikkitAppointments — premium, minimalist, Apple-inspired.
-// Colors reference CSS variables so we can switch light/dark at runtime.
-// The variable values are defined in globals (see ThemeVars below / layout).
+// ZikkitAppointments — monochrome editorial design.
+// Sharp lines, big type, near-black & white, purple used ONLY as a punctuation accent.
 export const zikkitColors = {
   bg: 'var(--zk-bg)',
   bg2: 'var(--zk-bg2)',
@@ -31,35 +30,35 @@ export const zikkitColors = {
   shadowSm: 'var(--zk-shadow-sm)',
   shadowMd: 'var(--zk-shadow-md)',
   shadowLg: 'var(--zk-shadow-lg)',
-  shadowAccent: '0 8px 24px rgba(124,58,237,0.24)',
+  shadowAccent: 'none',
 };
 
-// CSS injected once — defines the variables for light (default) and dark.
+// Monochrome palette. Shadows are nearly gone — we use crisp 1px borders instead.
 export const THEME_CSS = `
 :root, [data-theme="light"] {
-  --zk-bg: #FAFAFA; --zk-bg2: #F4F4F5;
-  --zk-surface1: #FFFFFF; --zk-surface2: #FAFAFA; --zk-surface3: #F4F4F5; --zk-surface4: #E9E9EB;
-  --zk-border: #ECECEE; --zk-border2: #E0E0E3;
-  --zk-text: #111113; --zk-text2: #5E5E66; --zk-text3: #9A9AA2;
-  --zk-accent-dim: rgba(124,58,237,0.06); --zk-accent-mid: rgba(124,58,237,0.12);
-  --zk-hot-dim: rgba(229,72,77,0.07); --zk-green-dim: rgba(48,164,108,0.08);
-  --zk-shadow-sm: 0 1px 2px rgba(17,17,19,0.04), 0 1px 3px rgba(17,17,19,0.03);
-  --zk-shadow-md: 0 2px 8px rgba(17,17,19,0.04), 0 4px 16px rgba(17,17,19,0.04);
-  --zk-shadow-lg: 0 8px 30px rgba(17,17,19,0.08), 0 2px 8px rgba(17,17,19,0.04);
+  --zk-bg: #FFFFFF; --zk-bg2: #FAFAFA;
+  --zk-surface1: #FFFFFF; --zk-surface2: #FAFAFA; --zk-surface3: #F2F2F2; --zk-surface4: #E5E5E5;
+  --zk-border: #1A1A1A; --zk-border2: #E2E2E2;
+  --zk-text: #0A0A0A; --zk-text2: #4A4A4A; --zk-text3: #8A8A8A;
+  --zk-accent-dim: rgba(124,58,237,0.08); --zk-accent-mid: rgba(124,58,237,0.16);
+  --zk-hot-dim: rgba(229,72,77,0.08); --zk-green-dim: rgba(48,164,108,0.10);
+  --zk-shadow-sm: none; --zk-shadow-md: none; --zk-shadow-lg: 0 24px 60px rgba(0,0,0,0.12); --zk-blur: rgba(255,255,255,0.85);
 }
 [data-theme="dark"] {
-  --zk-bg: #0E0E11; --zk-bg2: #16161A;
-  --zk-surface1: #1A1A1F; --zk-surface2: #16161A; --zk-surface3: #222228; --zk-surface4: #2E2E36;
-  --zk-border: #2A2A31; --zk-border2: #36363F;
-  --zk-text: #F4F4F6; --zk-text2: #A9A9B4; --zk-text3: #6E6E78;
-  --zk-accent-dim: rgba(144,97,249,0.14); --zk-accent-mid: rgba(144,97,249,0.22);
-  --zk-hot-dim: rgba(229,72,77,0.16); --zk-green-dim: rgba(48,164,108,0.16);
-  --zk-shadow-sm: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
-  --zk-shadow-md: 0 2px 8px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25);
-  --zk-shadow-lg: 0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  --zk-bg: #000000; --zk-bg2: #0A0A0A;
+  --zk-surface1: #0D0D0D; --zk-surface2: #0A0A0A; --zk-surface3: #161616; --zk-surface4: #242424;
+  --zk-border: #F0F0F0; --zk-border2: #262626;
+  --zk-text: #FAFAFA; --zk-text2: #A0A0A0; --zk-text3: #5A5A5A;
+  --zk-accent-dim: rgba(144,97,249,0.16); --zk-accent-mid: rgba(144,97,249,0.26);
+  --zk-hot-dim: rgba(229,72,77,0.18); --zk-green-dim: rgba(48,164,108,0.18);
+  --zk-shadow-sm: none; --zk-shadow-md: none; --zk-shadow-lg: 0 24px 60px rgba(0,0,0,0.6); --zk-blur: rgba(0,0,0,0.85);
 }
 body { background: var(--zk-bg); transition: background 0.3s ease; }
+::selection { background: #7C3AED; color: #fff; }
 `;
+
+// NOTE: --zk-border is near-black (light) / near-white (dark) — this is the SHARP LINE look.
+// --zk-border2 is the subtle hairline for less-important separators.
 
 export const theme = createTheme({
   direction: 'rtl',
@@ -68,24 +67,25 @@ export const theme = createTheme({
     primary: { main: '#7C3AED' },
     error: { main: '#E5484D' },
     success: { main: '#30A46C' },
-    background: { default: '#FAFAFA', paper: '#FFFFFF' },
-    text: { primary: '#111113', secondary: '#5E5E66' },
+    background: { default: '#FFFFFF', paper: '#FFFFFF' },
+    text: { primary: '#0A0A0A', secondary: '#4A4A4A' },
   },
   typography: {
     fontFamily: "'Heebo', 'Assistant', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-    h1: { fontWeight: 800, letterSpacing: '-0.03em' },
-    h2: { fontWeight: 800, letterSpacing: '-0.025em' },
-    h3: { fontWeight: 700, letterSpacing: '-0.02em' },
-    button: { fontWeight: 600, letterSpacing: '-0.01em' },
+    h1: { fontWeight: 900, letterSpacing: '-0.04em' },
+    h2: { fontWeight: 900, letterSpacing: '-0.035em' },
+    h3: { fontWeight: 800, letterSpacing: '-0.03em' },
+    button: { fontWeight: 700, letterSpacing: '-0.01em' },
   },
-  shape: { borderRadius: 16 },
+  shape: { borderRadius: 4 },
   components: {
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { textTransform: 'none', fontWeight: 600, borderRadius: 12, padding: '8px 18px', transition: 'all 0.2s cubic-bezier(0.22,1,0.36,1)' },
-        containedPrimary: { background: '#7C3AED', boxShadow: 'none', '&:hover': { background: '#6D28D9', boxShadow: '0 8px 24px rgba(124,58,237,0.24)' } },
-        outlined: { borderColor: 'var(--zk-border2)', color: 'var(--zk-text)', '&:hover': { borderColor: '#7C3AED', background: 'var(--zk-accent-dim)' } },
+        root: { textTransform: 'none', fontWeight: 700, borderRadius: 6, padding: '9px 20px', transition: 'all 0.18s ease' },
+        containedPrimary: { background: '#7C3AED', boxShadow: 'none', '&:hover': { background: '#6D28D9', boxShadow: 'none' } },
+        outlined: { borderColor: 'var(--zk-border)', borderWidth: 1.5, color: 'var(--zk-text)', '&:hover': { borderColor: 'var(--zk-border)', borderWidth: 1.5, background: 'var(--zk-text)', color: 'var(--zk-bg)' } },
+        text: { color: 'var(--zk-text)', '&:hover': { background: 'var(--zk-surface3)' } },
       },
     },
     MuiTextField: {
@@ -93,26 +93,26 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 12, backgroundColor: 'var(--zk-surface1)', color: 'var(--zk-text)', transition: 'all 0.2s',
-            '& fieldset': { borderColor: 'var(--zk-border2)' },
-            '&:hover fieldset': { borderColor: 'var(--zk-text3)' },
-            '&.Mui-focused fieldset': { borderColor: '#7C3AED', borderWidth: 1.5 },
+            borderRadius: 6, backgroundColor: 'var(--zk-surface1)', color: 'var(--zk-text)', transition: 'all 0.18s',
+            '& fieldset': { borderColor: 'var(--zk-border2)', borderWidth: 1.5 },
+            '&:hover fieldset': { borderColor: 'var(--zk-text2)' },
+            '&.Mui-focused fieldset': { borderColor: 'var(--zk-border)', borderWidth: 1.5 },
           },
           '& .MuiInputLabel-root': { color: 'var(--zk-text3)' },
         },
       },
     },
     MuiPaper: { styleOverrides: { root: { backgroundImage: 'none', backgroundColor: 'var(--zk-surface1)', color: 'var(--zk-text)' } } },
-    MuiDialog: { styleOverrides: { paper: { borderRadius: 24, boxShadow: 'var(--zk-shadow-lg)' } } },
-    MuiMenu: { styleOverrides: { paper: { backgroundColor: 'var(--zk-surface1)', color: 'var(--zk-text)' } } },
+    MuiDialog: { styleOverrides: { paper: { borderRadius: 8, border: '1.5px solid var(--zk-border)', boxShadow: 'var(--zk-shadow-lg)' } } },
+    MuiMenu: { styleOverrides: { paper: { backgroundColor: 'var(--zk-surface1)', color: 'var(--zk-text)', border: '1.5px solid var(--zk-border)', borderRadius: 8 } } },
     MuiSwitch: {
       styleOverrides: {
         root: { padding: 8 },
         switchBase: { '&.Mui-checked': { color: '#fff', '& + .MuiSwitch-track': { backgroundColor: '#7C3AED', opacity: 1 } } },
-        thumb: { boxShadow: '0 1px 3px rgba(0,0,0,0.2)' },
+        thumb: { boxShadow: 'none' },
         track: { borderRadius: 22, backgroundColor: 'var(--zk-surface4)', opacity: 1 },
       },
     },
-    MuiChip: { styleOverrides: { root: { fontWeight: 600, borderRadius: 8 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 700, borderRadius: 4 } } },
   },
 });

@@ -140,7 +140,7 @@ export default function TeamPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>צוות ועמדות</Typography>
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ חבר צוות</Button>
@@ -148,7 +148,7 @@ export default function TeamPage() {
 
       <Box sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stations count */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>💺 מספר עמדות / כיסאות</Typography>
             <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{stations}</Typography>
@@ -169,7 +169,7 @@ export default function TeamPage() {
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             {team.map((m) => (
-              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd, transform: 'translateY(-2px)' } }}>
+              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd, transform: 'translateY(-2px)' } }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
                   {m.photo ? (
                     <Box component="img" src={m.photo} sx={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${m.color}` }} />

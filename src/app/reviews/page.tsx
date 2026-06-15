@@ -47,7 +47,7 @@ export default function ReviewsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>ביקורות</Typography>
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ ביקורת</Button>
@@ -63,7 +63,7 @@ export default function ReviewsPage() {
 
         {/* Distribution */}
         {stats.count > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
             {[5, 4, 3, 2, 1].map((star) => {
               const count = stats.distribution[star - 1];
               const pct = stats.count ? (count / stats.count) * 100 : 0;
@@ -89,7 +89,7 @@ export default function ReviewsPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {reviews.map((r) => (
-              <Box key={r.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+              <Box key={r.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                   <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>{r.customerName?.[0] || '?'}</Box>
                   <Box sx={{ flex: 1 }}>

@@ -54,7 +54,7 @@ export default function ReportsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>דוחות כספיים</Typography>
         <Button onClick={exportCSV} size="small" sx={{ color: c.accent, fontWeight: 700 }}>⬇ CSV</Button>
@@ -85,7 +85,7 @@ export default function ReportsPage() {
                 { label: 'ממוצע', value: `₪${report.avgTicket}`, color: c.text },
                 { label: 'ביטולים', value: report.cancelled, color: report.cancelled > 0 ? c.hot : c.text },
               ].map((k, i) => (
-                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: { xs: 2, sm: 2.5 }, boxShadow: c.shadowSm }}>
+                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: { xs: 2, sm: 2.5 }, boxShadow: c.shadowSm }}>
                   <Typography sx={{ fontSize: { xs: 22, sm: 26 }, fontWeight: 800, color: k.color, letterSpacing: '-0.02em' }}>{k.value}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>{k.label}</Typography>
                 </Box>
@@ -94,7 +94,7 @@ export default function ReportsPage() {
 
             {/* Revenue by day */}
             {report.byDay.length > 0 && report.totalRevenue > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>הכנסה לפי יום</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.75, height: 150 }}>
                   {report.byDay.slice(-14).map((d) => (
@@ -110,7 +110,7 @@ export default function ReportsPage() {
 
             {/* By service */}
             {report.byService.length > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>פילוח לפי שירות</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {report.byService.map((s) => (

@@ -50,7 +50,7 @@ export default function AutomationsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>אוטומציות</Typography>
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
@@ -64,7 +64,7 @@ export default function AutomationsPage() {
         </Box>
 
         {/* Channel */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 1.5 }}>📡 ערוץ שליחה</Typography>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Box onClick={() => set('channel', 'sms')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 2.5, bgcolor: a.channel === 'sms' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'sms' ? c.accent : c.border}` }}>

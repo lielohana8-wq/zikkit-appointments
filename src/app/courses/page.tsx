@@ -58,7 +58,7 @@ export default function CoursesPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>קורסים ומוצרים</Typography>
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ הוסף</Button>
@@ -75,7 +75,7 @@ export default function CoursesPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {products.map((p) => (
-              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ fontSize: 32 }}>{TYPES.find((t) => t.id === p.type)?.label.split(' ')[0] || '📦'}</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</Typography>

@@ -41,7 +41,7 @@ export function PWAInstaller() {
   if (!show) return null;
 
   return (
-    <Box sx={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 2000, maxWidth: 420, mx: 'auto', bgcolor: '#fff', borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', p: 2, display: 'flex', alignItems: 'center', gap: 1.5, border: `1px solid ${c.border}` }}>
+    <Box sx={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 2000, maxWidth: 420, mx: 'auto', bgcolor: '#fff', borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', p: 2, display: 'flex', alignItems: 'center', gap: 1.5, border: `1px solid ${c.border2}` }}>
       <Box sx={{ width: 44, height: 44, borderRadius: 2.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, flexShrink: 0 }}>Z</Box>
       <Box sx={{ flex: 1 }}>
         <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text }}>התקן את האפליקציה</Typography>

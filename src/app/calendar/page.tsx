@@ -104,7 +104,7 @@ export default function CalendarPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>יומן תורים</Typography>
         <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ תור</Button>
@@ -156,7 +156,7 @@ export default function CalendarPage() {
                     {dayBks.length === 0 ? (
                       <Box sx={{ textAlign: 'center', py: 2, color: c.text3, fontSize: 10 }}>—</Box>
                     ) : dayBks.map((b) => (
-                      <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75 }}>
+                      <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75 }}>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: staffColor(b.staff) }}>{b.time}</Typography>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: c.text, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                         <Typography sx={{ fontSize: 9, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || 'טיפול'}</Typography>
@@ -185,7 +185,7 @@ export default function CalendarPage() {
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {dayBookings.length > 0 && (
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Box sx={{ flex: 1, bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.25, boxShadow: c.shadowSm }}>
+            <Box sx={{ flex: 1, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.25, boxShadow: c.shadowSm }}>
               <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.02em' }}>{dayBookings.length}</Typography>
               <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>תורים היום</Typography>
             </Box>
@@ -205,7 +205,7 @@ export default function CalendarPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {dayBookings.map((b) => (
-              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
                 <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: b.staff ? `${staffColor(b.staff)}1A` : c.accentDim, borderRadius: 3, py: 1 }}>
                   <Typography sx={{ fontSize: 16, fontWeight: 800, color: b.staff ? staffColor(b.staff) : c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
                   <Typography sx={{ fontSize: 9.5, color: b.staff ? staffColor(b.staff) : c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>

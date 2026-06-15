@@ -60,13 +60,13 @@ export default function SettingsPage() {
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <Box sx={{ mb: 3 }}>
       <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</Typography>
-      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>{children}</Box>
+      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>{children}</Box>
     </Box>
   );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>הגדרות עסק</Typography>
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
       <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Logo + name */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
           {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 3, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 3, background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{s.businessName || 'העסק שלי'}</Typography>

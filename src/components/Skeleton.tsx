@@ -31,7 +31,7 @@ export function PageSkeleton({ rows = 5 }: { rows?: number }) {
         <SkeletonBox height={48} radius={99} mb={24} />
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {Array.from({ length: rows }).map((_, i) => (
-            <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
               <SkeletonBox width={46} height={46} radius={23} />
               <Box sx={{ flex: 1 }}>
                 <SkeletonBox width="55%" height={16} mb={8} />

@@ -43,7 +43,7 @@ export default function StationsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>ניהול עמדות</Typography>
         <Box sx={{ width: 80 }} />
@@ -56,7 +56,7 @@ export default function StationsPage() {
           <Typography sx={{ fontSize: 14, color: c.text2 }}>דנה תוכל לקבוע עד {stations} תורים במקביל באותה שעה</Typography>
         </Box>
 
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Typography sx={{ fontSize: 56, fontWeight: 800, color: c.accent }}>{stations}</Typography>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>כיסאות / עמדות / מטפלים</Typography>

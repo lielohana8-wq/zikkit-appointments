@@ -60,7 +60,7 @@ export default function ExpensesPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>הוצאות ורווחיות</Typography>
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ הוצאה</Button>
@@ -83,11 +83,11 @@ export default function ExpensesPage() {
 
         {/* Revenue vs expenses */}
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
             <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 600 }}>📈 הכנסות</Typography>
             <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.green, letterSpacing: '-0.02em' }}>₪{p.revenue.toLocaleString()}</Typography>
           </Box>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
             <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 600 }}>📉 הוצאות</Typography>
             <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.hot, letterSpacing: '-0.02em' }}>₪{p.expenses.toLocaleString()}</Typography>
           </Box>
@@ -95,7 +95,7 @@ export default function ExpensesPage() {
 
         {/* By category */}
         {p.byCategory.length > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>הוצאות לפי קטגוריה</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {p.byCategory.map((cat) => (
@@ -123,7 +123,7 @@ export default function ExpensesPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {rangeExpenses.map((e) => (
-              <Box key={e.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
+              <Box key={e.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{e.description}{e.recurring && ' 🔄'}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{e.category} · {e.date}</Typography>

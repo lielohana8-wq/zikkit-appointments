@@ -50,9 +50,8 @@ function AuthPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg, position: 'relative', overflow: 'hidden', direction: 'rtl' }}>
-      {/* Ambient orbs */}
-      <Box sx={{ position: 'absolute', top: '-12%', right: '-8%', width: 480, height: 480, borderRadius: '50%', background: `radial-gradient(circle, ${c.accentMid}, transparent 70%)`, filter: 'blur(50px)', pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', bottom: '-18%', left: '-10%', width: 520, height: 520, borderRadius: '50%', background: `radial-gradient(circle, rgba(144,97,249,0.10), transparent 70%)`, filter: 'blur(60px)', pointerEvents: 'none' }} />
+      {/* subtle grid texture instead of orbs */}
+      <Box sx={{ position: 'absolute', inset: 0, opacity: 0.4, backgroundImage: `linear-gradient(${c.border2} 1px, transparent 1px), linear-gradient(90deg, ${c.border2} 1px, transparent 1px)`, backgroundSize: '64px 64px', pointerEvents: 'none', maskImage: 'radial-gradient(ellipse at center, black 20%, transparent 75%)' }} />
 
       {/* ===== LANDING VIEW ===== */}
       {view === 'landing' && (
@@ -68,9 +67,9 @@ function AuthPage() {
             <Box sx={{ bgcolor: c.accentDim, color: c.accent, fontWeight: 700, fontSize: 13, borderRadius: 99, px: 2, py: 0.75, mb: 3 }}>
               ✦ מערכת ניהול התורים החכמה לעסקים
             </Box>
-            <Typography sx={{ fontSize: { xs: 38, sm: 56 }, fontWeight: 900, color: c.text, letterSpacing: '-0.04em', lineHeight: 1.05, mb: 2.5 }}>
+            <Typography sx={{ fontSize: { xs: 46, sm: 72 }, fontWeight: 900, color: c.text, letterSpacing: '-0.055em', lineHeight: 0.92, mb: 3 }}>
               היומן שלך מתמלא.<br />
-              <Box component="span" sx={{ background: `linear-gradient(120deg, ${c.accent}, ${c.accent2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>גם כשאתה עובד.</Box>
+              <Box component="span" sx={{ color: c.accent }}>גם כשאתה עובד.</Box>
             </Typography>
             <Typography sx={{ fontSize: { xs: 16, sm: 19 }, color: c.text2, maxWidth: 520, mb: 4, lineHeight: 1.6 }}>
               ניהול תורים, דף הזמנות ממותג, אוטומציות ולקוחות — הכל במקום אחד. למספרות, מכוני יופי, קליניקות ועוד.
@@ -85,7 +84,7 @@ function AuthPage() {
           <Box sx={{ maxWidth: 920, mx: 'auto', width: '100%', px: { xs: 3, sm: 6 }, pb: 6 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 2 }}>
               {features.map((f) => (
-                <Box key={f.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+                <Box key={f.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
                   <Box sx={{ fontSize: 28, mb: 1 }}>{f.icon}</Box>
                   <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text, mb: 0.25 }}>{f.title}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3, lineHeight: 1.5 }}>{f.desc}</Typography>
@@ -106,7 +105,7 @@ function AuthPage() {
               <ZikkitLogo useImage size={40} />
             </Box>
 
-            <Box sx={{ bgcolor: c.surface1, borderRadius: 6, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border}` }}>
+            <Box sx={{ bgcolor: c.surface1, borderRadius: 6, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border2}` }}>
               <Typography sx={{ fontSize: 24, fontWeight: 800, textAlign: 'center', color: c.text, letterSpacing: '-0.02em' }}>
                 {view === 'register' ? 'נתחיל לעבוד' : 'ברוכים השבים'}
               </Typography>

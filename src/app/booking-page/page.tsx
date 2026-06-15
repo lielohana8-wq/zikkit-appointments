@@ -93,7 +93,7 @@ export default function BookingPageSettings() {
   if (loading || dataLoading || !b) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 2 }}>
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 2 }}>
       <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 2 }}>{title}</Typography>
       {children}
     </Box>
@@ -101,7 +101,7 @@ export default function BookingPageSettings() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>דף הזמנות</Typography>
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>
@@ -122,7 +122,7 @@ export default function BookingPageSettings() {
 
         {/* Link */}
         {b.enabled && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text3, mb: 1 }}>🔗 הלינק שלך</Typography>
             <Typography sx={{ fontSize: 13, color: c.accent, fontWeight: 600, wordBreak: 'break-all', fontFamily: 'monospace', mb: 1.5 }}>{bookingUrl}</Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>

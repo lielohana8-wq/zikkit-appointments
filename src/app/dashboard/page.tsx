@@ -130,6 +130,13 @@ export default function DashboardPage() {
           <Typography sx={{ fontSize: 16, color: c.text3, mt: 0.5 }}>{todayBookings.length > 0 ? `יש לך ${todayBookings.length} תורים היום` : 'אין תורים היום — זמן טוב לקדם את העסק'}</Typography>
         </Box>
 
+        {/* Quick search */}
+        <Box onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); window.dispatchEvent(e); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 99, px: 2.5, py: 1.5, mb: 3, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { borderColor: c.border2, boxShadow: c.shadowMd } }}>
+          <Box sx={{ fontSize: 18 }}>🔍</Box>
+          <Typography sx={{ fontSize: 14.5, color: c.text3, flex: 1 }}>חיפוש לקוחות, תורים, עמודים...</Typography>
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}><kbd style={{ background: 'var(--zk-surface3)', color: 'var(--zk-text3)', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>⌘K</kbd></Box>
+        </Box>
+
         {/* Next appointment — hero card */}
         {(() => {
           const now = new Date();
@@ -272,6 +279,7 @@ export default function DashboardPage() {
             title: 'כספים',
             items: [
               { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
+              { icon: '📈', label: 'אנליטיקס', path: '/analytics', staff: false },
               { icon: '💰', label: 'רווחיות', path: '/expenses', staff: false },
               { icon: '🧾', label: 'קבלות', path: '/documents', staff: false },
               { icon: '📤', label: 'ייצוא', path: '/export-data', staff: false },
@@ -283,7 +291,7 @@ export default function DashboardPage() {
               { icon: '🎟️', label: 'מבצעים', path: '/promos', staff: false },
               { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
               { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
-              { icon: '📈', label: 'יועץ AI', path: '/ai-studio', staff: false },
+              { icon: '🤖', label: 'יועץ AI', path: '/ai-studio', staff: false },
             ],
           },
           {

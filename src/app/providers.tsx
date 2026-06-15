@@ -11,6 +11,7 @@ import { PWAInstaller } from '@/components/PWAInstaller';
 import { ToastProvider } from '@/components/Toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeModeProvider } from '@/components/ThemeMode';
+import { CommandPalette } from '@/components/CommandPalette';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const cache = useMemo(
@@ -25,7 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ThemeModeProvider>
           <ErrorBoundary>
             <ToastProvider>
-              <AuthProvider>{children}</AuthProvider>
+              <AuthProvider>
+                {children}
+                <CommandPalette />
+              </AuthProvider>
               <PWAInstaller />
             </ToastProvider>
           </ErrorBoundary>

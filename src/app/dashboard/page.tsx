@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
+import { useThemeMode } from '@/components/ThemeMode';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -25,6 +26,7 @@ interface Booking {
 export default function DashboardPage() {
   const router = useRouter();
   const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
+  const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [bizName, setBizName] = useState('');
@@ -113,6 +115,7 @@ export default function DashboardPage() {
         <ZikkitLogo size={34} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
+          <Button onClick={toggleTheme} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>{themeMode === 'dark' ? '☀️' : '🌙'}</Button>
           <Button onClick={() => router.push('/settings')} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>⚙️</Button>
           <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
         </Box>

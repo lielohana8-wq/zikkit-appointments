@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Providers } from './providers';
+import { THEME_CSS } from '@/styles/theme';
 
 export const metadata: Metadata = {
   title: 'ZikkitAppointments — ניהול תורים חכם עם AI',
@@ -34,6 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           @keyframes zkFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
           @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         `}</style>
+        <style dangerouslySetInnerHTML={{ __html: THEME_CSS }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var m=document.cookie.split('; ').find(function(r){return r.indexOf('zk-theme=')===0});var t=m?m.split('=')[1]:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();` }} />
       </head>
       <body>
         <Providers>{children}</Providers>

@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, TextField, MenuItem } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, TextField, MenuItem, Switch } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBizSettings, saveBizSettings, type BizSettings } from '@/lib/bizdata';
 import { useToast } from '@/components/Toast';
+import { useThemeMode } from '@/components/ThemeMode';
 import { zikkitColors as c } from '@/styles/theme';
 
 const BIZ_TYPES = ['מספרה', 'מכון יופי', 'קוסמטיקה', 'ציפורניים', 'איפור', 'עיסוי', 'קליניקה', 'רופא שיניים', 'פיזיותרפיה', 'וטרינר', 'אופטיקה', 'אחר'];
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading, logout } = useAuth();
   const { showToast } = useToast();
+  const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
   const [s, setS] = useState<BizSettings | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -100,6 +102,16 @@ export default function SettingsPage() {
         </Section>
 
         <Section title="העדפות">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pb: 2, borderBottom: `1px solid ${c.border}` }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ fontSize: 20 }}>{themeMode === 'dark' ? '🌙' : '☀️'}</Box>
+              <Box>
+                <Typography sx={{ fontSize: 14.5, fontWeight: 600, color: c.text }}>מצב כהה</Typography>
+                <Typography sx={{ fontSize: 12, color: c.text3 }}>{themeMode === 'dark' ? 'פעיל' : 'כבוי'}</Typography>
+              </Box>
+            </Box>
+            <Switch checked={themeMode === 'dark'} onChange={toggleTheme} />
+          </Box>
           <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
             <TextField select fullWidth size="small" label="מטבע" value={s.currency} onChange={(e) => set('currency', e.target.value)}>
               <MenuItem value="ILS">₪ שקל</MenuItem>

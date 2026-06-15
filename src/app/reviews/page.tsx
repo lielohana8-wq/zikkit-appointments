@@ -5,11 +5,14 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, Switch } 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getReviews, addReview, updateReview, deleteReview, reviewStats, type Review } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
+import { PageSkeleton } from '@/components/Skeleton';
 import { zikkitColors as c } from '@/styles/theme';
 
 export default function ReviewsPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -27,7 +30,8 @@ export default function ReviewsPage() {
   const save = async () => {
     if (!bizId || !draft.customerName || !draft.text) return;
     setSaving(true);
-    try { await addReview(bizId, { ...draft, published: true }); setOpen(false); setDraft({ customerName: '', rating: 5, text: '', service: '' }); await load(); }
+    try { await addReview(bizId, { ...draft, published: true }); setOpen(false); setDraft({ customerName: '', rating: 5, text: '', service: '' }); await load(); showToast('הביקורת נוספה', 'success'); }
+    catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
     finally { setSaving(false); }
   };
 
@@ -37,7 +41,7 @@ export default function ReviewsPage() {
     await load();
   };
 
-  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading) return <PageSkeleton rows={6} />;
 
   const stats = reviewStats(reviews);
 

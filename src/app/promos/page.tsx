@@ -5,11 +5,13 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem,
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getPromos, addPromo, updatePromo, deletePromo, getLoyalty, saveLoyalty, type Promo, type LoyaltySettings } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 export default function PromosPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loyalty, setLoyalty] = useState<LoyaltySettings | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -28,7 +30,8 @@ export default function PromosPage() {
   const save = async () => {
     if (!bizId || !draft.code) return;
     setSaving(true);
-    try { await addPromo(bizId, draft); setOpen(false); setDraft({ code: '', description: '', discountType: 'percent', discountValue: 10, expiresAt: '', maxUsage: 0 }); await load(); }
+    try { await addPromo(bizId, draft); setOpen(false); setDraft({ code: '', description: '', discountType: 'percent', discountValue: 10, expiresAt: '', maxUsage: 0 }); await load(); showToast('הקופון נוצר', 'success'); }
+    catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
     finally { setSaving(false); }
   };
 

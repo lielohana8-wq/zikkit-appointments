@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, Men
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getProducts, addProduct, deleteProduct } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Product {
@@ -21,6 +22,7 @@ const TYPES = [
 export default function CoursesPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [open, setOpen] = useState(false);

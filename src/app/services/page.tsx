@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, Chip, Sli
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getServices, addService, updateService, deleteService, loadBiz, type Service } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Draft {
@@ -15,6 +16,7 @@ const emptyDraft: Draft = { name: '', category: '', price: 0, duration: 30, desc
 export default function ServicesPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -78,10 +80,10 @@ export default function ServicesPage() {
         await saveServices(bizId, [...existing, ...newOnes]);
         await load();
       } else {
-        alert(data.error || 'ה-AI לא הצליח. ודא שיש credit ב-Anthropic.');
+        showToast(data.error || 'ה-AI לא הצליח. ודא שיש credit ב-Anthropic.', 'error');
       }
     } catch {
-      alert('שגיאה בזיהוי AI');
+      showToast('שגיאה בזיהוי AI', 'error');
     } finally { setAiLoading(false); }
   };
 

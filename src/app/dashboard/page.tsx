@@ -12,12 +12,14 @@ import { zikkitColors as c } from '@/styles/theme';
 interface Booking {
   id: string;
   customerName: string;
+  customerPhone?: string;
   service: string;
   date: string;
   time: string;
   duration: number;
   status: string;
   staff?: string;
+  price?: number;
 }
 
 export default function DashboardPage() {
@@ -125,7 +127,36 @@ export default function DashboardPage() {
           <Typography sx={{ fontSize: 16, color: c.text3, mt: 0.5 }}>{todayBookings.length > 0 ? `יש לך ${todayBookings.length} תורים היום` : 'אין תורים היום — זמן טוב לקדם את העסק'}</Typography>
         </Box>
 
-        {/* New booking notifications */}
+        {/* Next appointment — hero card */}
+        {(() => {
+          const now = new Date();
+          const nowStr = now.toISOString().split('T')[0];
+          const nowTime = now.toTimeString().slice(0, 5);
+          const next = bookings
+            .filter((b) => b.status !== 'cancelled' && (b.date > nowStr || (b.date === nowStr && b.time >= nowTime)))
+            .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))[0];
+          if (!next) return null;
+          const isToday = next.date === nowStr;
+          return (
+            <Box onClick={() => router.push('/calendar')} sx={{ cursor: 'pointer', background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, borderRadius: 6, p: { xs: 2.5, sm: 3 }, mb: 3, color: '#fff', boxShadow: c.shadowAccent, position: 'relative', overflow: 'hidden', transition: 'all 0.25s', '&:hover': { transform: 'translateY(-2px)' } }}>
+              <Box sx={{ position: 'absolute', top: -30, left: -20, width: 140, height: 140, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
+              <Typography sx={{ fontSize: 12, opacity: 0.85, fontWeight: 600, position: 'relative', textTransform: 'uppercase', letterSpacing: '0.05em' }}>התור הבא</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, position: 'relative' }}>
+                <Box sx={{ textAlign: 'center', bgcolor: 'rgba(255,255,255,0.18)', borderRadius: 3.5, px: 2, py: 1.25, minWidth: 72 }}>
+                  <Typography sx={{ fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em' }}>{next.time}</Typography>
+                  <Typography sx={{ fontSize: 10.5, opacity: 0.85, mt: 0.25 }}>{isToday ? 'היום' : next.date.slice(5)}</Typography>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.02em' }}>{next.customerName}</Typography>
+                  <Typography sx={{ fontSize: 13.5, opacity: 0.9 }}>{next.service || 'טיפול'}{next.staff ? ` · ${next.staff}` : ''}</Typography>
+                </Box>
+                {next.customerPhone && (
+                  <Box component="a" href={`tel:${next.customerPhone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, textDecoration: 'none', flexShrink: 0 }}>📞</Box>
+                )}
+              </Box>
+            </Box>
+          );
+        })()}
         {notifs.filter((n) => !n.read).length > 0 && (
           <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border}`, borderRadius: 5, p: 2.5, mb: 3, boxShadow: c.shadowSm }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>

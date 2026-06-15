@@ -5,11 +5,13 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getGallery, addGalleryImage, removeGalleryImage } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 export default function GalleryPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [images, setImages] = useState<string[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +38,7 @@ export default function GalleryPage() {
       const updated = await addGalleryImage(bizId, dataUrl);
       setImages(updated);
     } catch (err) {
-      alert((err as Error).message || 'שגיאה');
+      showToast((err as Error).message || 'שגיאה', 'error');
     } finally { setUploading(false); }
   };
 

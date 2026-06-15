@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField, Switch, MenuItem 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBranding, saveBranding, type BookingBranding } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 const COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1', '#EF4444', '#1C1917', '#0EA5E9', '#D946EF'];
@@ -12,6 +13,7 @@ const COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1'
 export default function BookingPageSettings() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [b, setB] = useState<BookingBranding | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,10 +55,10 @@ export default function BookingPageSettings() {
         } : p);
         setAiPrompt('');
       } else {
-        alert(data.error || 'לא הצלחתי לעצב — נסה שוב');
+        showToast(data.error || 'לא הצלחתי לעצב — נסה שוב', 'error');
       }
     } catch (e) {
-      alert('שגיאה: ' + (e as Error).message);
+      showToast('שגיאה: ' + (e as Error).message, 'error');
     } finally { setAiLoading(false); }
   };
 
@@ -82,7 +84,7 @@ export default function BookingPageSettings() {
     if (!bizId || !b) return;
     setSaving(true);
     try { await saveBranding(bizId, b); setSaved(true); setTimeout(() => setSaved(false), 2000); }
-    catch (e) { alert('שגיאה בשמירה: ' + (e as Error).message); }
+    catch (e) { showToast('שגיאה בשמירה: ' + (e as Error).message, 'error'); }
     finally { setSaving(false); }
   };
 

@@ -5,6 +5,8 @@ import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, Men
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
+import { PageSkeleton } from '@/components/Skeleton';
 import { zikkitColors as c } from '@/styles/theme';
 
 const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -12,6 +14,7 @@ const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמי
 export default function CalendarPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading, user, staffName } = useAuth();
+  const { showToast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Array<{ name: string; duration: number; price?: string }>>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -63,7 +66,7 @@ export default function CalendarPage() {
       await load(); // reconcile with server (replaces temp with real)
     } catch (e) {
       setBookings((prev) => prev.filter((bk) => bk.id !== optimistic.id)); // rollback
-      alert('שגיאה בשמירה: ' + (e as Error).message);
+      showToast('שגיאה בשמירה: ' + (e as Error).message, 'error');
     } finally { setSaving(false); }
   };
 
@@ -88,7 +91,7 @@ export default function CalendarPage() {
     } finally { setSaving(false); }
   };
 
-  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading) return <PageSkeleton rows={6} />;
 
   const days = Array.from({ length: 14 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return d.toISOString().split('T')[0]; });
   const dayBookings = bookings.filter((b) => b.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time));

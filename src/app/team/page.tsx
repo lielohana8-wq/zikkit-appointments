@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, Chip, Sli
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, loadBiz, setStations, type TeamMember } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { createStaffAccount } from '@/lib/staff';
 import { zikkitColors as c } from '@/styles/theme';
 
@@ -22,6 +23,7 @@ const emptyDraft: Draft = { name: '', role: '', photo: '', description: '', serv
 export default function TeamPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [availableServices, setAvailableServices] = useState<string[]>([]);
   const [stations, setStationsState] = useState(1);
@@ -88,7 +90,7 @@ export default function TeamPage() {
       // If owner asked to create a login for this member
       if (createLogin && draft.loginEmail && loginPassword) {
         if (loginPassword.length < 6) {
-          alert('הסיסמה חייבת להיות לפחות 6 תווים');
+          showToast('הסיסמה חייבת להיות לפחות 6 תווים', 'error');
           setSaving(false);
           return;
         }
@@ -106,13 +108,13 @@ export default function TeamPage() {
             password: loginPassword,
           });
           if (!result.success) {
-            alert('חבר הצוות נשמר, אבל יצירת ההתחברות נכשלה:\n' + result.error);
+            showToast('חבר הצוות נשמר, אבל יצירת ההתחברות נכשלה:\n' + result.error, 'error');
           } else {
             await updateTeamMember(bizId, member.id, { loginEmail: draft.loginEmail, staffUid: result.uid });
-            alert('✓ חשבון נוצר! חבר הצוות יכול להתחבר עם:\n' + draft.loginEmail);
+            showToast('חשבון נוצר! חבר הצוות יכול להתחבר עם: ' + draft.loginEmail, 'success');
           }
         } else {
-          alert('שגיאה: לא נמצא חבר הצוות אחרי השמירה. נסה שוב.');
+          showToast('שגיאה: לא נמצא חבר הצוות אחרי השמירה. נסה שוב.', 'error');
         }
       }
       setOpen(false); await load();

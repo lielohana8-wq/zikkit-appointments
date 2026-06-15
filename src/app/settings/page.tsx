@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField, MenuItem } from '
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBizSettings, saveBizSettings, type BizSettings } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 const BIZ_TYPES = ['מספרה', 'מכון יופי', 'קוסמטיקה', 'ציפורניים', 'איפור', 'עיסוי', 'קליניקה', 'רופא שיניים', 'פיזיותרפיה', 'וטרינר', 'אופטיקה', 'אחר'];
@@ -12,6 +13,7 @@ const BIZ_TYPES = ['מספרה', 'מכון יופי', 'קוסמטיקה', 'צי�
 export default function SettingsPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading, logout } = useAuth();
+  const { showToast } = useToast();
   const [s, setS] = useState<BizSettings | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,8 +48,8 @@ export default function SettingsPage() {
   const save = async () => {
     if (!bizId || !s) return;
     setSaving(true);
-    try { await saveBizSettings(bizId, s); setSaved(true); setTimeout(() => setSaved(false), 2000); }
-    catch (e) { alert('שגיאה: ' + (e as Error).message); }
+    try { await saveBizSettings(bizId, s); setSaved(true); setTimeout(() => setSaved(false), 2000); showToast('ההגדרות נשמרו', 'success'); }
+    catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
     finally { setSaving(false); }
   };
 

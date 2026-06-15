@@ -8,6 +8,8 @@ import { useMemo } from 'react';
 import { theme } from '@/styles/theme';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { PWAInstaller } from '@/components/PWAInstaller';
+import { ToastProvider } from '@/components/Toast';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const cache = useMemo(
@@ -19,8 +21,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <CacheProvider value={cache}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AuthProvider>{children}</AuthProvider>
-        <PWAInstaller />
+        <ErrorBoundary>
+          <ToastProvider>
+            <AuthProvider>{children}</AuthProvider>
+            <PWAInstaller />
+          </ToastProvider>
+        </ErrorBoundary>
       </ThemeProvider>
     </CacheProvider>
   );

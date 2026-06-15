@@ -5,6 +5,8 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem,
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getExpenses, addExpense, deleteExpense, getBookings, getServices, computeProfit, EXPENSE_CATEGORIES, type Expense, type Booking, type Service } from '@/lib/bizdata';
+import { useToast } from '@/components/Toast';
+import { PageSkeleton } from '@/components/Skeleton';
 import { zikkitColors as c } from '@/styles/theme';
 
 type Range = 'month' | 'quarter' | 'year' | 'all';
@@ -12,6 +14,7 @@ type Range = 'month' | 'quarter' | 'year' | 'all';
 export default function ExpensesPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
+  const { showToast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -36,11 +39,12 @@ export default function ExpensesPage() {
   const save = async () => {
     if (!bizId || !draft.description || !draft.amount) return;
     setSaving(true);
-    try { await addExpense(bizId, draft); setOpen(false); setDraft({ description: '', amount: 0, category: EXPENSE_CATEGORIES[0], date: new Date().toISOString().split('T')[0], recurring: false }); await load(); }
+    try { await addExpense(bizId, draft); setOpen(false); setDraft({ description: '', amount: 0, category: EXPENSE_CATEGORIES[0], date: new Date().toISOString().split('T')[0], recurring: false }); await load(); showToast('ההוצאה נשמרה', 'success'); }
+    catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
     finally { setSaving(false); }
   };
 
-  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading) return <PageSkeleton rows={6} />;
 
   const today = new Date();
   let from = new Date();

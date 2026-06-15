@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField, Dialog, Switch } 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getCustomers, upsertCustomer, updateCustomer, deleteCustomer, getBookings, getCustomerHistory, type Customer, type Booking } from '@/lib/bizdata';
+import { PageSkeleton } from '@/components/Skeleton';
 import { zikkitColors as c } from '@/styles/theme';
 
 const TAGS = ['VIP', 'קבוע', 'חדש', 'בעייתי', 'ממליץ'];
@@ -69,7 +70,7 @@ export default function CustomersPage() {
     await updateCustomer(bizId, cust.id, { notes });
   };
 
-  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading) return <PageSkeleton rows={6} />;
 
   let filtered = customers.filter((cu) => cu.name?.toLowerCase().includes(search.toLowerCase()) || cu.phone?.includes(search));
   if (filter === 'vip') filtered = filtered.filter((cu) => cu.vip);

@@ -349,6 +349,30 @@ export default function PublicBookingPage() {
               </Box>
             </Box>
             <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה! 💜'}</Typography>
+
+            {/* Add to calendar — reduces no-shows */}
+            <Button
+              onClick={() => {
+                const start = new Date(`${selectedDate}T${selectedTime}:00`);
+                const end = new Date(start.getTime() + (selectedService?.duration || 30) * 60000);
+                const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+                  `DTSTART:${fmt(start)}`, `DTEND:${fmt(end)}`,
+                  `SUMMARY:${selectedService?.name || 'תור'} - ${info.businessName}`,
+                  selectedStaff ? `DESCRIPTION:עם ${selectedStaff.name}` : '',
+                  info.branding.address ? `LOCATION:${info.branding.address}` : '',
+                  'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\n');
+                const blob = new Blob([ics], { type: 'text/calendar' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'appointment.ics'; a.click();
+                URL.revokeObjectURL(url);
+              }}
+              variant="outlined"
+              sx={{ mt: 2.5, borderRadius: 2, fontWeight: 700, borderColor: accent, color: accent, '&:hover': { borderColor: accent, bgcolor: `${accent}08` } }}
+            >
+              📅 הוסף ליומן שלי
+            </Button>
+
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 12, color: '#A8A29E', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
           </Box>
         )}

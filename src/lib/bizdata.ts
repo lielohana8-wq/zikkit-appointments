@@ -205,13 +205,15 @@ export async function deleteCustomer(bizId: string, id: string): Promise<void> {
 }
 
 // Get a customer's full booking history + computed stats
-export function getCustomerHistory(bookings: Booking[], phone: string): { history: Booking[]; totalSpent: number; lastService: string } {
+export function getCustomerHistory(bookings: Booking[], phone: string): { history: Booking[]; totalSpent: number; lastService: string; noShows: number; completedCount: number } {
   const history = bookings
     .filter((b) => b.customerPhone === phone)
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   const totalSpent = history.filter((b) => b.status !== 'cancelled').reduce((s, b) => s + (b.price || 0), 0);
   const lastService = history[0]?.service || '';
-  return { history, totalSpent, lastService };
+  const noShows = history.filter((b) => b.status === 'no_show').length;
+  const completedCount = history.filter((b) => b.status === 'completed').length;
+  return { history, totalSpent, lastService, noShows, completedCount };
 }
 
 // ---------- Services / Pricing ----------

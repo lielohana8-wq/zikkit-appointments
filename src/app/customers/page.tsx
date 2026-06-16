@@ -160,6 +160,14 @@ export default function CustomersPage() {
               </Box>
             </Box>
 
+            {/* No-show warning */}
+            {detailHistory.noShows >= 2 && (
+              <Box sx={{ mx: 3, mt: 2, p: 1.75, bgcolor: c.hotDim, border: `1px solid ${c.hot}`, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ fontSize: 20 }}>⚠️</Box>
+                <Typography sx={{ fontSize: 13, color: c.hot, fontWeight: 600 }}>לקוח זה לא הגיע ל-{detailHistory.noShows} תורים. שקול לבקש אישור מראש.</Typography>
+              </Box>
+            )}
+
             <Box sx={{ p: 3 }}>
               {/* Tags */}
               <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>תגיות</Typography>

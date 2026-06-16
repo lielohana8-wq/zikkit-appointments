@@ -303,6 +303,7 @@ export default function DashboardPage() {
             title: 'הגדרות העסק',
             items: [
               { icon: '📞', label: 'דנה', path: '/setup', staff: false },
+              { icon: '📨', label: 'בקשות פיילוט', path: '/pilot-requests', staff: false },
               { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
               { icon: '🕐', label: 'שעות', path: '/hours', staff: false },
               { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
@@ -311,7 +312,12 @@ export default function DashboardPage() {
             ],
           },
         ] as const).map((section) => {
-          const visible = section.items.filter((t) => user?.role !== 'staff' || t.staff);
+          const ownerEmails = ['ohanaliel3@gmail.com'];
+          const isPlatformOwner = ownerEmails.includes((firebaseUser?.email || '').toLowerCase());
+          const visible = section.items.filter((t) => {
+            if (t.path === '/pilot-requests' && !isPlatformOwner) return false; // owner-only platform tile
+            return user?.role !== 'staff' || t.staff;
+          });
           if (visible.length === 0) return null;
           return (
             <Box key={section.title} sx={{ mb: 3.5 }}>

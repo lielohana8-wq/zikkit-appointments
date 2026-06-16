@@ -8,6 +8,7 @@ import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { useThemeMode } from '@/components/ThemeMode';
+import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
   const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [bizName, setBizName] = useState('');
@@ -151,7 +153,7 @@ export default function DashboardPage() {
           if (!next) return null;
           const isToday = next.date === nowStr;
           return (
-            <Box onClick={() => router.push('/calendar')} sx={{ cursor: 'pointer', background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, borderRadius: 6, p: { xs: 2.5, sm: 3 }, mb: 3, color: '#fff', boxShadow: c.shadowAccent, position: 'relative', overflow: 'hidden', transition: 'all 0.25s', '&:hover': { transform: 'translateY(-2px)' } }}>
+            <Box onClick={() => setSelectedBooking(next)} sx={{ cursor: 'pointer', background: c.accent, borderRadius: 2, p: { xs: 2.5, sm: 3 }, mb: 3, color: '#fff', position: 'relative', overflow: 'hidden', transition: 'all 0.18s', '&:hover': { background: c.accent3 } }}>
               <Box sx={{ position: 'absolute', top: -30, left: -20, width: 140, height: 140, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
               <Typography sx={{ fontSize: 12, opacity: 0.85, fontWeight: 600, position: 'relative', textTransform: 'uppercase', letterSpacing: '0.05em' }}>התור הבא</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, position: 'relative' }}>
@@ -337,7 +339,7 @@ export default function DashboardPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 4 }}>
             {todayBookings.sort((a, b) => a.time.localeCompare(b.time)).map((b) => (
-              <BookingRow key={b.id} booking={b} />
+              <BookingRow key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />
             ))}
           </Box>
         )}
@@ -347,19 +349,21 @@ export default function DashboardPage() {
           <>
             <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, mt: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תורים קרובים</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              {upcoming.map((b) => <BookingRow key={b.id} booking={b} showDate />)}
+              {upcoming.map((b) => <BookingRow key={b.id} booking={b} showDate onClick={() => setSelectedBooking(b)} />)}
             </Box>
           </>
         )}
       </Box>
+
+      <BookingDetailDialog booking={selectedBooking as never} bizId={bizId} onClose={() => setSelectedBooking(null)} onChanged={() => window.location.reload()} />
     </Box>
   );
 }
 
-function BookingRow({ booking, showDate }: { booking: Booking; showDate?: boolean }) {
+function BookingRow({ booking, showDate, onClick }: { booking: Booking; showDate?: boolean; onClick?: () => void }) {
   return (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
-      <Box sx={{ textAlign: 'center', minWidth: 56, bgcolor: c.accentDim, borderRadius: 3, py: 1, px: 1.25 }}>
+    <Box onClick={onClick} sx={{ cursor: onClick ? 'pointer' : 'default', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': onClick ? { borderColor: c.border, bgcolor: c.surface2 } : {} }}>
+      <Box sx={{ textAlign: 'center', minWidth: 56, bgcolor: c.accentDim, borderRadius: 1.5, py: 1, px: 1.25 }}>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{booking.time}</Typography>
         {showDate && <Typography sx={{ fontSize: 10.5, color: c.accent, opacity: 0.7 }}>{booking.date?.slice(5)}</Typography>}
       </Box>
@@ -367,6 +371,7 @@ function BookingRow({ booking, showDate }: { booking: Booking; showDate?: boolea
         <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{booking.customerName}</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3 }}>{booking.service || 'טיפול'}{booking.staff ? ` · ${booking.staff}` : ''} · {booking.duration} דק'</Typography>
       </Box>
+      {onClick && <Box sx={{ color: c.text3, fontSize: 18 }}>‹</Box>}
     </Box>
   );
 }

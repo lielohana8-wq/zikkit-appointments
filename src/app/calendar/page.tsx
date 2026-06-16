@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, Men
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
+import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { useToast } from '@/components/Toast';
 import { PageSkeleton } from '@/components/Skeleton';
 import { zikkitColors as c } from '@/styles/theme';
@@ -156,7 +157,7 @@ export default function CalendarPage() {
                     {dayBks.length === 0 ? (
                       <Box sx={{ textAlign: 'center', py: 2, color: c.text3, fontSize: 10 }}>—</Box>
                     ) : dayBks.map((b) => (
-                      <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75 }}>
+                      <Box key={b.id} onClick={() => openEdit(b)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75, transition: 'all 0.15s', '&:hover': { bgcolor: c.surface2 } }}>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: staffColor(b.staff) }}>{b.time}</Typography>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: c.text, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                         <Typography sx={{ fontSize: 9, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || 'טיפול'}</Typography>
@@ -259,31 +260,7 @@ export default function CalendarPage() {
       </Dialog>
 
       {/* Reschedule / edit dialog */}
-      <Dialog scroll="body" open={!!editBooking} onClose={() => setEditBooking(null)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
-        {editBooking && (
-          <>
-            <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>{editBooking.customerName}</Typography>
-            <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{editBooking.service || 'טיפול'}{editBooking.customerPhone ? ` · ${editBooking.customerPhone}` : ''}</Typography>
-
-            <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>שינוי מועד</Typography>
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-              <TextField label="תאריך" type="date" value={reschedule.date} onChange={(e) => setReschedule((p) => ({ ...p, date: e.target.value }))} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} size="small" />
-              <TextField label="שעה" type="time" value={reschedule.time} onChange={(e) => setReschedule((p) => ({ ...p, time: e.target.value }))} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} size="small" />
-            </Box>
-            {team.length > 0 && (
-              <TextField select fullWidth label="חבר צוות" value={reschedule.staff} onChange={(e) => setReschedule((p) => ({ ...p, staff: e.target.value }))} sx={{ mb: 2.5 }} size="small">
-                <MenuItem value="">ללא שיוך</MenuItem>
-                {team.map((m) => <MenuItem key={m.id} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</MenuItem>)}
-              </TextField>
-            )}
-
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button onClick={async () => { if (editBooking) { await cancel(editBooking.id); setEditBooking(null); } }} variant="outlined" sx={{ flex: 1, borderRadius: 3, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>בטל תור</Button>
-              <Button onClick={saveReschedule} variant="contained" disabled={saving} sx={{ flex: 2, borderRadius: 3, fontWeight: 700 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שינויים'}</Button>
-            </Box>
-          </>
-        )}
-      </Dialog>
+      <BookingDetailDialog booking={editBooking} bizId={bizId} onClose={() => setEditBooking(null)} onChanged={load} />
     </Box>
   );
 }

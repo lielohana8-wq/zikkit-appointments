@@ -75,19 +75,19 @@ export default function ExpensesPage() {
         </Box>
 
         {/* Profit hero */}
-        <Box sx={{ background: p.profit >= 0 ? `linear-gradient(135deg, ${c.green}, #1F7A4D)` : `linear-gradient(135deg, ${c.hot}, #B91C1C)`, borderRadius: 6, p: { xs: 3, sm: 4 }, color: '#fff', mb: 2.5, boxShadow: c.shadowLg }}>
-          <Typography sx={{ fontSize: 14, opacity: 0.85, fontWeight: 500 }}>רווח נקי</Typography>
-          <Typography sx={{ fontSize: { xs: 40, sm: 50 }, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1 }}>₪{p.profit.toLocaleString()}</Typography>
+        <Box sx={{ bgcolor: p.profit >= 0 ? c.green : c.hot, borderRadius: 2, p: { xs: 3, sm: 4 }, color: '#fff', mb: 2.5 }}>
+          <Typography sx={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>רווח נקי</Typography>
+          <Typography sx={{ fontSize: { xs: 52, sm: 64 }, fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 0.9, mt: 1 }}>₪{p.profit.toLocaleString()}</Typography>
           <Typography sx={{ fontSize: 13, opacity: 0.85, mt: 0.5 }}>שולי רווח {p.margin}%</Typography>
         </Box>
 
         {/* Revenue vs expenses */}
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
             <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 600 }}>📈 הכנסות</Typography>
             <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.green, letterSpacing: '-0.02em' }}>₪{p.revenue.toLocaleString()}</Typography>
           </Box>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
             <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 600 }}>📉 הוצאות</Typography>
             <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.hot, letterSpacing: '-0.02em' }}>₪{p.expenses.toLocaleString()}</Typography>
           </Box>
@@ -95,7 +95,7 @@ export default function ExpensesPage() {
 
         {/* By category */}
         {p.byCategory.length > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>הוצאות לפי קטגוריה</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {p.byCategory.map((cat) => (
@@ -123,7 +123,7 @@ export default function ExpensesPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {rangeExpenses.map((e) => (
-              <Box key={e.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
+              <Box key={e.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{e.description}{e.recurring && ' 🔄'}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{e.category} · {e.date}</Typography>
@@ -136,7 +136,7 @@ export default function ExpensesPage() {
         )}
       </Box>
 
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 400, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>הוצאה חדשה</Typography>
         <TextField fullWidth label="תיאור" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} sx={{ mb: 2 }} />
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
@@ -146,11 +146,11 @@ export default function ExpensesPage() {
         <TextField select fullWidth label="קטגוריה" value={draft.category} onChange={(e) => setDraft((p) => ({ ...p, category: e.target.value }))} sx={{ mb: 2 }}>
           {EXPENSE_CATEGORIES.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
         </TextField>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, bgcolor: c.surface2, borderRadius: 3, px: 2, py: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, bgcolor: c.surface2, borderRadius: 1.5, px: 2, py: 1 }}>
           <Typography sx={{ fontSize: 14, color: c.text2 }}>הוצאה חודשית קבועה 🔄</Typography>
           <Switch checked={draft.recurring} onChange={(e) => setDraft((p) => ({ ...p, recurring: e.target.checked }))} />
         </Box>
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.description || !draft.amount || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.description || !draft.amount || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'הוסף הוצאה'}
         </Button>
       </Dialog>

@@ -109,9 +109,9 @@ export default function CustomersPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {filtered.map((cu) => (
-              <Box key={cu.id} onClick={() => setDetail(cu)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd, transform: 'translateY(-2px)' } }}>
+              <Box key={cu.id} onClick={() => setDetail(cu)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
                 <Box sx={{ position: 'relative' }}>
-                  <Box sx={{ width: 46, height: 46, borderRadius: '50%', background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{cu.name?.[0] || '?'}</Box>
+                  <Box sx={{ width: 46, height: 46, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{cu.name?.[0] || '?'}</Box>
                   {cu.vip && <Box sx={{ position: 'absolute', top: -3, right: -3, fontSize: 13 }}>⭐</Box>}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -132,20 +132,20 @@ export default function CustomersPage() {
       </Box>
 
       {/* Add dialog */}
-      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 400, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>לקוח חדש</Typography>
         <TextField fullWidth label="שם" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="אימייל (אופציונלי)" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3 }} />
-        <Button onClick={add} variant="contained" fullWidth disabled={!form.name || !form.phone} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>הוסף לקוח</Button>
+        <Button onClick={add} variant="contained" fullWidth disabled={!form.name || !form.phone} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>הוסף לקוח</Button>
       </Dialog>
 
       {/* Detail dialog */}
-      <Dialog scroll="body" open={!!detail} onClose={() => { setDetail(null); load(); }} PaperProps={{ sx: { borderRadius: 5, maxWidth: 440, width: '100%' } }}>
+      <Dialog scroll="body" open={!!detail} onClose={() => { setDetail(null); load(); }} PaperProps={{ sx: { borderRadius: 2, maxWidth: 440, width: '100%' } }}>
         {detail && detailHistory && (
           <Box>
             {/* Header */}
-            <Box sx={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, p: 3, color: '#fff', position: 'relative' }}>
+            <Box sx={{ bgcolor: c.accent, p: 3, color: '#fff', position: 'relative' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{detail.name?.[0]}</Box>
                 <Box sx={{ flex: 1 }}>

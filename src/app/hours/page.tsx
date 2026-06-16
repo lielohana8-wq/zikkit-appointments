@@ -56,7 +56,7 @@ export default function HoursPage() {
           {DAYS.map((dayName, i) => {
             const d = hours.days[i];
             return (
-              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${d.open ? c.border : c.border}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2, display: 'flex', alignItems: 'center', gap: 1.5, opacity: d.open ? 1 : 0.7, transition: 'all 0.2s' }}>
+              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${d.open ? c.border : c.border}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 1.5, opacity: d.open ? 1 : 0.7, transition: 'all 0.2s' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, minWidth: 52 }}>{dayName}</Typography>
                 <Switch checked={d.open} onChange={(e) => update(i, 'open', e.target.checked)} />
                 {d.open ? (
@@ -73,7 +73,7 @@ export default function HoursPage() {
           })}
         </Box>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 3, fontWeight: 800 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שעות'}
         </Button>
       </Box>

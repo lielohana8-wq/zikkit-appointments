@@ -139,7 +139,7 @@ export default function PublicBookingPage() {
 
         {/* Logo + name card overlapping hero */}
         <Box sx={{ maxWidth: 520, mx: 'auto', px: 2, mt: -8, position: 'relative', zIndex: 2 }}>
-          <Box sx={{ bgcolor: '#fff', borderRadius: 5, p: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', textAlign: 'center' }}>
+          <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', textAlign: 'center' }}>
             {info.branding.logo ? (
               <Box component="img" src={info.branding.logo} sx={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', mt: -8, mb: 1.5, border: '4px solid #fff', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', mx: 'auto', display: 'block' }} />
             ) : (
@@ -186,8 +186,8 @@ export default function PublicBookingPage() {
               {info.services.length === 0 && <Typography sx={{ textAlign: 'center', color: '#A8A29E', py: 4 }}>אין שירותים זמינים כרגע</Typography>}
               {info.services.map((s) => (
                 <Box key={s.id} onClick={() => { setSelectedService(s); setStage('slot'); }}
-                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '2px solid transparent', transition: 'all 0.2s', '&:hover': { borderColor: accent, transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${accent}22` } }}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 3, bgcolor: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✂️</Box>
+                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 2, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '2px solid transparent', transition: 'all 0.2s', '&:hover': { borderColor: accent, transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${accent}22` } }}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 1.5, bgcolor: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✂️</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: 16, fontWeight: 700, color: '#1C1917' }}>{s.name}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, mt: 0.25 }}>
@@ -206,7 +206,7 @@ export default function PublicBookingPage() {
         {stage === 'slot' && selectedService && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Button onClick={() => setStage('service')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה לשירותים</Button>
-            <Box sx={{ bgcolor: `${accent}10`, borderRadius: 3, px: 2, py: 1.25, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ bgcolor: `${accent}10`, borderRadius: 1.5, px: 2, py: 1.25, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography sx={{ fontSize: 13, fontWeight: 700, color: accentDark }}>✂️ {selectedService.name}</Typography>
               <Typography sx={{ fontSize: 12, color: '#78716C' }}>· {selectedService.duration} דק'</Typography>
             </Box>
@@ -218,7 +218,7 @@ export default function PublicBookingPage() {
                 const active = d === selectedDate;
                 return (
                   <Box key={d} onClick={() => has && (setSelectedDate(d), setSelectedTime(''))}
-                    sx={{ cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.35, minWidth: 58, textAlign: 'center', py: 1.5, borderRadius: 3, bgcolor: active ? accent : '#fff', color: active ? '#fff' : '#1C1917', boxShadow: active ? `0 4px 14px ${accent}44` : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', flexShrink: 0 }}>
+                    sx={{ cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.35, minWidth: 58, textAlign: 'center', py: 1.5, borderRadius: 1.5, bgcolor: active ? accent : '#fff', color: active ? '#fff' : '#1C1917', boxShadow: active ? `0 4px 14px ${accent}44` : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', flexShrink: 0 }}>
                     <Typography sx={{ fontSize: 10.5, fontWeight: 600, opacity: 0.7 }}>{i === 0 ? 'היום' : i === 1 ? 'מחר' : HEBREW_DAYS_SHORT[dateObj.getDay()]}</Typography>
                     <Typography sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1.2 }}>{dateObj.getDate()}</Typography>
                     <Typography sx={{ fontSize: 9.5, opacity: 0.6 }}>{HEBREW_MONTHS[dateObj.getMonth()].slice(0, 3)}</Typography>
@@ -247,7 +247,7 @@ export default function PublicBookingPage() {
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Button onClick={() => setStage('slot')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה למועד</Button>
             <Typography sx={{ fontSize: 19, fontWeight: 800, color: '#1C1917', mb: 2 }}>כמעט סיימנו!</Typography>
-            <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, mb: 1.5, borderBottom: '1px solid #F5F3F0' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917' }}>{selectedService.name}</Typography>
                 {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>₪{selectedService.price}</Typography> : null}
@@ -258,10 +258,10 @@ export default function PublicBookingPage() {
                 <Typography sx={{ fontSize: 13.5, color: '#57534E' }}>⏱️ {selectedService.duration} דק'</Typography>
               </Box>
             </Box>
-            <TextField fullWidth placeholder="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />
-            <TextField fullWidth placeholder={info.branding.requirePhone !== false ? "מספר טלפון" : "מספר טלפון (אופציונלי)"} type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 1.75 : 3, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />
-            {info.branding.requireEmail && <TextField fullWidth placeholder="אימייל" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: '#fff' } }} />}
-            <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking} fullWidth sx={{ py: 1.85, borderRadius: 3, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
+            <TextField fullWidth placeholder="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
+            <TextField fullWidth placeholder={info.branding.requirePhone !== false ? "מספר טלפון" : "מספר טלפון (אופציונלי)"} type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 1.75 : 3, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
+            {info.branding.requireEmail && <TextField fullWidth placeholder="אימייל" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />}
+            <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking} fullWidth sx={{ py: 1.85, borderRadius: 1.5, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
               {booking ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : '✓ אישור התור'}
             </Button>
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 11.5, color: '#A8A29E', textAlign: 'center', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
@@ -273,7 +273,7 @@ export default function PublicBookingPage() {
           <Box sx={{ textAlign: 'center', py: 5, animation: 'fadeIn 0.5s' }}>
             <Box sx={{ width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 8px 30px ${accent}55`, animation: 'pop 0.5s' }}>✓</Box>
             <Typography sx={{ fontSize: 28, fontWeight: 900, color: '#1C1917', mb: 1 }}>התור נקבע! 🎉</Typography>
-            <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 2.5, mt: 3, mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', textAlign: 'right' }}>
+            <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mt: 3, mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', textAlign: 'right' }}>
               <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917', mb: 1 }}>{selectedService?.name}</Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Typography sx={{ fontSize: 14, color: accent, fontWeight: 700 }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>

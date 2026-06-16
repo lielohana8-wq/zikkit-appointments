@@ -56,7 +56,7 @@ export default function StationsPage() {
           <Typography sx={{ fontSize: 14, color: c.text2 }}>דנה תוכל לקבוע עד {stations} תורים במקביל באותה שעה</Typography>
         </Box>
 
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 4 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Typography sx={{ fontSize: 56, fontWeight: 800, color: c.accent }}>{stations}</Typography>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>כיסאות / עמדות / מטפלים</Typography>
@@ -68,13 +68,13 @@ export default function StationsPage() {
           </Box>
         </Box>
 
-        <Box sx={{ bgcolor: c.accentDim, borderRadius: 3, p: 2.5, mt: 3 }}>
+        <Box sx={{ bgcolor: c.accentDim, borderRadius: 1.5, p: 2.5, mt: 3 }}>
           <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.6 }}>
             💡 לדוגמה: אם יש לך 3 כיסאות במספרה, דנה תוכל לקבוע 3 תספורות לאותה שעה — אבל לא תקבע תור רביעי עד שאחד מתפנה.
           </Typography>
         </Box>
 
-        <Button onClick={save} variant="contained" fullWidth sx={{ mt: 3, py: 1.75, borderRadius: 3, fontWeight: 800 }}>
+        <Button onClick={save} variant="contained" fullWidth sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>
           {saved ? '✓ נשמר!' : 'שמור'}
         </Button>
       </Box>

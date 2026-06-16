@@ -128,7 +128,7 @@ export default function CalendarPage() {
           const count = bookings.filter((b) => b.date === d).length;
           const active = d === selectedDate;
           return (
-            <Box key={d} onClick={() => setSelectedDate(d)} sx={{ cursor: 'pointer', minWidth: 62, textAlign: 'center', py: 1.5, px: 1, borderRadius: 3.5, bgcolor: active ? c.accent : c.surface2, color: active ? '#fff' : c.text2, boxShadow: active ? c.shadowAccent : 'none', transition: 'all 0.2s', flexShrink: 0, '&:hover': { bgcolor: active ? c.accent : c.surface3 } }}>
+            <Box key={d} onClick={() => setSelectedDate(d)} sx={{ cursor: 'pointer', minWidth: 62, textAlign: 'center', py: 1.5, px: 1, borderRadius: 1.5, bgcolor: active ? c.accent : c.surface2, color: active ? '#fff' : c.text2, boxShadow: active ? c.shadowAccent : 'none', transition: 'all 0.2s', flexShrink: 0, '&:hover': { bgcolor: active ? c.accent : c.surface3 } }}>
               <Typography sx={{ fontSize: 11, fontWeight: 600, opacity: active ? 0.85 : 1 }}>{i === 0 ? 'היום' : i === 1 ? 'מחר' : HEBREW_DAYS[dateObj.getDay()]}</Typography>
               <Typography sx={{ fontSize: 19, fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{dateObj.getDate()}</Typography>
               <Typography sx={{ fontSize: 9, opacity: 0.6 }}>{dateObj.getMonth() + 1}</Typography>
@@ -186,11 +186,11 @@ export default function CalendarPage() {
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {dayBookings.length > 0 && (
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Box sx={{ flex: 1, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.25, boxShadow: c.shadowSm }}>
+            <Box sx={{ flex: 1, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.25 }}>
               <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.02em' }}>{dayBookings.length}</Typography>
               <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>תורים היום</Typography>
             </Box>
-            <Box sx={{ flex: 1, bgcolor: c.accent, borderRadius: 4, p: 2.25, boxShadow: c.shadowSm }}>
+            <Box sx={{ flex: 1, bgcolor: c.accent, borderRadius: 2, p: 2.25 }}>
               <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>₪{dayRevenue.toLocaleString()}</Typography>
               <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>הכנסה צפויה</Typography>
             </Box>
@@ -201,13 +201,13 @@ export default function CalendarPage() {
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Box sx={{ fontSize: 40, mb: 1.5, opacity: 0.5 }}>📅</Box>
             <Typography sx={{ color: c.text3, mb: 2.5 }}>אין תורים ביום זה</Typography>
-            <Button onClick={() => setAddOpen(true)} variant="outlined" sx={{ borderRadius: 3, fontWeight: 600 }}>+ הוסף תור</Button>
+            <Button onClick={() => setAddOpen(true)} variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600 }}>+ הוסף תור</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {dayBookings.map((b) => (
-              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
-                <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: b.staff ? `${staffColor(b.staff)}1A` : c.accentDim, borderRadius: 3, py: 1 }}>
+              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+                <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: b.staff ? `${staffColor(b.staff)}1A` : c.accentDim, borderRadius: 1.5, py: 1 }}>
                   <Typography sx={{ fontSize: 16, fontWeight: 800, color: b.staff ? staffColor(b.staff) : c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
                   <Typography sx={{ fontSize: 9.5, color: b.staff ? staffColor(b.staff) : c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>
                 </Box>
@@ -226,7 +226,7 @@ export default function CalendarPage() {
       </Box>
       )}
 
-      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
+      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>תור חדש</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{selectedDate}</Typography>
         <TextField fullWidth label="שם הלקוח" value={form.customerName} onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))} sx={{ mb: 2 }} />
@@ -254,7 +254,7 @@ export default function CalendarPage() {
           </TextField>
         )}
         <TextField fullWidth label="הערות" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} />
-        <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
+        <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'קבע תור'}
         </Button>
       </Dialog>

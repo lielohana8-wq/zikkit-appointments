@@ -70,12 +70,12 @@ export default function CoursesPage() {
             <Box sx={{ fontSize: 48, mb: 2 }}>🎓</Box>
             <Typography sx={{ color: c.text2, mb: 1, fontWeight: 700 }}>אין עדיין קורסים או מוצרים</Typography>
             <Typography sx={{ color: c.text3, fontSize: 14, mb: 3 }}>מכרו קורסים דיגיטליים, כרטיסיות ומוצרים ללקוחות שלכם</Typography>
-            <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>צור את הראשון</Button>
+            <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700 }}>צור את הראשון</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {products.map((p) => (
-              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ fontSize: 32 }}>{TYPES.find((t) => t.id === p.type)?.label.split(' ')[0] || '📦'}</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 16, fontWeight: 700, color: c.text }}>{p.name}</Typography>
@@ -90,7 +90,7 @@ export default function CoursesPage() {
         )}
       </Box>
 
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 420, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>פריט חדש</Typography>
         <TextField select fullWidth label="סוג" value={draft.type} onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value as 'course' | 'package' | 'physical' }))} sx={{ mb: 2 }}>
           {TYPES.map((t) => <MenuItem key={t.id} value={t.id}>{t.label}</MenuItem>)}
@@ -102,7 +102,7 @@ export default function CoursesPage() {
           {draft.type === 'package' && <TextField label="מספר טיפולים" type="number" value={draft.sessions} onChange={(e) => setDraft((p) => ({ ...p, sessions: Number(e.target.value) }))} sx={{ flex: 1 }} />}
         </Box>
         {draft.type === 'course' && <TextField fullWidth label="קישור לתוכן (וידאו/PDF)" value={draft.contentUrl} onChange={(e) => setDraft((p) => ({ ...p, contentUrl: e.target.value }))} sx={{ mb: 2 }} />}
-        <Button onClick={create} variant="contained" fullWidth disabled={!draft.name} sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}>צור</Button>
+        <Button onClick={create} variant="contained" fullWidth disabled={!draft.name} sx={{ borderRadius: 1.5, fontWeight: 800, py: 1.5 }}>צור</Button>
       </Dialog>
     </Box>
   );

@@ -71,11 +71,10 @@ export default function ReportsPage() {
         {report && (
           <>
             {/* Hero revenue card */}
-            <Box sx={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, borderRadius: 6, p: { xs: 3, sm: 4 }, color: '#fff', mb: 2.5, position: 'relative', overflow: 'hidden', boxShadow: c.shadowAccent }}>
-              <Box sx={{ position: 'absolute', top: -30, left: -30, width: 160, height: 160, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
-              <Typography sx={{ fontSize: 14, opacity: 0.85, fontWeight: 500, position: 'relative' }}>הכנסה כוללת</Typography>
-              <Typography sx={{ fontSize: { xs: 42, sm: 52 }, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, position: 'relative' }}>₪{report.totalRevenue.toLocaleString()}</Typography>
-              <Typography sx={{ fontSize: 13, opacity: 0.8, mt: 0.5, position: 'relative' }}>{report.completed} תורים · ₪{report.avgTicket} בממוצע לתור</Typography>
+            <Box sx={{ bgcolor: c.accent, borderRadius: 2, p: { xs: 3, sm: 4 }, color: '#fff', mb: 2.5, position: 'relative', overflow: 'hidden' }}>
+              <Typography sx={{ fontSize: 11, opacity: 0.85, fontWeight: 700, position: 'relative', textTransform: 'uppercase', letterSpacing: '0.12em' }}>הכנסה כוללת</Typography>
+              <Typography sx={{ fontSize: { xs: 52, sm: 68 }, fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 0.9, position: 'relative', mt: 1 }}>₪{report.totalRevenue.toLocaleString()}</Typography>
+              <Typography sx={{ fontSize: 13, opacity: 0.85, mt: 1.5, position: 'relative', fontWeight: 500 }}>{report.completed} תורים · ₪{report.avgTicket} בממוצע לתור</Typography>
             </Box>
 
             {/* KPI mini cards */}
@@ -85,7 +84,7 @@ export default function ReportsPage() {
                 { label: 'ממוצע', value: `₪${report.avgTicket}`, color: c.text },
                 { label: 'ביטולים', value: report.cancelled, color: report.cancelled > 0 ? c.hot : c.text },
               ].map((k, i) => (
-                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: { xs: 2, sm: 2.5 }, boxShadow: c.shadowSm }}>
+                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: { xs: 2, sm: 2.5 } }}>
                   <Typography sx={{ fontSize: { xs: 22, sm: 26 }, fontWeight: 800, color: k.color, letterSpacing: '-0.02em' }}>{k.value}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>{k.label}</Typography>
                 </Box>
@@ -94,7 +93,7 @@ export default function ReportsPage() {
 
             {/* Revenue by day */}
             {report.byDay.length > 0 && report.totalRevenue > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>הכנסה לפי יום</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.75, height: 150 }}>
                   {report.byDay.slice(-14).map((d) => (
@@ -110,7 +109,7 @@ export default function ReportsPage() {
 
             {/* By service */}
             {report.byService.length > 0 && (
-              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3 }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>פילוח לפי שירות</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {report.byService.map((s) => (

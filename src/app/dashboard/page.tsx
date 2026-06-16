@@ -96,7 +96,7 @@ export default function DashboardPage() {
               ownerEmail: firebaseUser.email?.toLowerCase() || '',
             }, { merge: true });
             window.location.reload();
-          }} variant="contained" size="large" sx={{ py: 1.75, px: 5, borderRadius: 3, fontWeight: 800 }}>
+          }} variant="contained" size="large" sx={{ py: 1.75, px: 5, borderRadius: 1.5, fontWeight: 800 }}>
             צור את העסק שלי →
           </Button>
         </Box>
@@ -136,10 +136,10 @@ export default function DashboardPage() {
         </Box>
 
         {/* Quick search */}
-        <Box onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); window.dispatchEvent(e); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 99, px: 2.5, py: 1.5, mb: 3, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { borderColor: c.border2, boxShadow: c.shadowMd } }}>
+        <Box onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); window.dispatchEvent(e); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 99, px: 2.5, py: 1.5, mb: 3, transition: 'all 0.2s', '&:hover': { borderColor: c.border2 } }}>
           <Box sx={{ fontSize: 18 }}>🔍</Box>
           <Typography sx={{ fontSize: 14.5, color: c.text3, flex: 1 }}>חיפוש לקוחות, תורים, עמודים...</Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'block' } }}><kbd style={{ background: 'var(--zk-surface3)', color: 'var(--zk-text3)', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>⌘K</kbd></Box>
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}><kbd style={{ background: 'var(--zk-surface3)', color: 'var(--zk-text3)', padding: '3px 8px', borderRadius: 2, fontSize: 11, fontWeight: 600 }}>⌘K</kbd></Box>
         </Box>
 
         {/* Next appointment — hero card */}
@@ -157,7 +157,7 @@ export default function DashboardPage() {
               <Box sx={{ position: 'absolute', top: -30, left: -20, width: 140, height: 140, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
               <Typography sx={{ fontSize: 12, opacity: 0.85, fontWeight: 600, position: 'relative', textTransform: 'uppercase', letterSpacing: '0.05em' }}>התור הבא</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, position: 'relative' }}>
-                <Box sx={{ textAlign: 'center', bgcolor: 'rgba(255,255,255,0.18)', borderRadius: 3.5, px: 2, py: 1.25, minWidth: 72 }}>
+                <Box sx={{ textAlign: 'center', bgcolor: 'rgba(255,255,255,0.18)', borderRadius: 1.5, px: 2, py: 1.25, minWidth: 72 }}>
                   <Typography sx={{ fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em' }}>{next.time}</Typography>
                   <Typography sx={{ fontSize: 10.5, opacity: 0.85, mt: 0.25 }}>{isToday ? 'היום' : next.date.slice(5)}</Typography>
                 </Box>
@@ -173,7 +173,7 @@ export default function DashboardPage() {
           );
         })()}
         {notifs.filter((n) => !n.read).length > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 2.5, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.accent, animation: 'pulse 2s infinite' }} />
@@ -205,16 +205,16 @@ export default function DashboardPage() {
 
         {/* Dana add-on (subtle) */}
         {danaPhone ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ fontSize: 12, color: c.text3, fontWeight: 600 }}>מספר דנה — מענה אוטומטי</Typography>
               <Typography sx={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'monospace', letterSpacing: '-0.02em' }}>{danaPhone}</Typography>
             </Box>
           </Box>
         ) : (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>דנה — מענה טלפוני אוטומטי</Typography>
               <Typography sx={{ fontSize: 12.5, color: c.text3 }}>אופציונלי · מישהי שעונה לטלפון וקובעת תורים 24/7</Typography>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
           const doneCount = steps.filter((s) => s.done).length;
           if (doneCount === steps.length) return null;
           return (
-            <Box sx={{ mb: 4, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, boxShadow: c.shadowSm }}>
+            <Box sx={{ mb: 4, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                 <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>בוא נסיים את ההגדרה 🚀</Typography>
                 <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.accent }}>{doneCount}/{steps.length}</Typography>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {steps.map((s) => (
-                  <Box key={s.path} onClick={() => !s.done && router.push(s.path)} sx={{ cursor: s.done ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: 3, bgcolor: s.done ? 'transparent' : c.surface2, opacity: s.done ? 0.6 : 1, transition: 'all 0.2s', '&:hover': { bgcolor: s.done ? 'transparent' : c.surface3 } }}>
+                  <Box key={s.path} onClick={() => !s.done && router.push(s.path)} sx={{ cursor: s.done ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: 1.5, bgcolor: s.done ? 'transparent' : c.surface2, opacity: s.done ? 0.6 : 1, transition: 'all 0.2s', '&:hover': { bgcolor: s.done ? 'transparent' : c.surface3 } }}>
                     <Box sx={{ width: 26, height: 26, borderRadius: '50%', bgcolor: s.done ? c.green : c.surface4, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{s.done ? '✓' : ''}</Box>
                     <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text, textDecoration: s.done ? 'line-through' : 'none', flex: 1 }}>{s.label}</Typography>
                     {!s.done && <Typography sx={{ fontSize: 18 }}>{s.icon}</Typography>}
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תובנות חכמות</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {insights.slice(0, 3).map((ins, i) => (
-                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, boxShadow: c.shadowSm }}>
+                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2 }}>
                   <Typography sx={{ fontSize: 13.5, color: c.text, fontWeight: 500 }}>{ins}</Typography>
                 </Box>
               ))}
@@ -332,7 +332,7 @@ export default function DashboardPage() {
         {/* Today */}
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>
         {todayBookings.length === 0 ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 5, textAlign: 'center', boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 5, textAlign: 'center' }}>
             <Box sx={{ fontSize: 32, mb: 1, opacity: 0.5 }}>☕</Box>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>אין תורים היום</Typography>
           </Box>

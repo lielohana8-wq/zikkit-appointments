@@ -46,7 +46,7 @@ export default function ExportPage() {
       </Box>
 
       <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <Box sx={{ fontSize: 22 }}>📊</Box>
           <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5 }}>
             ייצא את הנתונים שלך כקובץ CSV — נפתח באקסל / Google Sheets. כולל תמיכה בעברית.
@@ -55,8 +55,8 @@ export default function ExportPage() {
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {exports.map((e) => (
-            <Box key={e.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
-              <Box sx={{ width: 48, height: 48, borderRadius: 3, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{e.icon}</Box>
+            <Box key={e.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ width: 48, height: 48, borderRadius: 1.5, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{e.icon}</Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: c.text }}>{e.title}</Typography>
                 <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{e.desc}</Typography>

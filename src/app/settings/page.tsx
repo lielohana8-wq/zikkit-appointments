@@ -60,7 +60,7 @@ export default function SettingsPage() {
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <Box sx={{ mb: 3 }}>
       <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</Typography>
-      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>{children}</Box>
+      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>{children}</Box>
     </Box>
   );
 
@@ -74,8 +74,8 @@ export default function SettingsPage() {
 
       <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Logo + name */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
-          {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 3, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 3, background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
+          {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 1.5, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 1.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{s.businessName || 'העסק שלי'}</Typography>
             <Button component="label" size="small" sx={{ color: c.accent, fontWeight: 600, px: 0 }}>שנה לוגו<input type="file" accept="image/*" hidden onChange={handleLogo} /></Button>
@@ -125,13 +125,13 @@ export default function SettingsPage() {
           <TextField fullWidth size="small" label="מדיניות ביטול" value={s.cancellationPolicy} onChange={(e) => set('cancellationPolicy', e.target.value)} multiline rows={2} placeholder="למשל: ביטול עד 24 שעות לפני התור" />
         </Section>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 3, fontWeight: 700, mb: 3 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 1.5, fontWeight: 700, mb: 3 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור הגדרות'}
         </Button>
 
         {/* Danger zone */}
         <Box sx={{ borderTop: `1px solid ${c.border}`, pt: 3 }}>
-          <Button onClick={() => logout()} fullWidth variant="outlined" sx={{ borderRadius: 3, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>התנתק מהחשבון</Button>
+          <Button onClick={() => logout()} fullWidth variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>התנתק מהחשבון</Button>
         </Box>
       </Box>
     </Box>

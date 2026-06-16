@@ -81,12 +81,12 @@ export default function DocumentsPage() {
       <Box sx={{ maxWidth: 720, mx: 'auto', p: 3 }}>
         {/* Create buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
-          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
+          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>🧾</Box>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>קבלה חדשה</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>תיעוד תשלום שהתקבל</Typography>
           </Box>
-          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)', boxShadow: c.shadowMd } }}>
+          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>📄</Box>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>הצעת מחיר</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>הצעה מעוצבת ללקוח</Typography>
@@ -104,8 +104,8 @@ export default function DocumentsPage() {
             {docs.map((d) => {
               const { total } = docTotal(d);
               return (
-                <Box key={d.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm }}>
-                  <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{d.type === 'receipt' ? '🧾' : '📄'}</Box>
+                <Box key={d.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{d.type === 'receipt' ? '🧾' : '📄'}</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{d.type === 'receipt' ? 'קבלה' : 'הצעה'} #{d.number} · {d.customerName || 'ללא שם'}</Typography>
                     <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{d.date} · ₪{total.toLocaleString()}</Typography>
@@ -121,7 +121,7 @@ export default function DocumentsPage() {
       </Box>
 
       {/* Editor dialog */}
-      <Dialog scroll="body" open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 520, width: '100%' } }}>
+      <Dialog scroll="body" open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 2, p: 3, maxWidth: 520, width: '100%' } }}>
         {editor && (
           <>
             <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editor.type === 'receipt' ? 'קבלה' : 'הצעת מחיר'} #{editor.number}</Typography>
@@ -152,20 +152,20 @@ export default function DocumentsPage() {
             </Box>
             <TextField fullWidth size="small" label="הערות" value={editor.notes} onChange={(e) => setEditor({ ...editor, notes: e.target.value })} multiline rows={2} sx={{ mb: 2 }} />
 
-            <Box sx={{ bgcolor: c.surface2, borderRadius: 3, p: 2, mb: 2, textAlign: 'left' }}>
+            <Box sx={{ bgcolor: c.surface2, borderRadius: 1.5, p: 2, mb: 2, textAlign: 'left' }}>
               <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text }}>סה״כ: ₪{docTotal(editor).total.toLocaleString()}</Typography>
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button onClick={() => { setPreview(editor); }} variant="outlined" sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>תצוגה מקדימה</Button>
-              <Button onClick={saveDoc} variant="contained" disabled={saving} sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
+              <Button onClick={() => { setPreview(editor); }} variant="outlined" sx={{ flex: 1, borderRadius: 1.5, fontWeight: 600 }}>תצוגה מקדימה</Button>
+              <Button onClick={saveDoc} variant="contained" disabled={saving} sx={{ flex: 1, borderRadius: 1.5, fontWeight: 700 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
             </Box>
           </>
         )}
       </Dialog>
 
       {/* Branding dialog — deep design */}
-      <Dialog scroll="body" open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3, maxWidth: 480, width: '100%' } }}>
+      <Dialog scroll="body" open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3, maxWidth: 480, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>עיצוב המסמכים שלך</Typography>
 
         {/* Template chooser */}
@@ -219,15 +219,15 @@ export default function DocumentsPage() {
 
         {/* Live mini preview */}
         <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>תצוגה מקדימה חיה</Typography>
-        <Box sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${c.border2}`, mb: 2.5, transform: 'scale(1)', transformOrigin: 'top' }}>
+        <Box sx={{ borderRadius: 1.5, overflow: 'hidden', border: `1px solid ${c.border2}`, mb: 2.5, transform: 'scale(1)', transformOrigin: 'top' }}>
           <DocPreview doc={sampleDoc} branding={branding} compact />
         </Box>
 
-        <Button onClick={saveBrand} variant="contained" fullWidth disabled={saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור עיצוב'}</Button>
+        <Button onClick={saveBrand} variant="contained" fullWidth disabled={saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור עיצוב'}</Button>
       </Dialog>
 
       {/* Preview dialog — the actual branded document */}
-      <Dialog scroll="body" open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 4, maxWidth: 520, width: '100%' } }}>
+      <Dialog scroll="body" open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 2, maxWidth: 520, width: '100%' } }}>
         {preview && branding && <DocPreview doc={preview} branding={branding} />}
       </Dialog>
     </Box>
@@ -363,8 +363,8 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
 
         {!compact && (
           <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
-            <Button onClick={() => window.print()} variant="contained" fullWidth sx={{ borderRadius: 3, fontWeight: 700, bgcolor: ac, '&:hover': { bgcolor: ac, filter: 'brightness(0.92)' } }}>🖨️ הדפס / PDF</Button>
-            {doc.customerPhone && <Button href={`https://wa.me/972${doc.customerPhone.replace(/^0/, '')}`} target="_blank" variant="outlined" sx={{ borderRadius: 3, fontWeight: 700, whiteSpace: 'nowrap' }}>שלח</Button>}
+            <Button onClick={() => window.print()} variant="contained" fullWidth sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: ac, '&:hover': { bgcolor: ac, filter: 'brightness(0.92)' } }}>🖨️ הדפס / PDF</Button>
+            {doc.customerPhone && <Button href={`https://wa.me/972${doc.customerPhone.replace(/^0/, '')}`} target="_blank" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, whiteSpace: 'nowrap' }}>שלח</Button>}
           </Box>
         )}
       </Box>

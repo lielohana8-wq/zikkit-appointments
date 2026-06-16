@@ -54,7 +54,7 @@ export default function PromosPage() {
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Loyalty program */}
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תוכנית נאמנות</Typography>
-        <Box sx={{ bgcolor: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, background: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, border: `1px solid ${loyalty.enabled ? 'transparent' : c.border}`, borderRadius: 5, p: 3, mb: 4, boxShadow: c.shadowSm, color: loyalty.enabled ? '#fff' : c.text }}>
+        <Box sx={{ bgcolor: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, background: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, border: `1px solid ${loyalty.enabled ? 'transparent' : c.border}`, borderRadius: 2, p: 3, mb: 4, color: loyalty.enabled ? '#fff' : c.text }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: loyalty.enabled ? 2.5 : 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ fontSize: 26 }}>🎁</Box>
@@ -67,7 +67,7 @@ export default function PromosPage() {
           </Box>
           {loyalty.enabled && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 3, p: 2, textAlign: 'center' }}>
+              <Box sx={{ bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 1.5, p: 2, textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 14 }}>כל <strong style={{ fontSize: 22 }}>{loyalty.visitsForReward}</strong> ביקורים → {loyalty.rewardDescription}</Typography>
               </Box>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -84,14 +84,14 @@ export default function PromosPage() {
           <Box sx={{ textAlign: 'center', py: 5 }}>
             <Box sx={{ fontSize: 36, mb: 1, opacity: 0.5 }}>🎟️</Box>
             <Typography sx={{ color: c.text3, fontSize: 14, mb: 2 }}>אין קופונים עדיין</Typography>
-            <Button onClick={() => setOpen(true)} variant="outlined" sx={{ borderRadius: 3, fontWeight: 600 }}>+ צור קופון ראשון</Button>
+            <Button onClick={() => setOpen(true)} variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600 }}>+ צור קופון ראשון</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {promos.map((p) => {
               const expired = p.expiresAt && p.expiresAt < new Date().toISOString().split('T')[0];
               return (
-                <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px dashed ${p.active && !expired ? c.accent : c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, opacity: p.active && !expired ? 1 : 0.6 }}>
+                <Box key={p.id} sx={{ bgcolor: c.surface1, border: `1px dashed ${p.active && !expired ? c.accent : c.border2}`, borderRadius: 2, p: 2.5, opacity: p.active && !expired ? 1 : 0.6 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ bgcolor: c.accentDim, color: c.accent, borderRadius: 2.5, px: 2, py: 1.25, fontWeight: 800, fontSize: 16, letterSpacing: '0.05em', fontFamily: 'monospace' }}>{p.code}</Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -108,7 +108,7 @@ export default function PromosPage() {
         )}
       </Box>
 
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 400, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>קופון חדש</Typography>
         <TextField fullWidth label="קוד קופון" value={draft.code} onChange={(e) => setDraft((p) => ({ ...p, code: e.target.value.toUpperCase() }))} placeholder="WELCOME10" sx={{ mb: 2 }} />
         <TextField fullWidth label="תיאור" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} placeholder="הנחת לקוח חדש" sx={{ mb: 2 }} />
@@ -120,7 +120,7 @@ export default function PromosPage() {
           <TextField type="number" label={draft.discountType === 'percent' ? 'אחוז' : 'סכום'} value={draft.discountValue} onChange={(e) => setDraft((p) => ({ ...p, discountValue: Number(e.target.value) }))} sx={{ flex: 1 }} />
         </Box>
         <TextField fullWidth type="date" label="תוקף (אופציונלי)" value={draft.expiresAt} onChange={(e) => setDraft((p) => ({ ...p, expiresAt: e.target.value }))} InputLabelProps={{ shrink: true }} sx={{ mb: 3 }} />
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.code || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.code || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'צור קופון'}
         </Button>
       </Dialog>

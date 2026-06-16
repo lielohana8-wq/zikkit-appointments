@@ -55,7 +55,7 @@ export default function ReviewsPage() {
 
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stats hero */}
-        <Box sx={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, borderRadius: 6, p: { xs: 3, sm: 4 }, color: '#fff', mb: 3, boxShadow: c.shadowLg, textAlign: 'center' }}>
+        <Box sx={{ bgcolor: c.accent, borderRadius: 2, p: { xs: 3, sm: 4 }, color: '#fff', mb: 3, boxShadow: c.shadowLg, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 52, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>{stats.avg || '—'}</Typography>
           <Typography sx={{ fontSize: 22, mb: 0.5 }}>{'★'.repeat(Math.round(stats.avg))}{'☆'.repeat(5 - Math.round(stats.avg))}</Typography>
           <Typography sx={{ fontSize: 13, opacity: 0.85 }}>{stats.count} ביקורות</Typography>
@@ -63,7 +63,7 @@ export default function ReviewsPage() {
 
         {/* Distribution */}
         {stats.count > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 3, boxShadow: c.shadowSm }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
             {[5, 4, 3, 2, 1].map((star) => {
               const count = stats.distribution[star - 1];
               const pct = stats.count ? (count / stats.count) * 100 : 0;
@@ -89,9 +89,9 @@ export default function ReviewsPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {reviews.map((r) => (
-              <Box key={r.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+              <Box key={r.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                  <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, ${c.accent}, ${c.accent2})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>{r.customerName?.[0] || '?'}</Box>
+                  <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>{r.customerName?.[0] || '?'}</Box>
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{r.customerName}</Typography>
                     <Typography sx={{ fontSize: 13, color: '#FFB224' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</Typography>
@@ -112,7 +112,7 @@ export default function ReviewsPage() {
         )}
       </Box>
 
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 400, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 400, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>הוסף ביקורת</Typography>
         <TextField fullWidth label="שם הלקוח" value={draft.customerName} onChange={(e) => setDraft((p) => ({ ...p, customerName: e.target.value }))} sx={{ mb: 2 }} />
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>דירוג</Typography>
@@ -123,7 +123,7 @@ export default function ReviewsPage() {
         </Box>
         <TextField fullWidth label="הביקורת" value={draft.text} onChange={(e) => setDraft((p) => ({ ...p, text: e.target.value }))} multiline rows={3} sx={{ mb: 2 }} />
         <TextField fullWidth label="שירות (אופציונלי)" value={draft.service} onChange={(e) => setDraft((p) => ({ ...p, service: e.target.value }))} sx={{ mb: 3 }} />
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.customerName || !draft.text || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.customerName || !draft.text || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'הוסף ביקורת'}
         </Button>
       </Dialog>

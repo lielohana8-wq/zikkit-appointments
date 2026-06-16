@@ -148,7 +148,7 @@ export default function TeamPage() {
 
       <Box sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stations count */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 3, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>💺 מספר עמדות / כיסאות</Typography>
             <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{stations}</Typography>
@@ -164,12 +164,12 @@ export default function TeamPage() {
             <Box sx={{ fontSize: 48, mb: 2 }}>🧑‍🤝‍🧑</Box>
             <Typography sx={{ color: c.text2, mb: 1, fontWeight: 700 }}>עדיין אין חברי צוות</Typography>
             <Typography sx={{ color: c.text3, fontSize: 14, mb: 3 }}>הוסף ספרים, מטפלות, או כל חבר צוות</Typography>
-            <Button onClick={openNew} variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>הוסף את הראשון</Button>
+            <Button onClick={openNew} variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700 }}>הוסף את הראשון</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             {team.map((m) => (
-              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd, transform: 'translateY(-2px)' } }}>
+              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
                   {m.photo ? (
                     <Box component="img" src={m.photo} sx={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${m.color}` }} />
@@ -201,7 +201,7 @@ export default function TeamPage() {
       </Box>
 
       {/* Add/Edit dialog */}
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 440, width: '100%' } }}>
         <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editId ? 'עריכת חבר צוות' : 'חבר צוות חדש'}</Typography>
 
         {/* Photo */}
@@ -245,7 +245,7 @@ export default function TeamPage() {
         )}
 
         {/* Staff login credentials */}
-        <Box sx={{ bgcolor: c.surface2, borderRadius: 3, p: 2, mb: 3, mt: 1 }}>
+        <Box sx={{ bgcolor: c.surface2, borderRadius: 1.5, p: 2, mb: 3, mt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: draft.createLogin ? 1.5 : 0 }}>
             <Box>
               <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>🔑 התחברות לחבר הצוות</Typography>
@@ -261,7 +261,7 @@ export default function TeamPage() {
           )}
         </Box>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 1.5, fontWeight: 800, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : editId ? 'שמור שינויים' : 'הוסף לצוות'}
         </Button>
       </Dialog>

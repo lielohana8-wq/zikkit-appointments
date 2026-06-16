@@ -75,8 +75,8 @@ function AuthPage() {
               ניהול תורים, דף הזמנות ממותג, אוטומציות ולקוחות — הכל במקום אחד. למספרות, מכוני יופי, קליניקות ועוד.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Button onClick={() => goTo('register')} variant="contained" sx={{ py: 1.6, px: 4, borderRadius: 3, fontWeight: 700, fontSize: 16 }}>התחל בחינם →</Button>
-              <Button onClick={() => goTo('login')} variant="outlined" sx={{ py: 1.6, px: 4, borderRadius: 3, fontWeight: 600, fontSize: 16 }}>יש לי כבר חשבון</Button>
+              <Button onClick={() => goTo('register')} variant="contained" sx={{ py: 1.6, px: 4, borderRadius: 1.5, fontWeight: 700, fontSize: 16 }}>התחל בחינם →</Button>
+              <Button onClick={() => goTo('login')} variant="outlined" sx={{ py: 1.6, px: 4, borderRadius: 1.5, fontWeight: 600, fontSize: 16 }}>יש לי כבר חשבון</Button>
             </Box>
           </Box>
 
@@ -84,7 +84,7 @@ function AuthPage() {
           <Box sx={{ maxWidth: 920, mx: 'auto', width: '100%', px: { xs: 3, sm: 6 }, pb: 6 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 2 }}>
               {features.map((f) => (
-                <Box key={f.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, boxShadow: c.shadowSm }}>
+                <Box key={f.title} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
                   <Box sx={{ fontSize: 28, mb: 1 }}>{f.icon}</Box>
                   <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text, mb: 0.25 }}>{f.title}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: c.text3, lineHeight: 1.5 }}>{f.desc}</Typography>
@@ -105,7 +105,7 @@ function AuthPage() {
               <ZikkitLogo useImage size={40} />
             </Box>
 
-            <Box sx={{ bgcolor: c.surface1, borderRadius: 6, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border2}` }}>
+            <Box sx={{ bgcolor: c.surface1, borderRadius: 2, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border2}` }}>
               <Typography sx={{ fontSize: 24, fontWeight: 800, textAlign: 'center', color: c.text, letterSpacing: '-0.02em' }}>
                 {view === 'register' ? 'נתחיל לעבוד' : 'ברוכים השבים'}
               </Typography>
@@ -113,7 +113,7 @@ function AuthPage() {
                 {view === 'register' ? 'גישה מלאה חינם בתקופת הפיילוט' : 'התחברו כדי לנהל את העסק שלכם'}
               </Typography>
 
-              <Button onClick={() => loginWithGoogle()} fullWidth variant="outlined" sx={{ py: 1.4, borderRadius: 3, mb: 2.5, fontWeight: 600, fontSize: 14.5, gap: 1 }}>
+              <Button onClick={() => loginWithGoogle()} fullWidth variant="outlined" sx={{ py: 1.4, borderRadius: 1.5, mb: 2.5, fontWeight: 600, fontSize: 14.5, gap: 1 }}>
                 <Box component="span" sx={{ fontSize: 17 }}>🔵</Box> המשך עם Google
               </Button>
               <Divider sx={{ my: 2.5, fontSize: 12, color: c.text3, '&::before, &::after': { borderColor: c.border } }}>או באמצעות אימייל</Divider>
@@ -125,7 +125,7 @@ function AuthPage() {
 
               {error && <Box sx={{ bgcolor: c.hotDim, borderRadius: 2.5, px: 2, py: 1.25, mb: 2 }}><Typography sx={{ fontSize: 13, color: c.hot, fontWeight: 500 }}>{error}</Typography></Box>}
 
-              <Button onClick={handleSubmit} disabled={loading || (view === 'register' && (!bizName || !email || password.length < 6))} fullWidth variant="contained" sx={{ py: 1.5, borderRadius: 3, fontWeight: 700, fontSize: 15.5 }}>
+              <Button onClick={handleSubmit} disabled={loading || (view === 'register' && (!bizName || !email || password.length < 6))} fullWidth variant="contained" sx={{ py: 1.5, borderRadius: 1.5, fontWeight: 700, fontSize: 15.5 }}>
                 {loading ? <CircularProgress size={21} sx={{ color: '#fff' }} /> : view === 'register' ? 'יצירת חשבון' : 'התחברות'}
               </Button>
             </Box>

@@ -67,6 +67,18 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
     finally { setSaving(false); }
   };
 
+  const setStatus = async (status: string) => {
+    if (!bizId || !booking) return;
+    setSaving(true);
+    try {
+      await updateBooking(bizId, booking.id, { status });
+      showToast(status === 'completed' ? 'התור סומן כהושלם' : status === 'no_show' ? 'סומן: לא הגיע' : 'סטטוס עודכן', 'success');
+      onChanged?.();
+      onClose();
+    } catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
+    finally { setSaving(false); }
+  };
+
   if (!booking) return null;
   const waPhone = booking.customerPhone ? '972' + booking.customerPhone.replace(/^0/, '') : '';
 
@@ -102,8 +114,16 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
               </Box>
             )}
 
+            {/* Status */}
+            <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, mt: 2.5, mb: 1, textTransform: 'uppercase', letterSpacing: '0.1em' }}>סטטוס</Typography>
+            <Box sx={{ display: 'flex', gap: 0.75 }}>
+              {([['confirmed', 'מאושר', c.accent], ['completed', 'הושלם', c.green], ['no_show', 'לא הגיע', c.hot]] as [string, string, string][]).map(([st, label, col]) => (
+                <Button key={st} onClick={() => setStatus(st)} disabled={saving} sx={{ flex: 1, borderRadius: 2, fontWeight: 700, fontSize: 13, py: 1, bgcolor: booking.status === st ? col : c.surface3, color: booking.status === st ? '#fff' : c.text2, '&:hover': { bgcolor: booking.status === st ? col : c.surface4 } }}>{label}</Button>
+              ))}
+            </Box>
+
             {/* Edit / cancel */}
-            <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5 }}>
+            <Box sx={{ display: 'flex', gap: 1.5, mt: 2.5 }}>
               <Button onClick={cancel} disabled={saving} sx={{ flex: 1, borderRadius: 2, fontWeight: 700, color: c.hot, '&:hover': { bgcolor: c.hotDim } }}>בטל תור</Button>
               <Button onClick={() => setEditing(true)} variant="contained" sx={{ flex: 2, borderRadius: 2, fontWeight: 700 }}>ערוך תור</Button>
             </Box>

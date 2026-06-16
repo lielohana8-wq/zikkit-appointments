@@ -101,7 +101,7 @@ export default function ServicesPage() {
       </Box>
 
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center', boxShadow: c.shadowSm }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <Box sx={{ fontSize: 22 }}>🤖</Box>
           <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5 }}>
             דנה והיומן משתמשים במחירון הזה כדי לדעת אילו שירותים יש, כמה זמן וכמה הם עולים.
@@ -114,15 +114,15 @@ export default function ServicesPage() {
             <Typography sx={{ color: c.text2, mb: 0.5, fontWeight: 700 }}>עדיין אין שירותים</Typography>
             <Typography sx={{ color: c.text3, fontSize: 13.5, mb: 3 }}>הוסף ידנית או תן ל-AI להציע לפי סוג העסק</Typography>
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
-              <Button onClick={openNew} variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>+ הוסף ידני</Button>
-              <Button onClick={suggestWithAI} disabled={aiLoading} variant="outlined" sx={{ borderRadius: 3, fontWeight: 700 }}>
+              <Button onClick={openNew} variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700 }}>+ הוסף ידני</Button>
+              <Button onClick={suggestWithAI} disabled={aiLoading} variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700 }}>
                 {aiLoading ? <CircularProgress size={16} sx={{ color: c.accent }} /> : '✨ הצע עם AI'}
               </Button>
             </Box>
           </Box>
         ) : (
           <>
-            <Button onClick={suggestWithAI} disabled={aiLoading} fullWidth variant="outlined" sx={{ borderRadius: 3, fontWeight: 700, mb: 3, py: 1.25, borderStyle: 'dashed' }}>
+            <Button onClick={suggestWithAI} disabled={aiLoading} fullWidth variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, mb: 3, py: 1.25, borderStyle: 'dashed' }}>
               {aiLoading ? <><CircularProgress size={16} sx={{ color: c.accent, mr: 1 }} />מזהה...</> : '✨ הוסף עוד שירותים עם AI'}
             </Button>
 
@@ -131,7 +131,7 @@ export default function ServicesPage() {
                 <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cat}</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   {services.filter((s) => (s.category || 'כללי') === cat).map((s) => (
-                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: c.shadowSm, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
+                    <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: c.text }}>{s.name}</Typography>
                         {s.description && <Typography sx={{ fontSize: 12.5, color: c.text3, mt: 0.25 }}>{s.description}</Typography>}
@@ -156,7 +156,7 @@ export default function ServicesPage() {
         )}
       </Box>
 
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 5, p: 3.5, maxWidth: 440, width: '100%' } }}>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 440, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>{editId ? 'עריכת שירות' : 'שירות חדש'}</Typography>
         <TextField fullWidth label="שם השירות" value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="קטגוריה (למשל: תספורות, צבע)" value={draft.category} onChange={(e) => setDraft((p) => ({ ...p, category: e.target.value }))} sx={{ mb: 2 }} />
@@ -168,7 +168,7 @@ export default function ServicesPage() {
         </Box>
         <TextField fullWidth label="תיאור (אופציונלי)" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
         <TextField fullWidth label="מה דנה צריכה לשאול?" placeholder="למשל: גבר/אישה, אורך שיער" value={draft.whatToAsk} onChange={(e) => setDraft((p) => ({ ...p, whatToAsk: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} helperText="🤖 דנה תשאל את זה לפני קביעת התור" />
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : editId ? 'שמור' : 'הוסף למחירון'}
         </Button>
       </Dialog>

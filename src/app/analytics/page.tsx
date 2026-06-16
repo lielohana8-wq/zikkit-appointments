@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
   });
 
   const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 5, p: 3, mb: 2.5, boxShadow: c.shadowSm }}>
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 2.5 }}>
       <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>{title}</Typography>
       {children}
     </Box>
@@ -173,12 +173,12 @@ export default function AnalyticsPage() {
             {/* Returning vs new */}
             <Card title="לקוחות חוזרים מול חדשים">
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Box sx={{ flex: returning || 1, bgcolor: c.accent, borderRadius: 3, p: 2, color: '#fff', textAlign: 'center', minWidth: 80 }}>
+                <Box sx={{ flex: returning || 1, bgcolor: c.accent, borderRadius: 1.5, p: 2, color: '#fff', textAlign: 'center', minWidth: 80 }}>
                   <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{returning}</Typography>
                   <Typography sx={{ fontSize: 12, opacity: 0.9 }}>חוזרים</Typography>
                   <Typography sx={{ fontSize: 11, opacity: 0.8 }}>{Math.round((returning / totalCust) * 100)}%</Typography>
                 </Box>
-                <Box sx={{ flex: newCust || 1, bgcolor: c.surface3, borderRadius: 3, p: 2, textAlign: 'center', minWidth: 80 }}>
+                <Box sx={{ flex: newCust || 1, bgcolor: c.surface3, borderRadius: 1.5, p: 2, textAlign: 'center', minWidth: 80 }}>
                   <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text }}>{newCust}</Typography>
                   <Typography sx={{ fontSize: 12, color: c.text3 }}>חדשים</Typography>
                   <Typography sx={{ fontSize: 11, color: c.text3 }}>{Math.round((newCust / totalCust) * 100)}%</Typography>

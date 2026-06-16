@@ -93,7 +93,7 @@ export default function BookingPageSettings() {
   if (loading || dataLoading || !b) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 2 }}>
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 2 }}>
       <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 2 }}>{title}</Typography>
       {children}
     </Box>
@@ -111,7 +111,7 @@ export default function BookingPageSettings() {
 
       <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Enable */}
-        <Box sx={{ bgcolor: b.enabled ? c.accentDim : c.surface1, border: `2px solid ${b.enabled ? c.accent : c.border}`, borderRadius: 4, p: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ bgcolor: b.enabled ? c.accentDim : c.surface1, border: `2px solid ${b.enabled ? c.accent : c.border}`, borderRadius: 2, p: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ fontSize: 32 }}>{b.enabled ? '🟢' : '⚪'}</Box>
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{b.enabled ? 'דף ההזמנות פעיל' : 'דף ההזמנות כבוי'}</Typography>
@@ -122,7 +122,7 @@ export default function BookingPageSettings() {
 
         {/* Link */}
         {b.enabled && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, boxShadow: c.shadowSm, p: 2.5, mb: 3 }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 3 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text3, mb: 1 }}>🔗 הלינק שלך</Typography>
             <Typography sx={{ fontSize: 13, color: c.accent, fontWeight: 600, wordBreak: 'break-all', fontFamily: 'monospace', mb: 1.5 }}>{bookingUrl}</Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -136,7 +136,7 @@ export default function BookingPageSettings() {
         <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 2, mt: 1 }}>🎨 עיצוב</Typography>
 
         {/* AI design prompt */}
-        <Box sx={{ bgcolor: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, background: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, border: `1px solid ${c.accentMid}`, borderRadius: 4, p: 2.5, mb: 3, boxShadow: c.shadowSm }}>
+        <Box sx={{ bgcolor: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, background: `linear-gradient(135deg, ${c.accentDim}, ${c.surface1})`, border: `1px solid ${c.accentMid}`, borderRadius: 2, p: 2.5, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Box sx={{ fontSize: 20 }}>✨</Box>
             <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>עיצוב עם AI</Typography>
@@ -207,7 +207,7 @@ export default function BookingPageSettings() {
           ))}
         </Section>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 3, fontWeight: 800, mt: 2 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 1.5, fontWeight: 800, mt: 2 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור הכל'}
         </Button>
       </Box>

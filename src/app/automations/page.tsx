@@ -34,19 +34,7 @@ export default function AutomationsPage() {
 
   if (loading || dataLoading || !a) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
-  const Row = ({ icon, title, desc, on, onToggle, children }: { icon: string; title: string; desc: string; on: boolean; onToggle: (v: boolean) => void; children?: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${on ? c.accentMid : c.border}`, borderRadius: 2, p: 2.5, mb: 2, transition: 'all 0.2s' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{ width: 46, height: 46, borderRadius: 1.5, bgcolor: on ? c.accentDim : c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, transition: 'all 0.2s' }}>{icon}</Box>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{title}</Typography>
-          <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{desc}</Typography>
-        </Box>
-        <Switch checked={on} onChange={(e) => onToggle(e.target.checked)} />
-      </Box>
-      {on && children && <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${c.border}` }}>{children}</Box>}
-    </Box>
-  );
+  const Row = AutomationRow;
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
@@ -119,6 +107,22 @@ export default function AutomationsPage() {
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור אוטומציות'}
         </Button>
       </Box>
+    </Box>
+  );
+}
+
+function AutomationRow({ icon, title, desc, on, onToggle, children }: { icon: string; title: string; desc: string; on: boolean; onToggle: (v: boolean) => void; children?: React.ReactNode }) {
+  return (
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${on ? c.accentMid : c.border}`, borderRadius: 2, p: 2.5, mb: 2, transition: 'all 0.2s' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ width: 46, height: 46, borderRadius: 1.5, bgcolor: on ? c.accentDim : c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, transition: 'all 0.2s' }}>{icon}</Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{title}</Typography>
+          <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{desc}</Typography>
+        </Box>
+        <Switch checked={on} onChange={(e) => onToggle(e.target.checked)} />
+      </Box>
+      {on && children && <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${c.border}` }}>{children}</Box>}
     </Box>
   );
 }

@@ -57,12 +57,7 @@ export default function SettingsPage() {
 
   if (loading || dataLoading || !s) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ mb: 3 }}>
-      <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</Typography>
-      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>{children}</Box>
-    </Box>
-  );
+  const Section = SettingsSection;
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
@@ -134,6 +129,15 @@ export default function SettingsPage() {
           <Button onClick={() => logout()} fullWidth variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>התנתק מהחשבון</Button>
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</Typography>
+      <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>{children}</Box>
     </Box>
   );
 }

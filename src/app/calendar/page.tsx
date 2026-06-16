@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem, Autocomplete } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
+import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, getCustomers, type Booking, type TeamMember, type Customer } from '@/lib/bizdata';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { useToast } from '@/components/Toast';
 import { PageSkeleton } from '@/components/Skeleton';
@@ -19,6 +19,7 @@ export default function CalendarPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Array<{ name: string; duration: number; price?: string }>>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
@@ -43,6 +44,7 @@ export default function CalendarPage() {
       const danaSvcs = (biz.dana?.services as Array<{ name: string; duration: number; price?: string }>) || [];
       setServices(danaSvcs);
       setTeam(((biz as Record<string, unknown>).team as { members?: TeamMember[] })?.members || []);
+      try { setCustomers(await getCustomers(bizId)); } catch { /* ignore */ }
     } finally { setDataLoading(false); }
   }, [bizId]);
 
@@ -229,7 +231,28 @@ export default function CalendarPage() {
       <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 420, width: '100%' } }}>
         <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>תור חדש</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{selectedDate}</Typography>
-        <TextField fullWidth label="שם הלקוח" value={form.customerName} onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))} sx={{ mb: 2 }} />
+        <Autocomplete
+          freeSolo
+          options={customers}
+          getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.name}
+          value={form.customerName}
+          onInputChange={(_, val) => setForm((p) => ({ ...p, customerName: val }))}
+          onChange={(_, val) => {
+            if (val && typeof val !== 'string') {
+              setForm((p) => ({ ...p, customerName: val.name, customerPhone: val.phone || '' }));
+            }
+          }}
+          renderOption={(props, opt) => (
+            <Box component="li" {...props} key={opt.id}>
+              <Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{opt.name}</Typography>
+                <Typography sx={{ fontSize: 12, color: c.text3 }}>{opt.phone}{opt.visits ? ` · ${opt.visits} ביקורים` : ''}</Typography>
+              </Box>
+            </Box>
+          )}
+          renderInput={(params) => <TextField {...params} label="שם הלקוח" placeholder="חפש או הקלד חדש" />}
+          sx={{ mb: 2 }}
+        />
         <TextField fullWidth label="טלפון" value={form.customerPhone} onChange={(e) => setForm((p) => ({ ...p, customerPhone: e.target.value }))} sx={{ mb: 2 }} />
         {services.length > 0 ? (
           <TextField select fullWidth label="טיפול" value={form.service} onChange={(e) => {

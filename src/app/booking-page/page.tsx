@@ -92,13 +92,6 @@ export default function BookingPageSettings() {
 
   if (loading || dataLoading || !b) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 2 }}>
-      <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 2 }}>{title}</Typography>
-      {children}
-    </Box>
-  );
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -211,6 +204,15 @@ export default function BookingPageSettings() {
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור הכל'}
         </Button>
       </Box>
+    </Box>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 2 }}>
+      <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 2 }}>{title}</Typography>
+      {children}
     </Box>
   );
 }

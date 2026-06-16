@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * an account directly; the owner reviews requests and approves manually.
  */
 const PROJECT_ID = 'zikkit-e87ff';
-const OWNER_EMAIL = process.env.PILOT_NOTIFY_EMAIL || 'ohanaliel3@gmail.com';
+const OWNER_EMAIL = process.env.PILOT_NOTIFY_EMAIL || 'ohanaliel@gmail.com';
 
 export async function POST(req: NextRequest) {
   try {

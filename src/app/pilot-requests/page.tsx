@@ -23,7 +23,7 @@ type Filter = 'all' | 'new' | 'approved' | 'rejected';
 
 // Only the Zikkit owner can view pilot requests. These are leads for the whole
 // platform — never visible to tenant business owners who log in.
-const OWNER_EMAILS = ['ohanaliel3@gmail.com'];
+const OWNER_EMAILS = ['ohanaliel@gmail.com'];
 
 export default function PilotRequestsPage() {
   const router = useRouter();

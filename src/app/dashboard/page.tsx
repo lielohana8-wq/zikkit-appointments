@@ -312,7 +312,7 @@ export default function DashboardPage() {
             ],
           },
         ] as const).map((section) => {
-          const ownerEmails = ['ohanaliel3@gmail.com'];
+          const ownerEmails = ['ohanaliel@gmail.com'];
           const isPlatformOwner = ownerEmails.includes((firebaseUser?.email || '').toLowerCase());
           const visible = section.items.filter((t) => {
             if (t.path === '/pilot-requests' && !isPlatformOwner) return false; // owner-only platform tile

@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const PROJECT_ID = 'zikkit-e87ff';
 
 // Platform owner(s) — only these may read/modify pilot leads. Server-side gate.
-const OWNER_EMAILS = (process.env.PILOT_OWNER_EMAILS || 'ohanaliel3@gmail.com')
+const OWNER_EMAILS = (process.env.PILOT_OWNER_EMAILS || 'ohanaliel@gmail.com')
   .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 
 function authed(req: NextRequest, bodyEmail?: string): boolean {

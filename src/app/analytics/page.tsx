@@ -103,7 +103,7 @@ export default function AnalyticsPage() {
         <Box sx={{ width: 80 }} />
       </Box>
 
-      <Box sx={{ maxWidth: 720, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 720, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {active.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Box sx={{ fontSize: 44, mb: 1.5, opacity: 0.5 }}>📈</Box>

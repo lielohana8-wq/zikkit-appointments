@@ -60,7 +60,7 @@ export default function ReportsPage() {
         <Button onClick={exportCSV} size="small" sx={{ color: c.accent, fontWeight: 700 }}>⬇ CSV</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 820, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 4 } }}>
+      <Box className="zk-page" sx={{ maxWidth: 820, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 4 } }}>
         {/* Range selector — segmented control */}
         <Box sx={{ display: 'flex', gap: 0.5, mb: 4, bgcolor: c.surface3, p: 0.5, borderRadius: 99, width: 'fit-content', mx: 'auto' }}>
           {([['today', 'היום'], ['week', 'שבוע'], ['month', 'חודש'], ['all', 'הכל']] as [Range, string][]).map(([r, label]) => (

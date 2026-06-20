@@ -102,7 +102,7 @@ export default function BookingPageSettings() {
         </Button>
       </Box>
 
-      <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Enable */}
         <Box sx={{ bgcolor: b.enabled ? c.accentDim : c.surface1, border: `2px solid ${b.enabled ? c.accent : c.border}`, borderRadius: 2, p: 3, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ fontSize: 32 }}>{b.enabled ? '🟢' : '⚪'}</Box>

@@ -51,7 +51,7 @@ export default function PromosPage() {
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ קופון</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Loyalty program */}
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תוכנית נאמנות</Typography>
         <Box sx={{ bgcolor: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, background: loyalty.enabled ? `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})` : c.surface1, border: `1px solid ${loyalty.enabled ? 'transparent' : c.border}`, borderRadius: 2, p: 3, mb: 4, color: loyalty.enabled ? '#fff' : c.text }}>

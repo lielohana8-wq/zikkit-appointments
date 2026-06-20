@@ -143,7 +143,7 @@ export default function CalendarPage() {
 
       {/* Week view */}
       {viewMode === 'week' && (
-        <Box sx={{ maxWidth: 1000, mx: 'auto', px: { xs: 1.5, sm: 3 }, py: 3 }}>
+        <Box className="zk-page" sx={{ maxWidth: 1000, mx: 'auto', px: { xs: 1.5, sm: 3 }, py: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
             {weekDays.map((d) => {
               const dateObj = new Date(d);

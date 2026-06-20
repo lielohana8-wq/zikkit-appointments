@@ -123,7 +123,7 @@ export default function DashboardPage() {
         </Box>
       </Box>
 
-      <Box sx={{ maxWidth: 940, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 5 } }}>
+      <Box className="zk-page" sx={{ maxWidth: 940, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 5 } }}>
         {/* Greeting — editorial */}
         <Box sx={{ mb: 4 }}>
           <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.12em', mb: 1 }}>

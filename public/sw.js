@@ -1,5 +1,5 @@
 // Minimal service worker for PWA installability + basic caching.
-const CACHE = 'zikkit-v1';
+const CACHE = 'zikkit-v2';
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));

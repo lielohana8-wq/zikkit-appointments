@@ -53,7 +53,7 @@ export default function ReviewsPage() {
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ ביקורת</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stats hero */}
         <Box sx={{ bgcolor: c.accent, borderRadius: 2, p: { xs: 3, sm: 4 }, color: '#fff', mb: 3, boxShadow: c.shadowLg, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 52, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>{stats.avg || '—'}</Typography>

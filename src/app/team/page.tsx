@@ -146,7 +146,7 @@ export default function TeamPage() {
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ חבר צוות</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stations count */}
         <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

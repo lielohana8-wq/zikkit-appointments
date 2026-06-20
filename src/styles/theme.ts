@@ -55,6 +55,18 @@ export const THEME_CSS = `
 }
 body { background: var(--zk-bg); transition: background 0.3s ease; }
 ::selection { background: #7C3AED; color: #fff; }
+
+/* ---- Interaction polish (applies app-wide) ---- */
+.zk-page { animation: zkPageIn 0.42s cubic-bezier(0.16,1,0.3,1) both; }
+@keyframes zkPageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.zk-lift { transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), border-color 0.18s ease, box-shadow 0.18s ease; }
+.zk-lift:hover { transform: translateY(-3px); border-color: var(--zk-border) !important; }
+.zk-stagger > * { animation: zkPageIn 0.42s cubic-bezier(0.16,1,0.3,1) both; }
+.zk-stagger > *:nth-child(1){animation-delay:.02s} .zk-stagger > *:nth-child(2){animation-delay:.06s}
+.zk-stagger > *:nth-child(3){animation-delay:.1s} .zk-stagger > *:nth-child(4){animation-delay:.14s}
+.zk-stagger > *:nth-child(5){animation-delay:.18s} .zk-stagger > *:nth-child(6){animation-delay:.22s}
+.zk-stagger > *:nth-child(7){animation-delay:.26s} .zk-stagger > *:nth-child(8){animation-delay:.3s}
+@media (prefers-reduced-motion: reduce) { .zk-page, .zk-stagger > *, .zk-lift { animation: none !important; transition: none !important; } }
 `;
 
 // NOTE: --zk-border is near-black (light) / near-white (dark) — this is the SHARP LINE look.
@@ -82,8 +94,8 @@ export const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { textTransform: 'none', fontWeight: 700, borderRadius: 6, padding: '9px 20px', transition: 'all 0.18s ease' },
-        containedPrimary: { background: '#7C3AED', boxShadow: 'none', '&:hover': { background: '#6D28D9', boxShadow: 'none' } },
+        root: { textTransform: 'none', fontWeight: 700, borderRadius: 6, padding: '9px 20px', transition: 'transform 0.12s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease', '&:active': { transform: 'scale(0.97)' } },
+        containedPrimary: { background: '#7C3AED', boxShadow: 'none', '&:hover': { background: '#6D28D9', boxShadow: '0 4px 16px rgba(124,58,237,0.3)' } },
         outlined: { borderColor: 'var(--zk-border)', borderWidth: 1.5, color: 'var(--zk-text)', '&:hover': { borderColor: 'var(--zk-border)', borderWidth: 1.5, background: 'var(--zk-text)', color: 'var(--zk-bg)' } },
         text: { color: 'var(--zk-text)', '&:hover': { background: 'var(--zk-surface3)' } },
       },

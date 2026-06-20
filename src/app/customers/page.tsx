@@ -89,7 +89,7 @@ export default function CustomersPage() {
         <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ לקוח</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <TextField fullWidth placeholder="🔍  חיפוש לפי שם או טלפון" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 99, bgcolor: c.surface1 } }} />
 
         {/* Filter pills */}

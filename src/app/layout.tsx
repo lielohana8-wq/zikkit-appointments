@@ -3,12 +3,12 @@ import { Providers } from './providers';
 import { THEME_CSS } from '@/styles/theme';
 
 export const metadata: Metadata = {
-  title: 'ZikkitAppointments — ניהול תורים חכם עם AI',
+  title: 'Zikkit Appointments — ניהול תורים חכם עם AI',
   description: 'סוכנת AI שעונה לטלפון 24/7, קובעת תורים, ומנהלת את היומן שלך. לספרים, קוסמטיקאיות, קליניקות ועוד.',
   manifest: '/manifest.json',
-  themeColor: '#9333EA',
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Zikkit' },
-  icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
+  themeColor: '#7C3AED',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Zikkit' },
+  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Assistant:wght@400;500;600;700;800&display=swap"
@@ -33,6 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           ::-webkit-scrollbar-thumb:hover { background: #B4B4BB; }
           .zk-fade-up { animation: zkFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
           @keyframes zkFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+          .zk-pwa-slide { animation: zkPwaSlide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+          @keyframes zkPwaSlide { from { opacity: 0; transform: translateY(80px); } to { opacity: 1; transform: translateY(0); } }
           @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         `}</style>
         <style dangerouslySetInnerHTML={{ __html: THEME_CSS }} />

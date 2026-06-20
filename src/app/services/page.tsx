@@ -100,7 +100,7 @@ export default function ServicesPage() {
         <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ שירות</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <Box sx={{ fontSize: 22 }}>🤖</Box>
           <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5 }}>

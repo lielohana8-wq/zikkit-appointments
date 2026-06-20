@@ -44,7 +44,7 @@ export default function AutomationsPage() {
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         <Box sx={{ bgcolor: c.accentDim, borderRadius: 1.5, p: 2, mb: 3 }}>
           <Typography sx={{ fontSize: 13, color: c.text2, lineHeight: 1.6 }}>
             ⚡ אוטומציות עובדות <b>בנפרד מדנה</b>. גם בלי מענה טלפוני, המערכת תשלח אישורים, תזכורות ובקשות ביקורת ללקוחות אוטומטית.

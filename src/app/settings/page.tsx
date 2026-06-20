@@ -67,7 +67,7 @@ export default function SettingsPage() {
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Logo + name */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
           {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 1.5, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 1.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}

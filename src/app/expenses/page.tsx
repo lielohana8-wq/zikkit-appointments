@@ -66,7 +66,7 @@ export default function ExpensesPage() {
         <Button onClick={() => setOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ הוצאה</Button>
       </Box>
 
-      <Box sx={{ maxWidth: 720, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+      <Box className="zk-page" sx={{ maxWidth: 720, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Range */}
         <Box sx={{ display: 'flex', gap: 0.5, mb: 3, bgcolor: c.surface3, p: 0.5, borderRadius: 99, width: 'fit-content', mx: 'auto' }}>
           {([['month', 'חודש'], ['quarter', 'רבעון'], ['year', 'שנה'], ['all', 'הכל']] as [Range, string][]).map(([r, label]) => (

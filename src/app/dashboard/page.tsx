@@ -9,6 +9,7 @@ import { getNotifications, markNotificationsRead, computeInsights, type AppNotif
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { useThemeMode } from '@/components/ThemeMode';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
+import { WelcomeWizard } from '@/components/WelcomeWizard';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -277,6 +278,7 @@ export default function DashboardPage() {
               { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
               { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
               { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
+              { icon: '🔔', label: 'רשימת המתנה', path: '/waitlist', staff: true },
               { icon: '📋', label: 'מחירון', path: '/services', staff: false },
             ],
           },
@@ -362,6 +364,7 @@ export default function DashboardPage() {
       </Box>
 
       <BookingDetailDialog booking={selectedBooking as never} bizId={bizId} onClose={() => setSelectedBooking(null)} onChanged={() => window.location.reload()} />
+      {user?.role !== 'staff' && <WelcomeWizard bizId={bizId} hasServices={setupState.hasServices} hasHours={setupState.hasHours} bookingEnabled={setupState.bookingEnabled} />}
     </Box>
   );
 }

@@ -102,12 +102,34 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { bizId, booking } = body;
-    if (!bizId || !booking) return NextResponse.json({ error: 'missing data' }, { status: 400 });
+    const { bizId, booking, action } = body;
+    if (!bizId) return NextResponse.json({ error: 'missing data' }, { status: 400 });
 
     const biz = await getBiz(bizId);
     if (!biz) return NextResponse.json({ success: false, error: 'not found' }, { status: 404 });
 
+    // ---- Waitlist: customer wants to be notified if a slot opens ----
+    if (action === 'waitlist') {
+      const wl = body.waitlist || {};
+      if (!wl.name || !wl.phone) return NextResponse.json({ error: 'missing name/phone' }, { status: 400 });
+      const existing = ((biz.waitlist as Record<string, unknown>)?.items as unknown[]) || [];
+      const entry = {
+        id: 'wl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: wl.name, phone: wl.phone, service: wl.service || '', staff: wl.staff || '',
+        preferredDate: wl.preferredDate || '', note: wl.note || '',
+        status: 'waiting', createdAt: new Date().toISOString(),
+      };
+      await setBizField(bizId, ['waitlist', 'items'], [entry, ...existing].slice(0, 200));
+      // Notify owner
+      const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
+      if (ownerPhone) sendSms(ownerPhone, `רשימת המתנה: ${wl.name} (${wl.phone}) מחכה לתור${wl.service ? ' ל' + wl.service : ''}${wl.preferredDate ? ' · ' + wl.preferredDate : ''}`).catch(() => {});
+      // In-app notification
+      const notifications = ((biz.notifications as Record<string, unknown>)?.items as unknown[]) || [];
+      await setBizField(bizId, ['notifications', 'items'], [{ id: 'notif_' + Date.now(), type: 'waitlist', text: `${wl.name} נרשם/ה לרשימת המתנה`, read: false, createdAt: new Date().toISOString() }, ...notifications].slice(0, 50));
+      return NextResponse.json({ success: true, message: 'נרשמת לרשימת ההמתנה!' });
+    }
+
+    if (!booking) return NextResponse.json({ error: 'missing data' }, { status: 400 });
     const bookingCfg = (biz.booking as Record<string, unknown>) || {};
     if (bookingCfg.enabled === false) {
       return NextResponse.json({ success: false, error: 'הזמנות מקוונות אינן פעילות כרגע' }, { status: 403 });

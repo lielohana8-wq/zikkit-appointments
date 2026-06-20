@@ -611,6 +611,35 @@ export interface Review {
   createdAt: string;
 }
 
+// ---------- Waitlist ----------
+export interface WaitlistEntry {
+  id: string;
+  name: string;
+  phone: string;
+  service?: string;
+  staff?: string;
+  preferredDate?: string;
+  note?: string;
+  status: string;        // 'waiting' | 'contacted' | 'booked'
+  createdAt: string;
+}
+
+export async function getWaitlist(bizId: string): Promise<WaitlistEntry[]> {
+  const biz = await loadBiz(bizId);
+  return ((biz as Record<string, unknown>).waitlist as { items?: WaitlistEntry[] })?.items || [];
+}
+
+export async function updateWaitlistEntry(bizId: string, id: string, changes: Partial<WaitlistEntry>): Promise<void> {
+  const items = (await getWaitlist(bizId)).map((w) => (w.id === id ? { ...w, ...changes } : w));
+  await patchBiz(bizId, { waitlist: { items } });
+}
+
+export async function deleteWaitlistEntry(bizId: string, id: string): Promise<void> {
+  const items = (await getWaitlist(bizId)).filter((w) => w.id !== id);
+  await patchBiz(bizId, { waitlist: { items } });
+}
+
+
 export async function getReviews(bizId: string): Promise<Review[]> {
   const biz = await loadBiz(bizId);
   return ((biz as Record<string, unknown>).reviews as { items?: Review[] })?.items || [];

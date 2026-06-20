@@ -40,13 +40,35 @@ export default function PublicBookingPage() {
   const bizId = params.bizId as string;
   const [info, setInfo] = useState<BizInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done'>('service');
+  const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done' | 'waitlist' | 'waitlisted'>('service');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', email: '' });
   const [booking, setBooking] = useState(false);
+  const [wlNote, setWlNote] = useState('');
+
+  const submitWaitlist = async () => {
+    if (!form.name.trim() || !form.phone.trim()) return;
+    setBooking(true);
+    try {
+      const res = await fetch('/api/public-booking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bizId, action: 'waitlist',
+          waitlist: {
+            name: form.name, phone: form.phone,
+            service: selectedService?.name || '', staff: selectedStaff?.name || '',
+            preferredDate: selectedDate || '', note: wlNote,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) setStage('waitlisted');
+      else alert(data.error || 'שגיאה');
+    } catch { alert('שגיאה'); } finally { setBooking(false); }
+  };
   const [manageToken, setManageToken] = useState('');
 
   useEffect(() => {
@@ -303,7 +325,15 @@ export default function PublicBookingPage() {
                     <Box key={t} onClick={() => { setSelectedTime(t); setStage('details'); }}
                       sx={{ cursor: 'pointer', textAlign: 'center', py: 1.5, borderRadius: 2.5, bgcolor: '#fff', border: `1.5px solid #E7E5E4`, fontWeight: 700, fontSize: 15, color: '#1C1917', transition: 'all 0.15s', '&:hover': { borderColor: accent, bgcolor: accent, color: '#fff', transform: 'scale(1.05)' } }}>{t}</Box>
                   ))}
-                  {freeSlots(selectedDate).length === 0 && <Typography sx={{ gridColumn: '1/-1', textAlign: 'center', color: '#A8A29E', py: 3 }}>אין תורים פנויים ביום זה 😔</Typography>}
+                  {freeSlots(selectedDate).length === 0 && (
+                    <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 3 }}>
+                      <Typography sx={{ color: '#A8A29E', mb: 1.5 }}>אין תורים פנויים ביום זה 😔</Typography>
+                      <Button onClick={() => setStage('waitlist')} variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, borderColor: accent, color: accent, '&:hover': { borderColor: accent, bgcolor: `${accent}08` } }}>
+                        🔔 הצטרפו לרשימת המתנה
+                      </Button>
+                      <Typography sx={{ fontSize: 12, color: '#A8A29E', mt: 1 }}>נודיע לכם ברגע שמתפנה תור</Typography>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             )}
@@ -338,6 +368,30 @@ export default function PublicBookingPage() {
         )}
 
         {/* DONE */}
+        {/* STAGE: Waitlist form */}
+        {stage === 'waitlist' && (
+          <Box sx={{ animation: 'fadeIn 0.4s' }}>
+            <Button onClick={() => setStage('slot')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה</Button>
+            <Typography sx={{ fontSize: 20, fontWeight: 800, color: '#1C1917', mb: 0.5 }}>רשימת המתנה</Typography>
+            <Typography sx={{ fontSize: 13.5, color: '#78716C', mb: 2.5 }}>השאירו פרטים ונודיע לכם ברגע שמתפנה תור{selectedService ? ` ל${selectedService.name}` : ''}.</Typography>
+            <TextField fullWidth placeholder="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
+            <TextField fullWidth placeholder="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
+            <TextField fullWidth placeholder="העדפות? (יום/שעה שנוחים לכם)" value={wlNote} onChange={(e) => setWlNote(e.target.value)} multiline rows={2} sx={{ mb: 2.5, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
+            <Button onClick={submitWaitlist} disabled={booking || !form.name.trim() || !form.phone.trim()} fullWidth variant="contained" sx={{ borderRadius: 2, fontWeight: 800, py: 1.5, bgcolor: accent, '&:hover': { bgcolor: accentDark } }}>
+              {booking ? <CircularProgress size={22} sx={{ color: '#fff' }} /> : '🔔 הצטרפו לרשימת ההמתנה'}
+            </Button>
+          </Box>
+        )}
+
+        {/* STAGE: Waitlisted confirmation */}
+        {stage === 'waitlisted' && (
+          <Box sx={{ animation: 'fadeIn 0.4s', textAlign: 'center', py: 4 }}>
+            <Box sx={{ width: 84, height: 84, borderRadius: '50%', bgcolor: `${accent}15`, fontSize: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>🔔</Box>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#1C1917', letterSpacing: '-0.02em', mb: 1 }}>נרשמתם!</Typography>
+            <Typography sx={{ fontSize: 15, color: '#57534E', lineHeight: 1.55, maxWidth: 300, mx: 'auto' }}>נודיע לכם מיד כשמתפנה תור. בינתיים אפשר לבדוק שוב מאוחר יותר 😊</Typography>
+          </Box>
+        )}
+
         {stage === 'done' && (
           <Box sx={{ textAlign: 'center', py: 5, animation: 'fadeIn 0.5s' }}>
             <Box sx={{ width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 8px 30px ${accent}55`, animation: 'pop 0.5s' }}>✓</Box>

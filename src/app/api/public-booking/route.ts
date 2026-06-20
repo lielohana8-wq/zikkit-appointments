@@ -131,6 +131,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'התור הזה כבר נתפס. בחר שעה אחרת.' }, { status: 409 });
     }
 
+    const manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
     const newBooking = {
       id: 'apt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       source: 'online',
@@ -144,6 +145,7 @@ export async function POST(req: NextRequest) {
       status: 'confirmed',
       reminded: false,
       isNew: true,
+      manageToken,
       createdAt: new Date().toISOString(),
     };
 
@@ -162,8 +164,10 @@ export async function POST(req: NextRequest) {
 
     // SMS confirmations
     const bizName = (biz.cfg as Record<string, unknown>)?.biz_name || 'העסק';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
+    const manageUrl = `${baseUrl}/manage/${bizId}/${manageToken}`;
     if (booking.customerPhone) {
-      sendSms(booking.customerPhone, `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\nנתראה!`).catch(() => {});
+      sendSms(booking.customerPhone, `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`).catch(() => {});
     }
     // Notify owner
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
@@ -172,7 +176,7 @@ export async function POST(req: NextRequest) {
       sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}`).catch(() => {});
     }
 
-    return NextResponse.json({ success: true, message: 'התור נקבע בהצלחה!' });
+    return NextResponse.json({ success: true, message: 'התור נקבע בהצלחה!', manageToken });
   } catch (e) {
     return NextResponse.json({ success: false, error: (e as Error).message }, { status: 500 });
   }

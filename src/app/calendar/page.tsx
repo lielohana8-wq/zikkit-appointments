@@ -25,7 +25,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
+  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4 });
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
   const [reschedule, setReschedule] = useState({ date: '', time: '', staff: '' });
 
@@ -63,9 +63,26 @@ export default function CalendarPage() {
     };
     setBookings((prev) => [optimistic, ...prev]);
     setAddOpen(false);
-    setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '' });
+    const repeat = form.repeat;
+    const repeatCount = form.repeatCount;
+    setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4 });
     try {
-      await addBooking(bizId, { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, duration: optimistic.duration, staff: staffAssign, notes: optimistic.notes, date: selectedDate, time: optimistic.time, source: 'manual' });
+      const base = { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, duration: optimistic.duration, staff: staffAssign, notes: optimistic.notes, time: optimistic.time, source: 'manual' as const };
+      if (repeat === 'none') {
+        await addBooking(bizId, { ...base, date: selectedDate });
+      } else {
+        // Create a series: weekly or every 2 weeks or monthly
+        const stepDays = repeat === 'weekly' ? 7 : repeat === 'biweekly' ? 14 : 30;
+        const start = new Date(selectedDate + 'T00:00:00');
+        for (let i = 0; i < repeatCount; i++) {
+          const d = new Date(start);
+          if (repeat === 'monthly') d.setMonth(d.getMonth() + i);
+          else d.setDate(d.getDate() + stepDays * i);
+          const dateStr = d.toISOString().split('T')[0];
+          await addBooking(bizId, { ...base, date: dateStr });
+        }
+        showToast(`נוצרו ${repeatCount} תורים חוזרים`, 'success');
+      }
       await load(); // reconcile with server (replaces temp with real)
     } catch (e) {
       setBookings((prev) => prev.filter((bk) => bk.id !== optimistic.id)); // rollback
@@ -276,7 +293,20 @@ export default function CalendarPage() {
             {team.map((m) => <MenuItem key={m.id} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</MenuItem>)}
           </TextField>
         )}
-        <TextField fullWidth label="הערות" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} />
+        <TextField fullWidth label="הערות" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
+
+        {/* Recurring */}
+        <TextField select fullWidth label="חזרה" value={form.repeat} onChange={(e) => setForm((p) => ({ ...p, repeat: e.target.value }))} sx={{ mb: form.repeat !== 'none' ? 2 : 3 }} SelectProps={{ native: true }}>
+          <option value="none">תור חד-פעמי</option>
+          <option value="weekly">כל שבוע</option>
+          <option value="biweekly">כל שבועיים</option>
+          <option value="monthly">כל חודש</option>
+        </TextField>
+        {form.repeat !== 'none' && (
+          <TextField select fullWidth label="כמה פעמים" value={form.repeatCount} onChange={(e) => setForm((p) => ({ ...p, repeatCount: Number(e.target.value) }))} sx={{ mb: 3 }} SelectProps={{ native: true }}>
+            {[2, 3, 4, 5, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} תורים</option>)}
+          </TextField>
+        )}
         <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'קבע תור'}
         </Button>

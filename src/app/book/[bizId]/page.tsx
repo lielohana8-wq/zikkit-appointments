@@ -47,6 +47,7 @@ export default function PublicBookingPage() {
   const [selectedTime, setSelectedTime] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', email: '' });
   const [booking, setBooking] = useState(false);
+  const [manageToken, setManageToken] = useState('');
 
   useEffect(() => {
     if (!bizId) return;
@@ -105,7 +106,7 @@ export default function PublicBookingPage() {
         }),
       });
       const data = await res.json();
-      if (data.success) setStage('done');
+      if (data.success) { setManageToken(data.manageToken || ''); setStage('done'); }
       else alert(data.error || 'שגיאה');
     } finally { setBooking(false); }
   };
@@ -372,6 +373,13 @@ export default function PublicBookingPage() {
             >
               📅 הוסף ליומן שלי
             </Button>
+
+            {manageToken && (
+              <Typography sx={{ fontSize: 13, color: '#78716C', mt: 2 }}>
+                צריך לבטל או לשנות?{' '}
+                <Box component="a" href={`/manage/${bizId}/${manageToken}`} sx={{ color: accent, fontWeight: 700, textDecoration: 'none' }}>ניהול התור שלי</Box>
+              </Typography>
+            )}
 
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 12, color: '#A8A29E', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
           </Box>

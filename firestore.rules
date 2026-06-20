@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// ============================================================================
+// Zikkit Appointments — Firestore Security Rules
+// ----------------------------------------------------------------------------
+// Data model:
+//   appointment_businesses/{uid}  → a business document, keyed by the OWNER's
+//                                    Firebase Auth uid. Holds cfg, appointments,
+//                                    customers, dana, team, reviews, etc.
+//   staff_lookup/{uid}            → maps a staff member's uid to { ownerBizId }
+//   pilot_requests/{id}           → platform-level leads (owner of Zikkit only)
+//
+// Isolation principle: a signed-in user may only read/write the business doc
+// that they own (doc id == their uid) OR the business they are staff of
+// (staff_lookup/{their uid}.ownerBizId == that doc id). No cross-tenant access.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Is the caller a staff member mapped to this ownerBizId?
+    function isStaffOf(ownerBizId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/staff_lookup/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staff_lookup/$(request.auth.uid)).data.ownerBizId == ownerBizId;
+    }
+
+    // ---- Business documents (the core tenant data) ----
+    match /appointment_businesses/{bizId} {
+      // Read/write only your own business, or one you're staff of.
+      allow read, write: if signedIn() && (request.auth.uid == bizId || isStaffOf(bizId));
+    }
+
+    // ---- Staff lookup mapping ----
+    match /staff_lookup/{uid} {
+      // A user can read their own mapping (to discover which business they belong to).
+      allow read: if signedIn() && request.auth.uid == uid;
+      // Writes happen via the owner provisioning flow. Allow a business owner to
+      // create/update a mapping that points at THEIR business.
+      allow write: if signedIn() && request.resource.data.ownerBizId == request.auth.uid;
+      // Allow the mapped owner to delete it (removing a staff member).
+      allow delete: if signedIn() && resource.data.ownerBizId == request.auth.uid;
+    }
+
+    // ---- Pilot requests (platform leads) ----
+    // Written by the PUBLIC request form via a server route using the Admin SDK
+    // (service account bypasses these rules). Lock down all client access:
+    // nobody reading from the client should ever see other businesses' leads.
+    match /pilot_requests/{id} {
+      allow read, write: if false;
+    }
+
+    // ---- Legacy 'businesses' collection (field-service product), if present ----
+    // Keep isolated by owner uid as well; deny otherwise.
+    match /businesses/{bizId} {
+      allow read, write: if signedIn() && (request.auth.uid == bizId || isStaffOf(bizId));
+    }
+
+    // ---- Default deny everything else ----
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

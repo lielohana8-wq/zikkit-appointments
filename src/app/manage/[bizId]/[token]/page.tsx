@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Box, Typography, Button, CircularProgress, TextField } from '@mui/material';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 
 interface BookingInfo {
   service: string; date: string; time: string; duration: number;
@@ -23,6 +23,8 @@ export default function ManageBookingPage() {
   const [doneMsg, setDoneMsg] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
+  const [slots, setSlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   const accent = '#7C3AED';
 
@@ -36,6 +38,19 @@ export default function ManageBookingPage() {
       .catch(() => setError('שגיאה בטעינת התור.'))
       .finally(() => setLoading(false));
   }, [bizId, token]);
+
+  // Fetch real free slots whenever the chosen date changes (reschedule mode)
+  const loadSlots = useCallback(async (date: string) => {
+    if (!date) { setSlots([]); return; }
+    setSlotsLoading(true); setNewTime('');
+    try {
+      const r = await fetch(`/api/manage-booking?bizId=${bizId}&token=${token}&slotsDate=${date}`);
+      const d = await r.json();
+      setSlots(d.slots || []);
+    } catch { setSlots([]); } finally { setSlotsLoading(false); }
+  }, [bizId, token]);
+
+  useEffect(() => { if (mode === 'reschedule' && newDate) loadSlots(newDate); }, [mode, newDate, loadSlots]);
 
   const cancel = async () => {
     if (!confirm('לבטל את התור?')) return;
@@ -61,71 +76,107 @@ export default function ManageBookingPage() {
       });
       const d = await r.json();
       if (d.success) { setMode('done'); setDoneMsg(`התור עודכן ל-${newDate} בשעה ${newTime}.`); }
-      else if (d.error === 'slot_taken') setError('השעה הזו כבר תפוסה. בחר שעה אחרת.');
+      else if (d.error === 'slot_taken') { setError('השעה הזו כבר תפוסה. בחר שעה אחרת.'); loadSlots(newDate); }
       else setError('לא הצלחנו לעדכן. נסה שוב.');
     } catch { setError('שגיאה.'); } finally { setBusy(false); }
   };
 
-  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#FAFAFA' }}><CircularProgress sx={{ color: accent }} /></Box>;
+  // Next 14 days as quick date chips
+  const dateChips = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    return d.toISOString().split('T')[0];
+  });
+  const dayName = (iso: string) => ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'][new Date(iso + 'T00:00:00').getDay()];
+
+  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#F5F3FF,#FAFAFA)' }}><CircularProgress sx={{ color: accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }} dir="rtl">
-      <Box sx={{ maxWidth: 420, width: '100%', bgcolor: '#fff', borderRadius: 4, p: { xs: 3, sm: 4 }, boxShadow: '0 8px 40px rgba(0,0,0,0.08)', border: '1px solid #EEE' }}>
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(160deg,#F5F3FF 0%,#FAFAFA 40%)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }} dir="rtl">
+      <Box sx={{ maxWidth: 440, width: '100%', bgcolor: '#fff', borderRadius: 5, overflow: 'hidden', boxShadow: '0 20px 60px rgba(124,58,237,0.12)', border: '1px solid #F0EDFA' }}>
         {error && !booking ? (
-          <Box sx={{ textAlign: 'center', py: 3 }}>
-            <Box sx={{ fontSize: 40, mb: 2 }}>😕</Box>
+          <Box sx={{ textAlign: 'center', py: 6, px: 3 }}>
+            <Box sx={{ fontSize: 44, mb: 2 }}>😕</Box>
             <Typography sx={{ fontSize: 16, color: '#444', fontWeight: 600 }}>{error}</Typography>
           </Box>
         ) : mode === 'done' ? (
-          <Box sx={{ textAlign: 'center', py: 3 }}>
-            <Box sx={{ width: 76, height: 76, borderRadius: '50%', bgcolor: accent, color: '#fff', fontSize: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>✓</Box>
-            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#1C1917', mb: 1, letterSpacing: '-0.02em' }}>בוצע!</Typography>
-            <Typography sx={{ fontSize: 15, color: '#57534E', lineHeight: 1.5 }}>{doneMsg}</Typography>
+          <Box sx={{ textAlign: 'center', py: 6, px: 4 }}>
+            <Box sx={{ width: 84, height: 84, borderRadius: '50%', bgcolor: accent, color: '#fff', fontSize: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: '0 10px 30px rgba(124,58,237,0.35)' }}>✓</Box>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#1C1917', mb: 1, letterSpacing: '-0.02em' }}>בוצע!</Typography>
+            <Typography sx={{ fontSize: 15, color: '#57534E', lineHeight: 1.55 }}>{doneMsg}</Typography>
           </Box>
         ) : booking && mode === 'view' ? (
           <>
-            <Typography sx={{ fontSize: 12, fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>{bizName}</Typography>
-            <Typography sx={{ fontSize: 23, fontWeight: 900, color: '#1C1917', textAlign: 'center', mt: 0.5, mb: 0.5, letterSpacing: '-0.02em' }}>התור שלך</Typography>
-            {booking.status === 'cancelled' && <Typography sx={{ fontSize: 14, color: '#E5484D', fontWeight: 700, textAlign: 'center', mb: 2 }}>התור בוטל</Typography>}
-
-            <Box sx={{ bgcolor: '#FAF8FF', border: `1px solid ${accent}22`, borderRadius: 3, p: 2.5, my: 2.5 }}>
-              <Row label="שירות" value={booking.service} />
-              <Row label="תאריך" value={booking.date} />
-              <Row label="שעה" value={booking.time} />
-              {booking.staff && <Row label="עם" value={booking.staff} />}
+            {/* Header band */}
+            <Box sx={{ background: `linear-gradient(135deg, ${accent}, #5B21B6)`, color: '#fff', p: 3.5, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+              <Box sx={{ position: 'absolute', top: -30, right: -20, width: 120, height: 120, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
+              <Typography sx={{ fontSize: 12, fontWeight: 800, opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.12em', position: 'relative' }}>{bizName}</Typography>
+              <Typography sx={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.03em', mt: 0.5, position: 'relative' }}>התור שלך</Typography>
+              {booking.status === 'cancelled' && <Box sx={{ display: 'inline-block', mt: 1.5, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 99, px: 2, py: 0.5, fontSize: 13, fontWeight: 700, position: 'relative' }}>בוטל</Box>}
             </Box>
 
-            {booking.status !== 'cancelled' && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                <Button onClick={() => { setMode('reschedule'); setNewDate(booking.date); setNewTime(booking.time); }} variant="contained" sx={{ borderRadius: 2.5, fontWeight: 800, py: 1.4, bgcolor: accent, '&:hover': { bgcolor: '#6D28D9' } }}>שנה מועד</Button>
-                <Button onClick={cancel} disabled={busy} sx={{ borderRadius: 2.5, fontWeight: 700, py: 1.2, color: '#E5484D' }}>{busy ? <CircularProgress size={20} /> : 'בטל תור'}</Button>
+            <Box sx={{ p: 3.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Box sx={{ textAlign: 'center', bgcolor: `${accent}0F`, borderRadius: 3, px: 2.5, py: 1.5, minWidth: 92 }}>
+                  <Typography sx={{ fontSize: 30, fontWeight: 900, color: accent, lineHeight: 1, letterSpacing: '-0.03em' }}>{booking.time}</Typography>
+                  <Typography sx={{ fontSize: 12, color: accent, fontWeight: 700, mt: 0.5 }}>{booking.date}</Typography>
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: 18, fontWeight: 800, color: '#1C1917' }}>{booking.service}</Typography>
+                  <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{booking.duration} דקות{booking.staff ? ` · עם ${booking.staff}` : ''}</Typography>
+                </Box>
               </Box>
-            )}
+
+              {booking.status !== 'cancelled' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                  <Button onClick={() => { setMode('reschedule'); setNewDate(booking.date); }} variant="contained" sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, fontSize: 16, bgcolor: accent, boxShadow: `0 8px 24px ${accent}40`, '&:hover': { bgcolor: '#6D28D9' } }}>📅 שנה מועד</Button>
+                  <Button onClick={cancel} disabled={busy} sx={{ borderRadius: 3, fontWeight: 700, py: 1.25, color: '#E5484D', '&:hover': { bgcolor: '#FEF2F2' } }}>{busy ? <CircularProgress size={20} /> : 'בטל תור'}</Button>
+                </Box>
+              )}
+            </Box>
           </>
         ) : booking && mode === 'reschedule' ? (
-          <>
-            <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917', mb: 2.5, letterSpacing: '-0.02em' }}>בחר מועד חדש</Typography>
-            <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
-              <TextField label="תאריך" type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} />
-              <TextField label="שעה" type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} />
+          <Box sx={{ p: 3.5 }}>
+            <Button onClick={() => { setMode('view'); setError(''); }} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה</Button>
+            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#1C1917', mb: 2.5, letterSpacing: '-0.02em' }}>בחרו מועד חדש</Typography>
+
+            {/* Date chips */}
+            <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>יום</Typography>
+            <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1.5, mb: 2.5, '&::-webkit-scrollbar': { height: 0 } }}>
+              {dateChips.map((d) => {
+                const sel = d === newDate;
+                const dd = new Date(d + 'T00:00:00');
+                return (
+                  <Box key={d} onClick={() => setNewDate(d)} sx={{ cursor: 'pointer', flexShrink: 0, textAlign: 'center', minWidth: 56, py: 1, borderRadius: 2.5, border: `1.5px solid ${sel ? accent : '#E7E5E4'}`, bgcolor: sel ? accent : '#fff', color: sel ? '#fff' : '#1C1917', transition: 'all 0.15s' }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{dayName(d)}</Typography>
+                    <Typography sx={{ fontSize: 17, fontWeight: 800 }}>{dd.getDate()}</Typography>
+                  </Box>
+                );
+              })}
             </Box>
-            {error && <Typography sx={{ fontSize: 13, color: '#E5484D', mb: 2, fontWeight: 600 }}>{error}</Typography>}
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button onClick={() => { setMode('view'); setError(''); }} sx={{ flex: 1, borderRadius: 2.5, fontWeight: 700, color: '#78716C' }}>חזרה</Button>
-              <Button onClick={reschedule} disabled={busy || !newDate || !newTime} variant="contained" sx={{ flex: 2, borderRadius: 2.5, fontWeight: 800, bgcolor: accent, '&:hover': { bgcolor: '#6D28D9' } }}>{busy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'אשר שינוי'}</Button>
-            </Box>
-          </>
+
+            {/* Real free slots */}
+            <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>שעות פנויות</Typography>
+            {slotsLoading ? (
+              <Box sx={{ textAlign: 'center', py: 3 }}><CircularProgress size={24} sx={{ color: accent }} /></Box>
+            ) : slots.length === 0 ? (
+              <Typography sx={{ textAlign: 'center', color: '#A8A29E', py: 3, fontSize: 14 }}>אין שעות פנויות ביום זה 😔<br />נסו יום אחר</Typography>
+            ) : (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, mb: 1 }}>
+                {slots.map((t) => {
+                  const sel = t === newTime;
+                  return (
+                    <Box key={t} onClick={() => setNewTime(t)} sx={{ cursor: 'pointer', textAlign: 'center', py: 1.25, borderRadius: 2, border: `1.5px solid ${sel ? accent : '#E7E5E4'}`, bgcolor: sel ? accent : '#fff', color: sel ? '#fff' : '#1C1917', fontWeight: 700, fontSize: 14.5, transition: 'all 0.12s' }}>{t}</Box>
+                  );
+                })}
+              </Box>
+            )}
+
+            {error && <Typography sx={{ fontSize: 13, color: '#E5484D', mt: 1.5, fontWeight: 600, textAlign: 'center' }}>{error}</Typography>}
+
+            <Button onClick={reschedule} disabled={busy || !newDate || !newTime} fullWidth variant="contained" sx={{ mt: 2.5, borderRadius: 3, fontWeight: 800, py: 1.5, fontSize: 16, bgcolor: accent, boxShadow: `0 8px 24px ${accent}40`, '&:hover': { bgcolor: '#6D28D9' }, '&.Mui-disabled': { bgcolor: '#E7E5E4' } }}>{busy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'אשרו שינוי'}</Button>
+          </Box>
         ) : null}
       </Box>
-    </Box>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75 }}>
-      <Typography sx={{ fontSize: 13, color: '#78716C', fontWeight: 600 }}>{label}</Typography>
-      <Typography sx={{ fontSize: 15, color: '#1C1917', fontWeight: 700 }}>{value}</Typography>
     </Box>
   );
 }

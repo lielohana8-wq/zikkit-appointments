@@ -80,6 +80,32 @@ export default function BookingPageSettings() {
     reader.readAsDataURL(file);
   };
 
+  // Add an image to the gallery (compressed)
+  const addGalleryImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !b) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 900 / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        set('gallery', [...(b.gallery || []), dataUrl].slice(0, 12));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const removeGalleryImage = (idx: number) => {
+    if (!b) return;
+    set('gallery', (b.gallery || []).filter((_, i) => i !== idx));
+  };
+
   const save = async () => {
     if (!bizId || !b) return;
     setSaving(true);
@@ -176,13 +202,69 @@ export default function BookingPageSettings() {
           <TextField fullWidth size="small" label="הערת ביטול/מדיניות" value={b.cancellationNote} onChange={(e) => set('cancellationNote', e.target.value)} multiline rows={2} placeholder="ביטול עד 24 שעות לפני התור" />
         </Section>
 
+        {/* Gallery */}
+        <Section title="📸 גלריית תמונות">
+          <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>הציגו את העבודות שלכם — תמונות שימשכו לקוחות לקבוע. עד 12 תמונות.</Typography>
+          <TextField fullWidth size="small" label="כותרת הגלריה" value={b.galleryTitle} onChange={(e) => set('galleryTitle', e.target.value)} sx={{ mb: 2 }} placeholder="העבודות שלנו" />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mb: 2 }}>
+            {(b.gallery || []).map((img, i) => (
+              <Box key={i} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', aspectRatio: '1', border: `1px solid ${c.border2}` }}>
+                <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <Box onClick={() => removeGalleryImage(i)} sx={{ position: 'absolute', top: 4, left: 4, width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, cursor: 'pointer', '&:hover': { bgcolor: c.hot } }}>✕</Box>
+              </Box>
+            ))}
+            {(b.gallery || []).length < 12 && (
+              <Box component="label" sx={{ cursor: 'pointer', borderRadius: 2, border: `2px dashed ${c.border}`, aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: c.text3, gap: 0.5, '&:hover': { borderColor: c.accent, color: c.accent } }}>
+                <Box sx={{ fontSize: 24 }}>+</Box>
+                <Typography sx={{ fontSize: 11, fontWeight: 600 }}>הוסף</Typography>
+                <input type="file" accept="image/*" hidden onChange={addGalleryImage} />
+              </Box>
+            )}
+          </Box>
+        </Section>
+
+        {/* Announcement banner */}
+        <Section title="📢 הודעת עדכון">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text }}>הצג באנר הודעה בראש הדף</Typography>
+            <Switch checked={b.announcementOn} onChange={(e) => set('announcementOn', e.target.checked)} />
+          </Box>
+          <TextField fullWidth size="small" label="טקסט ההודעה" value={b.announcement} onChange={(e) => set('announcement', e.target.value)} multiline rows={2} placeholder="🎉 מבצע חגים! 20% הנחה על כל הטיפולים החודש" disabled={!b.announcementOn} />
+        </Section>
+
+        {/* Promo strip */}
+        <Section title="🔥 רצועת מבצע">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text }}>הצג רצועת מבצע בולטת</Typography>
+            <Switch checked={b.promoOn} onChange={(e) => set('promoOn', e.target.checked)} />
+          </Box>
+          <TextField fullWidth size="small" label="טקסט המבצע" value={b.promoText} onChange={(e) => set('promoText', e.target.value)} placeholder="לקוח חדש? קבל 15% הנחה על הביקור הראשון!" disabled={!b.promoOn} />
+        </Section>
+
+        {/* Popup */}
+        <Section title="💬 פופאפ פתיחה">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text }}>הצג פופאפ כשנכנסים לדף</Typography>
+            <Switch checked={b.popupOn} onChange={(e) => set('popupOn', e.target.checked)} />
+          </Box>
+          <TextField fullWidth size="small" label="כותרת הפופאפ" value={b.popupTitle} onChange={(e) => set('popupTitle', e.target.value)} sx={{ mb: 2 }} placeholder="ברוכים הבאים! 🎉" disabled={!b.popupOn} />
+          <TextField fullWidth size="small" label="תוכן הפופאפ" value={b.popupText} onChange={(e) => set('popupText', e.target.value)} multiline rows={3} placeholder="קבעו תור עכשיו וקבלו 10% הנחה. מחכים לכם!" disabled={!b.popupOn} />
+        </Section>
+
+        {/* About */}
+        <Section title="ℹ️ קצת עלינו">
+          <TextField fullWidth size="small" label="טקסט 'אודות'" value={b.aboutText} onChange={(e) => set('aboutText', e.target.value)} multiline rows={3} placeholder="ספרו ללקוחות עליכם — ניסיון, התמחות, מה מייחד אתכם..." />
+        </Section>
+
         {/* Contact */}
         <Section title="פרטי קשר (יוצגו בדף)">
           <TextField fullWidth size="small" label="📲 הטלפון שלך לקבלת התראות על תורים" value={b.notifyPhone} onChange={(e) => set('notifyPhone', e.target.value)} sx={{ mb: 2 }} placeholder="050-0000000" helperText="לכאן יישלח SMS על כל תור חדש" />
           <TextField fullWidth size="small" label="כתובת" value={b.address} onChange={(e) => set('address', e.target.value)} sx={{ mb: 2 }} />
           <TextField fullWidth size="small" label="טלפון" value={b.phone} onChange={(e) => set('phone', e.target.value)} sx={{ mb: 2 }} />
           <TextField fullWidth size="small" label="אינסטגרם (שם משתמש)" value={b.instagram} onChange={(e) => set('instagram', e.target.value)} sx={{ mb: 2 }} placeholder="@mybusiness" />
-          <TextField fullWidth size="small" label="וואטסאפ (מספר)" value={b.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} placeholder="0501234567" />
+          <TextField fullWidth size="small" label="וואטסאפ (מספר)" value={b.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} placeholder="0501234567" sx={{ mb: 2 }} />
+          <TextField fullWidth size="small" label="פייסבוק (קישור או שם)" value={b.facebook} onChange={(e) => set('facebook', e.target.value)} sx={{ mb: 2 }} placeholder="facebook.com/mybusiness" />
+          <TextField fullWidth size="small" label="טיקטוק (שם משתמש)" value={b.tiktok} onChange={(e) => set('tiktok', e.target.value)} placeholder="@mybusiness" />
         </Section>
 
         {/* Options */}
@@ -190,6 +272,7 @@ export default function BookingPageSettings() {
           {[
             { key: 'showPrices' as const, label: 'הצג מחירים' },
             { key: 'showDuration' as const, label: 'הצג משך טיפול' },
+            { key: 'showReviews' as const, label: 'הצג ביקורות' },
             { key: 'requirePhone' as const, label: 'דרוש טלפון מהלקוח' },
             { key: 'requireEmail' as const, label: 'דרוש אימייל מהלקוח' },
           ].map((o) => (

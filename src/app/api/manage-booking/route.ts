@@ -24,10 +24,41 @@ async function findBooking(bizId: string, token: string) {
 export async function GET(req: NextRequest) {
   const bizId = req.nextUrl.searchParams.get('bizId') || '';
   const token = req.nextUrl.searchParams.get('token') || '';
+  const slotsDate = req.nextUrl.searchParams.get('slotsDate') || '';
   if (!bizId || !token) return NextResponse.json({ error: 'missing' }, { status: 400 });
-  const { biz, booking } = await findBooking(bizId, token);
+  const { biz, bookings, booking } = await findBooking(bizId, token);
   if (!biz || !booking) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   const bizName = ((biz.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
+
+  // If a date is requested, compute REAL free slots for that date (excluding this booking).
+  if (slotsDate) {
+    const cfg = (biz.cfg as Record<string, unknown>) || {};
+    const apt = (biz.appointments as Record<string, unknown>) || {};
+    const hours = (cfg.hours as Record<number, { open: boolean; start: string; end: string }>) || null;
+    const stations = (apt.stations as number) || 1;
+    const dur = booking.duration || 30;
+    const dow = new Date(slotsDate + 'T00:00:00').getDay();
+    const dh = (hours && hours[dow]) || { open: dow !== 6, start: '09:00', end: '19:00' };
+    const slots: string[] = [];
+    if (dh.open) {
+      const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
+      const toStr = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+      // Only this staff's bookings block when the booking has a staff; else station capacity.
+      const relevant = booking.staff ? bookings.filter((b) => b.staff === booking.staff) : bookings;
+      const capacity = booking.staff ? 1 : stations;
+      for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += 15) {
+        const overlap = relevant.filter((b) => {
+          // exclude the booking being rescheduled, and cancelled ones
+          if (b.manageToken === token || b.status === 'cancelled' || b.date !== slotsDate) return false;
+          const bs = toMin(b.time); const be = bs + (b.duration || 30);
+          return t < be && t + dur > bs;
+        }).length;
+        if (overlap < capacity) slots.push(toStr(t));
+      }
+    }
+    return NextResponse.json({ slots });
+  }
+
   return NextResponse.json({
     bizName,
     booking: {

@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField } from '@mui/mater
 import { useParams } from 'next/navigation';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -70,6 +70,8 @@ export default function PublicBookingPage() {
     } catch { alert('שגיאה'); } finally { setBooking(false); }
   };
   const [manageToken, setManageToken] = useState('');
+  const [showPopup, setShowPopup] = useState(true);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bizId) return;
@@ -82,6 +84,7 @@ export default function PublicBookingPage() {
   const accent = info?.branding?.brandColor || '#9333EA';
   const accentLight = shade(accent, 60);
   const accentDark = shade(accent, -30);
+  const socialBtn = (col: string) => ({ width: 46, height: 46, borderRadius: '50%', bgcolor: `${col}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, textDecoration: 'none', transition: 'all 0.18s', cursor: 'pointer', '&:hover': { bgcolor: col, transform: 'translateY(-2px)' } });
 
   const freeSlots = useCallback((date: string): string[] => {
     if (!info || !selectedService) return [];
@@ -156,37 +159,68 @@ export default function PublicBookingPage() {
   const fontStack = "'Heebo', 'Assistant', -apple-system, sans-serif";
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8F7F5', direction: 'rtl', fontFamily: fontStack, pb: 8 }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap');`}</style>
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FBFAFF 0%, #F6F4FB 100%)', direction: 'rtl', fontFamily: fontStack, pb: 8 }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
+
+      {/* Announcement banner */}
+      {info.branding.announcementOn && info.branding.announcement && (
+        <Box sx={{ bgcolor: accentDark, color: '#fff', textAlign: 'center', py: 1.25, px: 2, fontSize: 13.5, fontWeight: 600, position: 'sticky', top: 0, zIndex: 20 }}>
+          📢 {info.branding.announcement}
+        </Box>
+      )}
+
+      {/* Welcome popup (shown once) */}
+      {showPopup && info.branding.popupOn && (info.branding.popupTitle || info.branding.popupText) && (
+        <Box onClick={() => setShowPopup(false)} sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3, backdropFilter: 'blur(4px)' }}>
+          <Box onClick={(e) => e.stopPropagation()} sx={{ bgcolor: '#fff', borderRadius: 5, maxWidth: 380, width: '100%', p: 4, textAlign: 'center', animation: 'popIn 0.3s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>🎉</Box>
+            {info.branding.popupTitle && <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#1C1917', letterSpacing: '-0.02em', mb: 1 }}>{info.branding.popupTitle}</Typography>}
+            {info.branding.popupText && <Typography sx={{ fontSize: 15, color: '#57534E', lineHeight: 1.6, mb: 3 }}>{info.branding.popupText}</Typography>}
+            <Button onClick={() => setShowPopup(false)} fullWidth variant="contained" sx={{ borderRadius: 3, fontWeight: 800, py: 1.4, bgcolor: accent, '&:hover': { bgcolor: accentDark } }}>הבנתי, בואו נתחיל</Button>
+          </Box>
+        </Box>
+      )}
+
+      {/* Gallery lightbox */}
+      {lightbox && (
+        <Box onClick={() => setLightbox(null)} sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.88)', zIndex: 1400, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+          <Box component="img" src={lightbox} sx={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 3, objectFit: 'contain' }} />
+          <Box sx={{ position: 'absolute', top: 20, left: 20, color: '#fff', fontSize: 28, cursor: 'pointer', opacity: 0.8 }}>✕</Box>
+        </Box>
+      )}
 
       {/* Hero header */}
       <Box sx={{ position: 'relative', overflow: 'hidden' }}>
         {info.branding.banner ? (
-          <Box sx={{ height: 220, background: `url(${info.branding.banner}) center/cover`, position: 'relative' }}>
-            <Box sx={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.15))` }} />
+          <Box sx={{ height: 240, background: `url(${info.branding.banner}) center/cover`, position: 'relative' }}>
+            <Box sx={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.1))` }} />
           </Box>
         ) : (
-          <Box sx={{ height: 180, background: `linear-gradient(135deg, ${accent} 0%, ${accentDark} 100%)`, position: 'relative' }}>
-            <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
-            <Box sx={{ position: 'absolute', bottom: -60, left: -20, width: 160, height: 160, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.06)' }} />
+          <Box sx={{ height: 210, background: `linear-gradient(135deg, ${accent} 0%, ${accentDark} 100%)`, position: 'relative' }}>
+            <Box sx={{ position: 'absolute', top: -50, right: -40, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.1)' }} />
+            <Box sx={{ position: 'absolute', bottom: -70, left: -30, width: 180, height: 180, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.07)' }} />
+            <Box sx={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)', backgroundSize: '22px 22px', opacity: 0.5 }} />
           </Box>
         )}
 
         {/* Logo + name card overlapping hero */}
-        <Box sx={{ maxWidth: 520, mx: 'auto', px: 2, mt: -8, position: 'relative', zIndex: 2 }}>
-          <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', textAlign: 'center' }}>
+        <Box sx={{ maxWidth: 520, mx: 'auto', px: 2, mt: -9, position: 'relative', zIndex: 2 }}>
+          <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3.5, boxShadow: '0 16px 48px rgba(124,58,237,0.13)', textAlign: 'center', border: '1px solid #F0EDFA' }}>
             {info.branding.logo ? (
-              <Box component="img" src={info.branding.logo} sx={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', mt: -8, mb: 1.5, border: '4px solid #fff', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', mx: 'auto', display: 'block' }} />
+              <Box component="img" src={info.branding.logo} sx={{ width: 92, height: 92, borderRadius: '50%', objectFit: 'cover', mt: -9, mb: 1.5, border: '4px solid #fff', boxShadow: '0 8px 24px rgba(124,58,237,0.2)', mx: 'auto', display: 'block' }} />
             ) : (
-              <Box sx={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38, fontWeight: 800, mt: -8, mb: 1.5, border: '4px solid #fff', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', mx: 'auto' }}>{info.businessName[0]}</Box>
+              <Box sx={{ width: 92, height: 92, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 900, mt: -9, mb: 1.5, border: '4px solid #fff', boxShadow: '0 8px 24px rgba(124,58,237,0.25)', mx: 'auto' }}>{info.businessName[0]}</Box>
             )}
-            <Typography sx={{ fontSize: 26, fontWeight: 900, color: '#1C1917', fontFamily: fontStack }}>{info.businessName}</Typography>
-            {info.branding.welcomeText && <Typography sx={{ fontSize: 14.5, color: '#78716C', mt: 0.5, lineHeight: 1.5 }}>{info.branding.welcomeText}</Typography>}
+            <Typography sx={{ fontSize: 27, fontWeight: 900, color: '#1C1917', fontFamily: fontStack, letterSpacing: '-0.03em' }}>{info.businessName}</Typography>
+            {info.branding.welcomeText && <Typography sx={{ fontSize: 14.5, color: '#78716C', mt: 0.75, lineHeight: 1.5 }}>{info.branding.welcomeText}</Typography>}
+            {info.branding.promoOn && info.branding.promoText && (
+              <Box sx={{ mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 2.5, px: 2, py: 1.25, fontSize: 13.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, boxShadow: `0 6px 18px ${accent}33` }}>🔥 {info.branding.promoText}</Box>
+            )}
             {/* Quick contact chips */}
             {(info.branding.phone || info.branding.address) && (
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 2, flexWrap: 'wrap' }}>
-                {info.branding.address && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#F5F3F0', borderRadius: 99, px: 1.5, py: 0.5, fontSize: 12, color: '#57534E' }}>📍 {info.branding.address}</Box>}
-                {info.branding.phone && <Box component="a" href={`tel:${info.branding.phone}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: '#F5F3F0', borderRadius: 99, px: 1.5, py: 0.5, fontSize: 12, color: '#57534E', textDecoration: 'none' }}>📞 {info.branding.phone}</Box>}
+                {info.branding.address && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: `${accent}0D`, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 12.5, color: accentDark, fontWeight: 600 }}>📍 {info.branding.address}</Box>}
+                {info.branding.phone && <Box component="a" href={`tel:${info.branding.phone}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: `${accent}0D`, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 12.5, color: accentDark, fontWeight: 600, textDecoration: 'none' }}>📞 {info.branding.phone}</Box>}
               </Box>
             )}
           </Box>
@@ -221,22 +255,22 @@ export default function PublicBookingPage() {
               {info.services.length === 0 && <Typography sx={{ textAlign: 'center', color: '#A8A29E', py: 4 }}>אין שירותים זמינים כרגע</Typography>}
               {info.services.map((s) => (
                 <Box key={s.id} onClick={() => { setSelectedService(s); setStage(info.team && info.team.length > 0 ? 'staff' : 'slot'); }}
-                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 2, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '2px solid transparent', transition: 'all 0.2s', '&:hover': { borderColor: accent, transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${accent}22` } }}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 1.5, bgcolor: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✂️</Box>
+                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 3.5, p: 2.5, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', border: '1.5px solid #F0EDFA', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: accent, transform: 'translateY(-3px)', boxShadow: `0 14px 32px ${accent}26` }, '&:active': { transform: 'translateY(-1px)' } }}>
+                  <Box sx={{ width: 52, height: 52, borderRadius: 2.5, background: `linear-gradient(135deg, ${accent}1A, ${accent}0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>✂️</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 16, fontWeight: 700, color: '#1C1917' }}>{s.name}</Typography>
-                    <Box sx={{ display: 'flex', gap: 1.5, mt: 0.25 }}>
-                      {info.branding.showDuration !== false && <Typography sx={{ fontSize: 12.5, color: '#A8A29E' }}>🕐 {s.duration} דק'</Typography>}
+                    <Typography sx={{ fontSize: 16.5, fontWeight: 800, color: '#1C1917', letterSpacing: '-0.01em' }}>{s.name}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5, mt: 0.4 }}>
+                      {info.branding.showDuration !== false && <Typography sx={{ fontSize: 12.5, color: '#A8A29E', fontWeight: 500 }}>🕐 {s.duration} דק'</Typography>}
                     </Box>
                   </Box>
-                  {info.branding.showPrices && s.price ? <Box sx={{ textAlign: 'center' }}><Typography sx={{ fontSize: 18, fontWeight: 800, color: accent, lineHeight: 1 }}>₪{s.price}</Typography></Box> : null}
-                  <Box sx={{ color: accent, fontSize: 22, fontWeight: 300 }}>‹</Box>
+                  {info.branding.showPrices && s.price ? <Box sx={{ textAlign: 'center', bgcolor: `${accent}0D`, borderRadius: 2, px: 1.5, py: 0.75 }}><Typography sx={{ fontSize: 18, fontWeight: 900, color: accent, lineHeight: 1, letterSpacing: '-0.02em' }}>₪{s.price}</Typography></Box> : null}
+                  <Box sx={{ color: accent, fontSize: 24, fontWeight: 300, opacity: 0.6 }}>‹</Box>
                 </Box>
               ))}
             </Box>
 
             {/* Reviews — social proof */}
-            {info.reviews && info.reviews.length > 0 && (
+            {info.branding.showReviews !== false && info.reviews && info.reviews.length > 0 && (
               <Box sx={{ mt: 4 }}>
                 {(() => {
                   const avg = Math.round((info.reviews.reduce((s, r) => s + r.rating, 0) / info.reviews.length) * 10) / 10;
@@ -250,13 +284,45 @@ export default function PublicBookingPage() {
                 })()}
                 <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { height: 0 } }}>
                   {info.reviews.slice(0, 8).map((r, i) => (
-                    <Box key={i} sx={{ minWidth: 240, maxWidth: 240, border: '1.5px solid #E7E5E4', borderRadius: 2, p: 2, flexShrink: 0 }}>
+                    <Box key={i} sx={{ minWidth: 240, maxWidth: 240, border: '1.5px solid #F0EDFA', bgcolor: '#fff', borderRadius: 3, p: 2, flexShrink: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
                       <Typography sx={{ fontSize: 13, color: '#FFB224', mb: 0.5 }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</Typography>
                       <Typography sx={{ fontSize: 13, color: '#57534E', lineHeight: 1.5, mb: 1 }}>{r.text}</Typography>
                       <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#1C1917' }}>{r.customerName}</Typography>
                     </Box>
                   ))}
                 </Box>
+              </Box>
+            )}
+
+            {/* Gallery */}
+            {info.branding.gallery && info.branding.gallery.length > 0 && (
+              <Box sx={{ mt: 4 }}>
+                <Typography sx={{ fontSize: 17, fontWeight: 800, color: '#1C1917', mb: 1.5, letterSpacing: '-0.01em' }}>{info.branding.galleryTitle || 'הגלריה שלנו'}</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+                  {info.branding.gallery.map((img, i) => (
+                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', borderRadius: 2.5, overflow: 'hidden', aspectRatio: '1', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
+                      <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* About */}
+            {info.branding.aboutText && (
+              <Box sx={{ mt: 4, bgcolor: '#fff', borderRadius: 3.5, p: 2.75, border: '1.5px solid #F0EDFA', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#1C1917', mb: 1 }}>קצת עלינו</Typography>
+                <Typography sx={{ fontSize: 14, color: '#57534E', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{info.branding.aboutText}</Typography>
+              </Box>
+            )}
+
+            {/* Social links */}
+            {(info.branding.instagram || info.branding.facebook || info.branding.tiktok || info.branding.whatsapp) && (
+              <Box sx={{ display: 'flex', gap: 1.25, justifyContent: 'center', mt: 4 }}>
+                {info.branding.instagram && <Box component="a" href={`https://instagram.com/${info.branding.instagram.replace('@', '')}`} target="_blank" sx={socialBtn(accent)}>📷</Box>}
+                {info.branding.facebook && <Box component="a" href={info.branding.facebook.startsWith('http') ? info.branding.facebook : `https://${info.branding.facebook}`} target="_blank" sx={socialBtn(accent)}>👍</Box>}
+                {info.branding.tiktok && <Box component="a" href={`https://tiktok.com/${info.branding.tiktok.startsWith('@') ? info.branding.tiktok : '@' + info.branding.tiktok}`} target="_blank" sx={socialBtn(accent)}>🎵</Box>}
+                {info.branding.whatsapp && <Box component="a" href={`https://wa.me/972${info.branding.whatsapp.replace(/^0/, '')}`} target="_blank" sx={socialBtn(accent)}>💬</Box>}
               </Box>
             )}
           </Box>
@@ -323,7 +389,7 @@ export default function PublicBookingPage() {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
                   {freeSlots(selectedDate).map((t) => (
                     <Box key={t} onClick={() => { setSelectedTime(t); setStage('details'); }}
-                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.5, borderRadius: 2.5, bgcolor: '#fff', border: `1.5px solid #E7E5E4`, fontWeight: 700, fontSize: 15, color: '#1C1917', transition: 'all 0.15s', '&:hover': { borderColor: accent, bgcolor: accent, color: '#fff', transform: 'scale(1.05)' } }}>{t}</Box>
+                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.5, borderRadius: 2.5, bgcolor: '#fff', border: `1.5px solid #F0EDFA`, fontWeight: 800, fontSize: 15, color: '#1C1917', transition: 'all 0.15s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 1px 4px rgba(0,0,0,0.03)', '&:hover': { borderColor: accent, bgcolor: accent, color: '#fff', transform: 'scale(1.06)', boxShadow: `0 8px 20px ${accent}33` } }}>{t}</Box>
                   ))}
                   {freeSlots(selectedDate).length === 0 && (
                     <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 3 }}>

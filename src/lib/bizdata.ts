@@ -294,6 +294,20 @@ export interface BookingBranding {
   cancellationNote: string;
   thankYouMessage: string;
   enabled: boolean;
+  // --- Rich options ---
+  gallery: string[];           // gallery image data URLs shown on booking page
+  galleryTitle: string;        // e.g. "העבודות שלנו"
+  announcement: string;        // important update text (banner)
+  announcementOn: boolean;     // show the banner
+  popupTitle: string;          // popup shown once on page open
+  popupText: string;
+  popupOn: boolean;
+  promoText: string;           // highlighted promo/offer strip
+  promoOn: boolean;
+  aboutText: string;           // "about us" section
+  tiktok: string;
+  facebook: string;
+  showReviews: boolean;        // toggle reviews section
 }
 
 export async function getBranding(bizId: string): Promise<BookingBranding> {
@@ -318,6 +332,19 @@ export async function getBranding(bizId: string): Promise<BookingBranding> {
     cancellationNote: b.cancellationNote || '',
     thankYouMessage: b.thankYouMessage || '',
     enabled: b.enabled !== false,
+    gallery: b.gallery || [],
+    galleryTitle: b.galleryTitle || 'העבודות שלנו',
+    announcement: b.announcement || '',
+    announcementOn: b.announcementOn === true,
+    popupTitle: b.popupTitle || '',
+    popupText: b.popupText || '',
+    popupOn: b.popupOn === true,
+    promoText: b.promoText || '',
+    promoOn: b.promoOn === true,
+    aboutText: b.aboutText || '',
+    tiktok: b.tiktok || '',
+    facebook: b.facebook || '',
+    showReviews: b.showReviews !== false,
   };
 }
 

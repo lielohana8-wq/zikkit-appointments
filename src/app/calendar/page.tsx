@@ -49,6 +49,12 @@ export default function CalendarPage() {
   }, [bizId]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('add') === '1') {
+      setAddOpen(true);
+      window.history.replaceState({}, '', '/calendar');
+    }
+  }, []);
 
   const submit = async () => {
     if (!bizId || !form.customerName) return;

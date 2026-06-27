@@ -10,6 +10,7 @@ import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { useThemeMode } from '@/components/ThemeMode';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { WelcomeWizard } from '@/components/WelcomeWizard';
+import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -28,6 +29,7 @@ interface Booking {
 export default function DashboardPage() {
   const router = useRouter();
   const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
+  const { showToast } = useToast();
   const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -109,6 +111,16 @@ export default function DashboardPage() {
   const today = new Date().toISOString().split('T')[0];
   const todayBookings = bookings.filter((b) => b.date === today);
   const upcoming = bookings.filter((b) => b.date > today).slice(0, 10);
+  // Today's expected revenue (from non-cancelled bookings today)
+  const todayRevenue = todayBookings
+    .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
+    .reduce((sum, b) => sum + (Number((b as { price?: number }).price) || 0), 0);
+  // This week's completed revenue
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().split('T')[0];
+  const weekRevenue = bookings
+    .filter((b) => b.date >= weekAgoStr && b.date <= today && b.status === 'completed')
+    .reduce((sum, b) => sum + (Number((b as { price?: number }).price) || 0), 0);
   const insights = user?.role !== 'staff' ? computeInsights(bookings as never) : [];
 
   return (
@@ -193,16 +205,34 @@ export default function DashboardPage() {
         {/* Stats — editorial bordered block */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', mb: 4, border: `1.5px solid ${c.border}`, borderRadius: 2, overflow: 'hidden' }}>
           {[
-            { label: 'תורים היום', value: todayBookings.length, accent: true },
-            { label: 'תורים קרובים', value: upcoming.length, accent: false },
-            { label: 'סה"כ תורים', value: bookings.length, accent: false },
+            { label: 'תורים היום', value: String(todayBookings.length), accent: true },
+            { label: 'צפי הכנסה היום', value: `₪${todayRevenue.toLocaleString()}`, accent: false },
+            { label: 'הכנסה השבוע', value: `₪${weekRevenue.toLocaleString()}`, accent: false },
           ].map((s, i) => (
             <Box key={i} sx={{ bgcolor: s.accent ? c.accent : c.surface1, borderRight: i < 2 ? `1px solid ${s.accent || i === 0 ? c.accent : c.border2}` : 'none', p: { xs: 2, sm: 3 } }}>
-              <Typography sx={{ fontSize: { xs: 36, sm: 46 }, fontWeight: 900, color: s.accent ? '#fff' : c.text, letterSpacing: '-0.04em', lineHeight: 0.9 }}>{s.value}</Typography>
-              <Typography sx={{ fontSize: 12, color: s.accent ? 'rgba(255,255,255,0.8)' : c.text3, mt: 1, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</Typography>
+              <Typography sx={{ fontSize: { xs: 28, sm: 38 }, fontWeight: 900, color: s.accent ? '#fff' : c.text, letterSpacing: '-0.04em', lineHeight: 0.9 }}>{s.value}</Typography>
+              <Typography sx={{ fontSize: 11.5, color: s.accent ? 'rgba(255,255,255,0.8)' : c.text3, mt: 1, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</Typography>
             </Box>
           ))}
         </Box>
+
+        {/* Share booking link — drives bookings */}
+        {setupState.bookingEnabled && bizId && (
+          <Box sx={{ bgcolor: c.accentDim, border: `1px solid ${c.accentMid}`, borderRadius: 2, p: 2.5, mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔗</Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 12, color: c.accent, fontWeight: 700 }}>לינק ההזמנות שלך</Typography>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{`${typeof window !== 'undefined' ? window.location.origin : ''}/book/${bizId}`}</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1.75 }}>
+              <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; navigator.clipboard?.writeText(url); showToast('הלינק הועתק!', 'success'); }} variant="contained" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>📋 העתק</Button>
+              <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; window.open(`https://wa.me/?text=${encodeURIComponent('קבעו תור אצלי: ' + url)}`, '_blank'); }} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1, color: c.green, borderColor: c.border2 }}>💬 שתף בוואטסאפ</Button>
+              <Button onClick={() => window.open(`/book/${bizId}`, '_blank')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>👁 תצוגה</Button>
+            </Box>
+          </Box>
+        )}
 
         {/* Dana add-on (subtle) */}
         {danaPhone ? (
@@ -365,6 +395,9 @@ export default function DashboardPage() {
 
       <BookingDetailDialog booking={selectedBooking as never} bizId={bizId} onClose={() => setSelectedBooking(null)} onChanged={() => window.location.reload()} />
       {user?.role !== 'staff' && <WelcomeWizard bizId={bizId} hasServices={setupState.hasServices} hasHours={setupState.hasHours} bookingEnabled={setupState.bookingEnabled} />}
+
+      {/* Quick-add FAB */}
+      <Box onClick={() => router.push('/calendar?add=1')} sx={{ position: 'fixed', bottom: 24, left: 24, width: 60, height: 60, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 300, cursor: 'pointer', boxShadow: `0 8px 28px ${c.accent}66`, zIndex: 50, transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { transform: 'scale(1.08) translateY(-2px)', boxShadow: `0 12px 36px ${c.accent}88` }, '&:active': { transform: 'scale(1.0)' } }}>+</Box>
     </Box>
   );
 }

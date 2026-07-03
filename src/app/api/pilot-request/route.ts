@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { cleanStr, cleanPhone, cleanEmail } from '@/lib/validate';
 
 /**
  * POST /api/pilot-request
@@ -11,13 +13,17 @@ const OWNER_EMAIL = process.env.PILOT_NOTIFY_EMAIL || 'ohanaliel@gmail.com';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 lead submissions per IP per minute (anti-spam)
+    const limited = enforceRateLimit(req, 'pilot-request', 5, 60_000);
+    if (limited) return limited;
+
     const body = await req.json();
-    const name = (body.name || '').trim();
-    const bizName = (body.bizName || '').trim();
-    const phone = (body.phone || '').trim();
-    const email = (body.email || '').trim();
-    const bizType = (body.bizType || '').trim();
-    const note = (body.note || '').trim();
+    const name = cleanStr(body.name, 80);
+    const bizName = cleanStr(body.bizName, 120);
+    const phone = cleanPhone(body.phone);
+    const email = cleanEmail(body.email);
+    const bizType = cleanStr(body.bizType, 60);
+    const note = cleanStr(body.note, 500);
 
     if (!name || !phone) {
       return NextResponse.json({ error: 'חסרים שם וטלפון' }, { status: 400 });

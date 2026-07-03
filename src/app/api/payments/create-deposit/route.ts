@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentPage, isGrowConfigured } from '@/lib/grow';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import { getBiz } from '@/lib/firestore-admin';
 
 /**
@@ -9,6 +10,8 @@ import { getBiz } from '@/lib/firestore-admin';
  */
 export async function POST(req: NextRequest) {
   try {
+    const limited = enforceRateLimit(req, 'create-deposit', 10, 60000);
+    if (limited) return limited;
     if (!isGrowConfigured()) {
       return NextResponse.json({ ok: false, error: 'תשלומים לא מוגדרים עדיין' }, { status: 503 });
     }

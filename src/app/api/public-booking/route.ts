@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBiz, setBizField, sendSms } from '@/lib/firestore-admin';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Public booking endpoint. Only active if the owner ENABLED their booking page.
@@ -118,6 +119,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 15 booking attempts per IP per minute
+    const limited = enforceRateLimit(req, 'public-booking-post', 15, 60_000);
+    if (limited) return limited;
+
     const body = await req.json();
     const { bizId, booking, action } = body;
     if (!bizId) return NextResponse.json({ error: 'missing data' }, { status: 400 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBiz, setBizField, sendSms } from '@/lib/firestore-admin';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Self-service booking management for customers (no login).
@@ -71,6 +72,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = enforceRateLimit(req, 'manage-booking-post', 20, 60000);
+    if (limited) return limited;
     const { bizId, token, action, date, time } = await req.json();
     if (!bizId || !token || !action) return NextResponse.json({ error: 'missing' }, { status: 400 });
 

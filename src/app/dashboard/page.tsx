@@ -136,6 +136,9 @@ export default function DashboardPage() {
           <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
           <Button onClick={toggleTheme} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>{themeMode === 'dark' ? '☀️' : '🌙'}</Button>
           <Button onClick={() => router.push('/settings')} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>⚙️</Button>
+          {['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase()) && (
+            <Button onClick={() => router.push('/hq')} sx={{ color: '#fff', bgcolor: c.text, fontWeight: 800, fontSize: 12, minWidth: 'auto', px: 1.25, py: 0.5, borderRadius: 1, letterSpacing: '0.05em', '&:hover': { bgcolor: c.accent } }}>HQ</Button>
+          )}
           <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
         </Box>
       </Box>

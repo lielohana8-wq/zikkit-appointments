@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem } from '@mui/material';
-import { updateBooking, deleteBooking, getTeam, type Booking, type TeamMember } from '@/lib/bizdata';
+import { updateBooking, deleteBooking, getTeam, loadBiz, type Booking, type TeamMember } from '@/lib/bizdata';
+import { waLink, messageTemplates } from '@/lib/messaging';
 import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
@@ -21,6 +22,8 @@ interface Props {
 export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Props) {
   const { showToast } = useToast();
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const [bizName, setBizName] = useState('העסק');
+  const [showMsgMenu, setShowMsgMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ date: '', time: '', staff: '', service: '', notes: '', duration: 30 });
@@ -36,7 +39,13 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
   }, [booking]);
 
   useEffect(() => {
-    if (bizId && booking) { getTeam(bizId).then(setTeam).catch(() => {}); }
+    if (bizId && booking) {
+      getTeam(bizId).then(setTeam).catch(() => {});
+      loadBiz(bizId).then((biz) => {
+        const name = ((biz?.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
+        setBizName(name);
+      }).catch(() => {});
+    }
   }, [bizId, booking]);
 
   const save = async () => {
@@ -80,7 +89,6 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
   };
 
   if (!booking) return null;
-  const waPhone = booking.customerPhone ? '972' + booking.customerPhone.replace(/^0/, '') : '';
 
   return (
     <Dialog scroll="body" open={!!booking} onClose={onClose} PaperProps={{ sx: { borderRadius: 8, maxWidth: 420, width: '100%' } }}>
@@ -108,10 +116,35 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
 
             {/* Quick actions */}
             {booking.customerPhone && (
-              <Box sx={{ display: 'flex', gap: 1.5, mt: 2.5 }}>
-                <Button href={`tel:${booking.customerPhone}`} fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>📞 התקשר</Button>
-                <Button href={`https://wa.me/${waPhone}`} target="_blank" fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>💬 וואטסאפ</Button>
-              </Box>
+              <>
+                <Box sx={{ display: 'flex', gap: 1.5, mt: 2.5 }}>
+                  <Button href={`tel:${booking.customerPhone}`} fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>📞 התקשר</Button>
+                  <Button onClick={() => setShowMsgMenu(!showMsgMenu)} fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, color: '#25D366', borderColor: c.border2 }}>💬 שלח הודעה</Button>
+                </Box>
+
+                {/* WhatsApp message templates */}
+                {showMsgMenu && (() => {
+                  const manageUrl = (booking as { manageToken?: string }).manageToken && bizId
+                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/manage/${bizId}/${(booking as { manageToken?: string }).manageToken}`
+                    : undefined;
+                  const ctx = { bizName, customerName: booking.customerName, service: booking.service, date: booking.date, time: booking.time, manageUrl };
+                  const msgs: [string, string][] = [
+                    ['✅ אישור תור', messageTemplates.confirmation(ctx)],
+                    ['⏰ תזכורת', messageTemplates.reminder(ctx)],
+                    ['🚗 בדרך אליך', messageTemplates.onTheWay(ctx)],
+                    ['🙏 תודה + ביקורת', messageTemplates.thankYou(ctx)],
+                  ];
+                  return (
+                    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75, bgcolor: c.surface2, borderRadius: 2, p: 1.5 }}>
+                      <Typography sx={{ fontSize: 11, fontWeight: 700, color: c.text3, mb: 0.25 }}>שלח בוואטסאפ — לחיצה פותחת הודעה מוכנה</Typography>
+                      {msgs.map(([label, msg]) => (
+                        <Button key={label} href={waLink(booking.customerPhone!, msg)} target="_blank" onClick={() => setShowMsgMenu(false)}
+                          sx={{ justifyContent: 'flex-start', borderRadius: 1.5, fontWeight: 600, fontSize: 13.5, color: c.text, bgcolor: c.surface1, py: 1, px: 1.5, '&:hover': { bgcolor: c.surface3 } }}>{label}</Button>
+                      ))}
+                    </Box>
+                  );
+                })()}
+              </>
             )}
 
             {/* Status */}

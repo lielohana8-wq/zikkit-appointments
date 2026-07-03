@@ -11,6 +11,7 @@ import { useThemeMode } from '@/components/ThemeMode';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { WelcomeWizard } from '@/components/WelcomeWizard';
 import { useToast } from '@/components/Toast';
+import { waLink, messageTemplates } from '@/lib/messaging';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Booking {
@@ -121,6 +122,10 @@ export default function DashboardPage() {
   const weekRevenue = bookings
     .filter((b) => b.date >= weekAgoStr && b.date <= today && b.status === 'completed')
     .reduce((sum, b) => sum + (Number((b as { price?: number }).price) || 0), 0);
+  // Tomorrow's bookings — for one-tap WhatsApp reminders
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowBookings = bookings.filter((b) => b.date === tomorrowStr && b.status !== 'cancelled');
   const insights = user?.role !== 'staff' ? computeInsights(bookings as never) : [];
 
   return (
@@ -230,6 +235,36 @@ export default function DashboardPage() {
               <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; navigator.clipboard?.writeText(url); showToast('הלינק הועתק!', 'success'); }} variant="contained" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>📋 העתק</Button>
               <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; window.open(`https://wa.me/?text=${encodeURIComponent('קבעו תור אצלי: ' + url)}`, '_blank'); }} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1, color: c.green, borderColor: c.border2 }}>💬 שתף בוואטסאפ</Button>
               <Button onClick={() => window.open(`/book/${bizId}`, '_blank')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>👁 תצוגה</Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* Tomorrow's reminders — one-tap WhatsApp, kills no-shows without any SMS provider */}
+        {user?.role !== 'staff' && tomorrowBookings.length > 0 && (
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Box>
+                <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>⏰ תזכורות למחר</Typography>
+                <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{tomorrowBookings.length} תורים · שלח תזכורת בלחיצה</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {tomorrowBookings.map((b, i) => {
+                const bk = b as { customerName?: string; customerPhone?: string; service?: string; time: string; date: string; manageToken?: string };
+                if (!bk.customerPhone) return null;
+                const manageUrl = bk.manageToken && bizId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/manage/${bizId}/${bk.manageToken}` : undefined;
+                const msg = messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: bk.customerName, service: bk.service, date: bk.date, time: bk.time, manageUrl });
+                return (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface2, borderRadius: 1.5, px: 1.75, py: 1.25 }}>
+                    <Box sx={{ fontSize: 14, fontWeight: 800, color: c.accent, minWidth: 44 }}>{bk.time}</Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.customerName}</Typography>
+                      <Typography sx={{ fontSize: 12, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.service}</Typography>
+                    </Box>
+                    <Button href={waLink(bk.customerPhone, msg)} target="_blank" size="small" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12.5, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' }, whiteSpace: 'nowrap', flexShrink: 0 }}>💬 תזכורת</Button>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         )}

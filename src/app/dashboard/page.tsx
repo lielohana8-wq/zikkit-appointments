@@ -352,6 +352,7 @@ export default function DashboardPage() {
           {
             title: 'כספים',
             items: [
+              { icon: '⚡', label: 'מנוע הכנסות', path: '/revenue', staff: false },
               { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
               { icon: '📈', label: 'אנליטיקס', path: '/analytics', staff: false },
               { icon: '💰', label: 'רווחיות', path: '/expenses', staff: false },

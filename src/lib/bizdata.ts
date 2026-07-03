@@ -70,7 +70,7 @@ export async function loadBiz(bizId: string): Promise<BizData> {
   return snap.exists() ? (snap.data() as BizData) : {};
 }
 
-async function patchBiz(bizId: string, partial: Record<string, unknown>): Promise<void> {
+export async function patchBiz(bizId: string, partial: Record<string, unknown>): Promise<void> {
   const db = getFirestoreDb();
   const ref = doc(db, BIZ_COLLECTION, bizId);
   const snap = await getDoc(ref);

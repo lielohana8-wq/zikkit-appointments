@@ -44,8 +44,8 @@ export function WelcomeWizard({ bizId, hasServices, hasHours, bookingEnabled }: 
       emoji: '👋',
       title: 'ברוכים הבאים ל-Zikkit!',
       body: 'המערכת שתנהל לכם את כל התורים, הלקוחות וההכנסות — במקום אחד. בואו נגדיר אתכם ב-3 צעדים מהירים.',
-      cta: 'יאללה, מתחילים',
-      action: () => setStep(1),
+      cta: 'בוא נגדיר ב-5 דקות',
+      action: () => { close(); router.push('/onboarding'); },
     },
     {
       emoji: '📋',

@@ -18,6 +18,7 @@ interface BizInfo {
   team?: Staff[];
   reviews?: Review[];
   hours: Record<number, { open: boolean; start: string; end: string }> | null;
+  blockedDates?: string[];
   bookings: Array<{ date: string; time: string; duration: number; staff?: string | null }>;
   branding: Branding;
 }
@@ -88,6 +89,7 @@ export default function PublicBookingPage() {
 
   const freeSlots = useCallback((date: string): string[] => {
     if (!info || !selectedService) return [];
+    if (info.blockedDates && info.blockedDates.includes(date)) return []; // holiday/vacation
     const dow = new Date(date).getDay();
     const dh = info.hours?.[dow] || { open: dow !== 6, start: '09:00', end: '19:00' };
     if (!dh.open) return [];
@@ -305,6 +307,23 @@ export default function PublicBookingPage() {
                     </Box>
                   ))}
                 </Box>
+              </Box>
+            )}
+
+            {/* Opening hours */}
+            {info.hours && (
+              <Box sx={{ mt: 4, bgcolor: '#fff', borderRadius: 3.5, p: 2.75, border: '1.5px solid #F0EDFA', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#1C1917', mb: 1.5 }}>🕐 שעות פתיחה</Typography>
+                {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((dayName, i) => {
+                  const d = info.hours?.[i];
+                  const todayDow = new Date().getDay();
+                  return (
+                    <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.6, borderBottom: i < 6 ? '1px solid #F5F3FA' : 'none' }}>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: i === todayDow ? 800 : 500, color: i === todayDow ? accent : '#57534E' }}>{dayName}{i === todayDow ? ' (היום)' : ''}</Typography>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: d?.open ? '#1C1917' : '#A8A29E' }}>{d?.open ? `${d.start} - ${d.end}` : 'סגור'}</Typography>
+                    </Box>
+                  );
+                })}
               </Box>
             )}
 

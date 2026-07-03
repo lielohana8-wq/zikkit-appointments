@@ -73,6 +73,7 @@ export async function GET(req: NextRequest) {
       team,
       reviews,
       hours: cfg.hours || null,
+      blockedDates: ((cfg.hours as Record<string, unknown>)?.blockedDates as string[]) || [],
       bookings: ((apt.bookings as Array<Record<string, unknown>>) || [])
         .filter((b) => b.status !== 'cancelled')
         .map((b) => ({ date: b.date, time: b.time, duration: b.duration, staff: b.staff || null })), // include staff for per-staff availability

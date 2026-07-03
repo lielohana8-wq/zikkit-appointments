@@ -453,6 +453,7 @@ export async function deleteTeamMember(bizId: string, id: string): Promise<void>
 export interface BizHours {
   // 0=Sunday .. 6=Saturday
   days: Record<number, { open: boolean; start: string; end: string }>;
+  blockedDates?: string[];  // ISO dates (YYYY-MM-DD) the business is closed (holidays/vacation)
 }
 
 export async function getHours(bizId: string): Promise<BizHours> {

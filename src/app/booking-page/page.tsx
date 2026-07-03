@@ -17,6 +17,7 @@ export default function BookingPageSettings() {
   const [b, setB] = useState<BookingBranding | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [saved, setSaved] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
@@ -147,8 +148,15 @@ export default function BookingPageSettings() {
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button onClick={() => navigator.clipboard.writeText(bookingUrl)} size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>📋 העתק</Button>
               <Button href={bookingUrl} target="_blank" size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>👁️ תצוגה</Button>
+              <Button onClick={() => setShowQR(!showQR)} size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>📱 QR</Button>
               <Button href={`https://wa.me/?text=${encodeURIComponent('קבעו תור: ' + bookingUrl)}`} target="_blank" size="small" sx={{ color: '#25D366', fontWeight: 700 }}>שתף בוואטסאפ</Button>
             </Box>
+            {showQR && (
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Box component="img" src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(bookingUrl)}`} sx={{ width: 200, height: 200, borderRadius: 2, border: `1px solid ${c.border2}`, bgcolor: '#fff', p: 1 }} alt="QR" />
+                <Typography sx={{ fontSize: 12, color: c.text3, mt: 1 }}>הדפיסו והציגו בעסק — לקוחות סורקים וקובעים תור</Typography>
+              </Box>
+            )}
           </Box>
         )}
 

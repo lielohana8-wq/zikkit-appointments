@@ -13,6 +13,21 @@ export default function HoursPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading } = useAuth();
   const [hours, setHoursState] = useState<BizHours | null>(null);
+  const [newBlockDate, setNewBlockDate] = useState('');
+
+  const addBlockedDate = () => {
+    if (!newBlockDate || !hours) return;
+    const existing = hours.blockedDates || [];
+    if (!existing.includes(newBlockDate)) {
+      setHoursState({ ...hours, blockedDates: [...existing, newBlockDate] });
+    }
+    setNewBlockDate('');
+  };
+
+  const removeBlockedDate = (d: string) => {
+    if (!hours) return;
+    setHoursState({ ...hours, blockedDates: (hours.blockedDates || []).filter((x) => x !== d) });
+  };
   const [dataLoading, setDataLoading] = useState(true);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -71,6 +86,25 @@ export default function HoursPage() {
               </Box>
             );
           })}
+        </Box>
+
+        {/* Blocked dates — holidays / vacation */}
+        <Box sx={{ mt: 4 }}>
+          <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 0.5 }}>🚫 ימים חסומים</Typography>
+          <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>חופשות, חגים או ימים שבהם אינך עובד. לקוחות לא יוכלו לקבוע תור בתאריכים האלה.</Typography>
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <TextField type="date" value={newBlockDate} onChange={(e) => setNewBlockDate(e.target.value)} size="small" sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} />
+            <Button onClick={addBlockedDate} variant="outlined" disabled={!newBlockDate} sx={{ borderRadius: 1.5, fontWeight: 700, whiteSpace: 'nowrap' }}>+ חסום</Button>
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {(hours.blockedDates || []).slice().sort().map((d) => (
+              <Box key={d} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, bgcolor: c.hotDim, color: c.hot, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 13, fontWeight: 600 }}>
+                {new Date(d + 'T00:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}
+                <Box onClick={() => removeBlockedDate(d)} sx={{ cursor: 'pointer', fontWeight: 800, ml: 0.25 }}>✕</Box>
+              </Box>
+            ))}
+            {(hours.blockedDates || []).length === 0 && <Typography sx={{ fontSize: 13, color: c.text3 }}>אין ימים חסומים</Typography>}
+          </Box>
         </Box>
 
         <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>

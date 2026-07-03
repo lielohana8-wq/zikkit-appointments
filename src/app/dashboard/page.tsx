@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getFirestoreDb, doc, getDoc, BIZ_COLLECTION } from '@/lib/firebase';
+import { getBizDocCached } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { useThemeMode } from '@/components/ThemeMode';
@@ -48,10 +48,9 @@ export default function DashboardPage() {
     if (!bizId) return;
     (async () => {
       try {
-        const db = getFirestoreDb();
-        const snap = await getDoc(doc(db, BIZ_COLLECTION, bizId));
-        if (snap.exists()) {
-          const data = snap.data();
+        const raw = await getBizDocCached(bizId);
+        if (raw) {
+          const data = raw as { cfg?: { biz_name?: string; hours?: unknown }; dana?: { phoneNumber?: string; services?: unknown[] }; hours?: unknown; booking?: { enabled?: boolean }; appointments?: { bookings?: unknown[] } };
           setBizName(data.cfg?.biz_name || '');
           setDanaPhone(data.dana?.phoneNumber || '');
           // Onboarding checklist state

@@ -58,3 +58,29 @@ export const PRODUCT = 'appointments' as const;
 // Dedicated collection — fully separate from Zikkit field's `businesses`.
 // Guarantees zero ID collisions even if the same person uses both products.
 export const BIZ_COLLECTION = 'appointment_businesses' as const;
+
+// ---------------------------------------------------------------------------
+// Cached business-document reader.
+// Reduces repeat Firestore reads: a revisit within TTL returns the cached
+// snapshot instead of hitting the network. Call invalidateBizCache(bizId)
+// after any write so the next read is fresh. Safe, additive — pages may opt in.
+// ---------------------------------------------------------------------------
+import { getDoc as _getDoc, doc as _doc } from 'firebase/firestore';
+
+interface BizCacheEntry { data: Record<string, unknown>; ts: number; }
+const _bizCache = new Map<string, BizCacheEntry>();
+const BIZ_TTL = 30_000;
+
+export async function getBizDocCached(bizId: string, force = false): Promise<Record<string, unknown> | null> {
+  const hit = _bizCache.get(bizId);
+  if (!force && hit && Date.now() - hit.ts < BIZ_TTL) return hit.data;
+  const snap = await _getDoc(_doc(getFirestoreDb(), BIZ_COLLECTION, bizId));
+  if (!snap.exists()) return null;
+  const data = snap.data() as Record<string, unknown>;
+  _bizCache.set(bizId, { data, ts: Date.now() });
+  return data;
+}
+
+export function invalidateBizCache(bizId: string): void {
+  _bizCache.delete(bizId);
+}

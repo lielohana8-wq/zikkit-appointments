@@ -264,6 +264,27 @@ export default function BookingPageSettings() {
           <TextField fullWidth size="small" label="טקסט 'אודות'" value={b.aboutText} onChange={(e) => set('aboutText', e.target.value)} multiline rows={3} placeholder="ספרו ללקוחות עליכם — ניסיון, התמחות, מה מייחד אתכם..." />
         </Section>
 
+        {/* Deposit / prepayment */}
+        <Section title="💳 מקדמה בהזמנה">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text }}>דרוש מקדמה לאישור התור</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>מוריד ביטולים ו&quot;לא הגיעו&quot; דרמטית</Typography>
+            </Box>
+            <Switch checked={b.depositOn} onChange={(e) => set('depositOn', e.target.checked)} />
+          </Box>
+          {b.depositOn && (
+            <>
+              <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
+                <TextField size="small" type="number" label="סכום קבוע (₪)" value={b.depositAmount || ''} onChange={(e) => { set('depositAmount', Number(e.target.value)); if (Number(e.target.value)) set('depositPercent', 0); }} sx={{ flex: 1 }} placeholder="30" />
+                <Box sx={{ display: 'flex', alignItems: 'center', color: c.text3, fontSize: 13 }}>או</Box>
+                <TextField size="small" type="number" label="אחוז מהמחיר (%)" value={b.depositPercent || ''} onChange={(e) => { set('depositPercent', Number(e.target.value)); if (Number(e.target.value)) set('depositAmount', 0); }} sx={{ flex: 1 }} placeholder="20" />
+              </Box>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>💡 דורש חיבור Grow (מנוי ותשלומים). בלי חיבור — הלקוח יתבקש לשלם אבל התשלום לא יעבור.</Typography>
+            </>
+          )}
+        </Section>
+
         {/* Contact */}
         <Section title="פרטי קשר (יוצגו בדף)">
           <TextField fullWidth size="small" label="📲 הטלפון שלך לקבלת התראות על תורים" value={b.notifyPhone} onChange={(e) => set('notifyPhone', e.target.value)} sx={{ mb: 2 }} placeholder="050-0000000" helperText="לכאן יישלח SMS על כל תור חדש" />

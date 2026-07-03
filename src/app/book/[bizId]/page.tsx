@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField } from '@mui/mater
 import { useParams } from 'next/navigation';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -133,7 +133,34 @@ export default function PublicBookingPage() {
         }),
       });
       const data = await res.json();
-      if (data.success) { setManageToken(data.manageToken || ''); setStage('done'); }
+      if (data.success) {
+        setManageToken(data.manageToken || '');
+        // If a deposit is required, redirect to Grow payment
+        const b = info.branding;
+        if (b.depositOn) {
+          const servicePrice = typeof selectedService.price === 'string' ? parseInt(selectedService.price) || 0 : selectedService.price || 0;
+          const depositAmt = b.depositAmount && b.depositAmount > 0
+            ? b.depositAmount
+            : Math.round((servicePrice * (b.depositPercent || 0)) / 100);
+          if (depositAmt > 0) {
+            try {
+              const payRes = await fetch('/api/payments/create-deposit', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  bizId, amount: depositAmt,
+                  description: `מקדמה ל${selectedService.name} · ${selectedDate} ${selectedTime}`,
+                  customerName: form.name, customerPhone: form.phone,
+                  bookingRef: data.manageToken || '',
+                }),
+              });
+              const payData = await payRes.json();
+              if (payData.ok && payData.url) { window.location.href = payData.url; return; }
+              // Grow not configured / failed → confirm anyway (owner will collect manually)
+            } catch { /* fall through to confirmation */ }
+          }
+        }
+        setStage('done');
+      }
       else alert(data.error || 'שגיאה');
     } finally { setBooking(false); }
   };
@@ -445,8 +472,24 @@ export default function PublicBookingPage() {
             <TextField fullWidth placeholder="שם מלא" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 1.75, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
             <TextField fullWidth placeholder={info.branding.requirePhone !== false ? "מספר טלפון" : "מספר טלפון (אופציונלי)"} type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: info.branding.requireEmail ? 1.75 : 3, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />
             {info.branding.requireEmail && <TextField fullWidth placeholder="אימייל" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: '#fff' } }} />}
+            {(() => {
+              const b = info.branding;
+              if (!b.depositOn) return null;
+              const sp = typeof selectedService.price === 'string' ? parseInt(selectedService.price) || 0 : selectedService.price || 0;
+              const dep = b.depositAmount && b.depositAmount > 0 ? b.depositAmount : Math.round((sp * (b.depositPercent || 0)) / 100);
+              if (dep <= 0) return null;
+              return (
+                <Box sx={{ bgcolor: `${accent}0D`, border: `1px solid ${accent}33`, borderRadius: 2, p: 1.75, mb: 2, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                  <Box sx={{ fontSize: 22 }}>💳</Box>
+                  <Box>
+                    <Typography sx={{ fontSize: 14, fontWeight: 800, color: accentDark }}>מקדמה: ₪{dep}</Typography>
+                    <Typography sx={{ fontSize: 12, color: '#78716C' }}>תשלום מאובטח לאישור התור. היתרה בעסק.</Typography>
+                  </Box>
+                </Box>
+              );
+            })()}
             <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking} fullWidth sx={{ py: 1.85, borderRadius: 1.5, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
-              {booking ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : '✓ אישור התור'}
+              {booking ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : info.branding.depositOn ? '💳 המשך לתשלום מקדמה' : '✓ אישור התור'}
             </Button>
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 11.5, color: '#A8A29E', textAlign: 'center', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
           </Box>

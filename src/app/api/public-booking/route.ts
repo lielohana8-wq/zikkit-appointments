@@ -106,6 +106,9 @@ export async function GET(req: NextRequest) {
         tiktok: booking.tiktok || '',
         facebook: booking.facebook || '',
         showReviews: booking.showReviews !== false,
+        depositOn: booking.depositOn === true,
+        depositAmount: booking.depositAmount || 0,
+        depositPercent: booking.depositPercent || 0,
       },
     });
   } catch (e) {

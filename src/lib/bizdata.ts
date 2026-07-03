@@ -308,6 +308,9 @@ export interface BookingBranding {
   tiktok: string;
   facebook: string;
   showReviews: boolean;        // toggle reviews section
+  depositOn: boolean;          // require a deposit to confirm a booking
+  depositAmount: number;       // fixed ILS amount (0 = use percent)
+  depositPercent: number;      // percent of service price (used if amount is 0)
 }
 
 export async function getBranding(bizId: string): Promise<BookingBranding> {
@@ -345,6 +348,9 @@ export async function getBranding(bizId: string): Promise<BookingBranding> {
     tiktok: b.tiktok || '',
     facebook: b.facebook || '',
     showReviews: b.showReviews !== false,
+    depositOn: b.depositOn === true,
+    depositAmount: b.depositAmount || 0,
+    depositPercent: b.depositPercent || 0,
   };
 }
 

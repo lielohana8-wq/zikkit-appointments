@@ -370,6 +370,7 @@ export default function DashboardPage() {
             title: 'הגדרות העסק',
             items: [
               { icon: '📞', label: 'דנה', path: '/setup', staff: false },
+              { icon: '💳', label: 'מנוי ותשלומים', path: '/billing', staff: false },
               { icon: '📨', label: 'בקשות פיילוט', path: '/pilot-requests', staff: false },
               { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
               { icon: '🕐', label: 'שעות', path: '/hours', staff: false },

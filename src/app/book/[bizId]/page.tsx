@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, TextField } from '@mui/material';
 import { useParams } from 'next/navigation';
+import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; description?: string; category?: string; }
 interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; }
@@ -66,7 +67,7 @@ export default function PublicBookingPage() {
         }),
       });
       const data = await res.json();
-      if (data.success) setStage('waitlisted');
+      if (data.success) { track(Events.WAITLIST_JOINED, { bizId }); setStage('waitlisted'); }
       else alert(data.error || 'שגיאה');
     } catch { alert('שגיאה'); } finally { setBooking(false); }
   };
@@ -134,6 +135,7 @@ export default function PublicBookingPage() {
       });
       const data = await res.json();
       if (data.success) {
+        track(Events.PUBLIC_BOOKING_MADE, { bizId, hasDeposit: info.branding.depositOn || false });
         setManageToken(data.manageToken || '');
         // If a deposit is required, redirect to Grow payment
         const b = info.branding;

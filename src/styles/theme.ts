@@ -66,7 +66,25 @@ body { background: var(--zk-bg); transition: background 0.3s ease; }
 .zk-stagger > *:nth-child(3){animation-delay:.1s} .zk-stagger > *:nth-child(4){animation-delay:.14s}
 .zk-stagger > *:nth-child(5){animation-delay:.18s} .zk-stagger > *:nth-child(6){animation-delay:.22s}
 .zk-stagger > *:nth-child(7){animation-delay:.26s} .zk-stagger > *:nth-child(8){animation-delay:.3s}
-@media (prefers-reduced-motion: reduce) { .zk-page, .zk-stagger > *, .zk-lift { animation: none !important; transition: none !important; } }
+
+/* Premium card lift with accent glow */
+.zk-card { transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s ease, border-color 0.2s ease; }
+.zk-card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(124,58,237,0.10); border-color: rgba(124,58,237,0.3) !important; }
+
+/* Button press feedback (applies to all MUI buttons) */
+.MuiButton-root { transition: transform 0.12s cubic-bezier(0.16,1,0.3,1) !important; }
+.MuiButton-root:active { transform: scale(0.97); }
+.MuiButtonBase-root.MuiButton-contained:hover { box-shadow: 0 6px 20px rgba(124,58,237,0.28) !important; }
+
+/* Skeleton shimmer */
+.zk-skeleton { background: linear-gradient(90deg, var(--zk-surface3) 25%, var(--zk-surface2) 37%, var(--zk-surface3) 63%); background-size: 400% 100%; animation: zkShimmer 1.4s ease infinite; border-radius: 8px; }
+@keyframes zkShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* Smooth fade-in for late content */
+.zk-fade { animation: zkFade 0.5s ease both; }
+@keyframes zkFade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) { .zk-page, .zk-stagger > *, .zk-lift, .zk-card, .zk-skeleton, .zk-fade, .MuiButton-root { animation: none !important; transition: none !important; } }
 `;
 
 // NOTE: --zk-border is near-black (light) / near-white (dark) — this is the SHARP LINE look.

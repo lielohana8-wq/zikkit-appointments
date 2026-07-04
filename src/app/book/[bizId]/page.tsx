@@ -248,9 +248,8 @@ export default function PublicBookingPage() {
               <Box sx={{ mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 2.5, px: 2, py: 1.25, fontSize: 13.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, boxShadow: `0 6px 18px ${accent}33` }}>🔥 {info.branding.promoText}</Box>
             )}
             {/* Quick contact chips */}
-            {(info.branding.phone || info.branding.address) && (
+            {info.branding.phone && (
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 2, flexWrap: 'wrap' }}>
-                {info.branding.address && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: `${accent}0D`, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 12.5, color: accentDark, fontWeight: 600 }}>📍 {info.branding.address}</Box>}
                 {info.branding.phone && <Box component="a" href={`tel:${info.branding.phone}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: `${accent}0D`, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 12.5, color: accentDark, fontWeight: 600, textDecoration: 'none' }}>📞 {info.branding.phone}</Box>}
               </Box>
             )}
@@ -532,6 +531,12 @@ export default function PublicBookingPage() {
                 <Typography sx={{ fontSize: 14, color: accent, fontWeight: 700 }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>
                 <Typography sx={{ fontSize: 14, color: accent, fontWeight: 700 }}>🕐 {selectedTime}</Typography>
               </Box>
+              {info.branding.address && (
+                <Box sx={{ borderTop: '1px solid #F5F5F4', mt: 1.5, pt: 1.5 }}>
+                  <Typography sx={{ fontSize: 14, color: '#57534E', fontWeight: 700 }}>📍 {info.branding.address}</Typography>
+                  <Typography component="a" href={`https://waze.com/ul?q=${encodeURIComponent(info.branding.address)}`} target="_blank" sx={{ fontSize: 12.5, color: accent, fontWeight: 700, textDecoration: 'none' }}>ניווט ב-Waze ←</Typography>
+                </Box>
+              )}
             </Box>
             <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה! 💜'}</Typography>
 

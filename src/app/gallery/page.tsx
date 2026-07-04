@@ -29,17 +29,21 @@ export default function GalleryPage() {
   useEffect(() => { load(); }, [load]);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !bizId) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !bizId) return;
     setUploading(true);
-    // Downscale to keep under Firestore limits
-    const dataUrl = await downscale(file, 900, 0.7);
     try {
-      const updated = await addGalleryImage(bizId, dataUrl);
+      // Upload every selected image, one after the other
+      let updated: string[] = images;
+      for (const file of files) {
+        const dataUrl = await downscale(file, 900, 0.7); // keep under Firestore limits
+        updated = await addGalleryImage(bizId, dataUrl);
+      }
       setImages(updated);
+      if (files.length > 1) showToast(`${files.length} תמונות הועלו`, 'success');
     } catch (err) {
       showToast((err as Error).message || 'שגיאה', 'error');
-    } finally { setUploading(false); }
+    } finally { setUploading(false); e.target.value = ''; }
   };
 
   const remove = async (index: number) => {
@@ -68,7 +72,7 @@ export default function GalleryPage() {
 
         <Button component="label" variant="contained" disabled={uploading || images.length >= 12} fullWidth sx={{ borderRadius: 1.5, fontWeight: 700, mb: 3, py: 1.4, borderStyle: 'dashed' }}>
           {uploading ? <><CircularProgress size={16} sx={{ color: '#fff', mr: 1 }} />מעלה...</> : `📷 העלה תמונה (${images.length}/12)`}
-          <input type="file" accept="image/*" hidden onChange={handleFile} />
+          <input type="file" accept="image/*" multiple hidden onChange={handleFile} />
         </Button>
 
         {images.length > 0 ? (

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, Chip, Dialog, TextField, MenuItem, Autocomplete } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem, Autocomplete } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBookings, addBooking, deleteBooking, updateBooking, loadBiz, getCustomers, type Booking, type TeamMember, type Customer } from '@/lib/bizdata';
+import { getBookings, addBooking, updateBooking, loadBiz, getCustomers, type Booking, type TeamMember, type Customer } from '@/lib/bizdata';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { useToast } from '@/components/Toast';
 import { PageSkeleton } from '@/components/Skeleton';
@@ -97,12 +97,6 @@ export default function CalendarPage() {
       setBookings((prev) => prev.filter((bk) => bk.id !== optimistic.id)); // rollback
       showToast('שגיאה בשמירה: ' + (e as Error).message, 'error');
     } finally { setSaving(false); }
-  };
-
-  const cancel = async (id: string) => {
-    if (!bizId) return;
-    await deleteBooking(bizId, id);
-    await load();
   };
 
   const openEdit = (b: Booking) => {
@@ -225,32 +219,81 @@ export default function CalendarPage() {
           </Box>
         )}
 
-        {dayBookings.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Box sx={{ fontSize: 40, mb: 1.5, opacity: 0.5 }}>📅</Box>
-            <Typography sx={{ color: c.text3, mb: 2.5 }}>אין תורים ביום זה</Typography>
-            <Button onClick={() => setAddOpen(true)} variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600 }}>+ הוסף תור</Button>
-          </Box>
-        ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-            {dayBookings.map((b) => (
-              <Box key={b.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: b.staff ? `3px solid ${staffColor(b.staff)}` : `1px solid ${c.border}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
-                <Box sx={{ textAlign: 'center', minWidth: 54, bgcolor: b.staff ? `${staffColor(b.staff)}1A` : c.accentDim, borderRadius: 1.5, py: 1 }}>
-                  <Typography sx={{ fontSize: 16, fontWeight: 800, color: b.staff ? staffColor(b.staff) : c.accent, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{b.time}</Typography>
-                  <Typography sx={{ fontSize: 9.5, color: b.staff ? staffColor(b.staff) : c.accent, opacity: 0.7 }}>{b.duration} דק'</Typography>
-                </Box>
-                <Box onClick={() => openEdit(b)} sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }}>
-                  <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{b.customerName}</Typography>
-                  <Typography sx={{ fontSize: 13, color: c.text3 }}>{b.service || 'טיפול'}{b.staff ? ` · ${b.staff}` : ''}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</Typography>
-                </Box>
-                {b.source === 'dana' && <Chip label="דנה" size="small" sx={{ bgcolor: c.accentDim, color: c.accent, fontWeight: 700, fontSize: 10 }} />}
-                {b.source === 'online' && <Chip label="אונליין" size="small" sx={{ bgcolor: c.greenDim, color: c.green, fontWeight: 700, fontSize: 10 }} />}
-                {b.price ? <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>₪{b.price}</Typography> : null}
-                <Button onClick={() => cancel(b.id)} size="small" sx={{ color: c.text3, minWidth: 'auto', fontSize: 12, '&:hover': { color: c.hot } }}>ביטול</Button>
+        {/* ===== Real day grid: 08:00-21:00, tap an empty hour to add, jobs stretch by duration ===== */}
+        {(() => {
+          const START = 8 * 60, END = 21 * 60, HOUR_PX = 64;
+          const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
+          const gridBks = dayBookings.filter((b) => b.status !== 'cancelled');
+          // Overlap lanes: greedy assignment so concurrent bookings sit side-by-side
+          const sorted = [...gridBks].sort((a, b) => toMin(a.time) - toMin(b.time));
+          const laneEnd: number[] = [];
+          const lanes = new Map<string, number>();
+          let maxLane = 0;
+          for (const b of sorted) {
+            const st = toMin(b.time); const en = st + (b.duration || 30);
+            let lane = laneEnd.findIndex((e) => e <= st);
+            if (lane === -1) { lane = laneEnd.length; laneEnd.push(en); } else laneEnd[lane] = en;
+            lanes.set(b.id, lane); maxLane = Math.max(maxLane, lane + 1);
+          }
+          const laneCount = Math.min(Math.max(maxLane, 1), 3);
+          const now = new Date();
+          const isToday = selectedDate === now.toISOString().split('T')[0];
+          const nowMin = now.getHours() * 60 + now.getMinutes();
+          const gridClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const mins = START + Math.round(((e.clientY - rect.top) / HOUR_PX) * 60 / 30) * 30;
+            const clamped = Math.max(START, Math.min(END - 30, mins));
+            const hh = String(Math.floor(clamped / 60)).padStart(2, '0');
+            const mm = String(clamped % 60).padStart(2, '0');
+            setForm((p) => ({ ...p, time: `${hh}:${mm}` }));
+            setAddOpen(true);
+          };
+          return (
+            <Box sx={{ display: 'flex', gap: 1, direction: 'rtl' }}>
+              {/* hour labels */}
+              <Box sx={{ width: 44, flexShrink: 0 }}>
+                {Array.from({ length: (END - START) / 60 }, (_, i) => (
+                  <Box key={i} sx={{ height: HOUR_PX, position: 'relative' }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: c.text3, position: 'absolute', top: -7 }}>{String(8 + i).padStart(2, '0')}:00</Typography>
+                  </Box>
+                ))}
               </Box>
-            ))}
-          </Box>
-        )}
+              {/* grid */}
+              <Box onClick={gridClick} sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, overflow: 'hidden', cursor: 'copy' }}>
+                {Array.from({ length: (END - START) / 60 }, (_, i) => (
+                  <Box key={i} sx={{ position: 'absolute', top: i * HOUR_PX, left: 0, right: 0, borderTop: i === 0 ? 'none' : `1px solid ${c.border}`, height: HOUR_PX }}>
+                    <Box sx={{ position: 'absolute', top: HOUR_PX / 2, left: 0, right: 0, borderTop: `1px dashed ${c.border}`, opacity: 0.5 }} />
+                  </Box>
+                ))}
+                {isToday && nowMin >= START && nowMin <= END && (
+                  <Box sx={{ position: 'absolute', top: ((nowMin - START) / 60) * HOUR_PX, left: 0, right: 0, zIndex: 3, pointerEvents: 'none' }}>
+                    <Box sx={{ borderTop: `2px solid ${c.hot}` }} />
+                    <Box sx={{ position: 'absolute', right: -4, top: -4, width: 8, height: 8, borderRadius: '50%', bgcolor: c.hot }} />
+                  </Box>
+                )}
+                {gridBks.map((b) => {
+                  const st = Math.max(toMin(b.time), START);
+                  const h = Math.max(((b.duration || 30) / 60) * HOUR_PX - 3, 26);
+                  const lane = Math.min(lanes.get(b.id) || 0, laneCount - 1);
+                  const blocked = b.status === 'blocked';
+                  const col = staffColor(b.staff);
+                  return (
+                    <Box key={b.id} onClick={(e) => { e.stopPropagation(); openEdit(b); }}
+                      sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: 2, cursor: 'pointer', overflow: 'hidden',
+                        bgcolor: blocked ? c.surface3 : `${col}1F`, opacity: blocked ? 0.8 : 1,
+                        border: blocked ? `1.5px dashed ${c.border}` : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
+                        transition: 'box-shadow 0.15s', '&:hover': { boxShadow: c.shadowMd, zIndex: 4 } }}>
+                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : col, lineHeight: 1.3 }}>{b.time} · {b.duration} דק'</Typography>
+                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
+                      {h > 48 && <Typography sx={{ fontSize: 10.5, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || (blocked ? '' : 'טיפול')}{!blocked && b.source === 'dana' ? ' · 🎙️ דנה' : ''}{!blocked && b.source === 'online' ? ' · 🔗' : ''}</Typography>}
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          );
+        })()}
+        <Typography sx={{ fontSize: 12, color: c.text3, textAlign: 'center', mt: 1.5 }}>💡 לחיצה על שעה ריקה = תור חדש בשעה הזו · לחיצה על תור = עריכה</Typography>
       </Box>
       )}
 

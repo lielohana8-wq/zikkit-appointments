@@ -127,6 +127,11 @@ export default function AppInstallPage() {
         )}
 
         <Typography sx={{ fontSize: 12, color: c.text3, mt: 5 }}>Zikkit Appointments · המערכת שממלאת לך את היומן 💜</Typography>
+        <Typography sx={{ fontSize: 11.5, mt: 1 }}>
+          <a href="/privacy" style={{ color: 'inherit', opacity: 0.6 }}>מדיניות פרטיות</a>
+          <span style={{ opacity: 0.4 }}> · </span>
+          <a href="/terms" style={{ color: 'inherit', opacity: 0.6 }}>תנאי שימוש</a>
+        </Typography>
       </Box>
     </Box>
   );

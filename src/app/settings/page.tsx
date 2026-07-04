@@ -1,15 +1,51 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, TextField, MenuItem, Switch } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, TextField, MenuItem, Switch, Dialog } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { getBizSettings, saveBizSettings, type BizSettings } from '@/lib/bizdata';
+import { getBizSettings, saveBizSettings, resetBusiness, type BizSettings } from '@/lib/bizdata';
 import { useToast } from '@/components/Toast';
 import { useThemeMode } from '@/components/ThemeMode';
 import { zikkitColors as c } from '@/styles/theme';
 
 const BIZ_TYPES = ['מספרה', 'מכון יופי', 'קוסמטיקה', 'ציפורניים', 'איפור', 'עיסוי', 'קליניקה', 'רופא שיניים', 'פיזיותרפיה', 'וטרינר', 'אופטיקה', 'אחר'];
+
+// All settings areas, grouped into categories with icons.
+const CATEGORIES: Array<{ title: string; icon: string; items: Array<{ icon: string; label: string; desc: string; path: string }> }> = [
+  {
+    title: 'העסק', icon: '🏪',
+    items: [
+      { icon: '🕐', label: 'שעות פעילות', desc: 'מתי העסק פתוח ומתי אפשר להזמין', path: '/hours' },
+      { icon: '👥', label: 'צוות ועובדים', desc: 'ניהול אנשי הצוות והרשאות', path: '/team' },
+      { icon: '🪑', label: 'עמדות', desc: 'מספר עמדות עבודה במקביל', path: '/stations' },
+    ],
+  },
+  {
+    title: 'הזמנות ולקוחות', icon: '📅',
+    items: [
+      { icon: '🔗', label: 'דף הזמנות', desc: 'עיצוב הדף, מקדמות, גלריה ומבצעים', path: '/booking-page' },
+      { icon: '✂️', label: 'שירותים ומחירים', desc: 'השירותים שלקוחות יכולים להזמין', path: '/services' },
+      { icon: '🖼️', label: 'גלריית עבודות', desc: 'תמונות שיוצגו בדף ההזמנות', path: '/gallery' },
+    ],
+  },
+  {
+    title: 'אוטומציה ו-AI', icon: '🤖',
+    items: [
+      { icon: '📞', label: 'דנה — מענה טלפוני', desc: 'הגדרת המזכירה החכמה שעונה 24/7', path: '/setup' },
+      { icon: '⚡', label: 'אוטומציות', desc: 'תזכורות והודעות אוטומטיות', path: '/automations' },
+      { icon: '🧠', label: 'סטודיו AI', desc: 'כלי AI לשיווק ותוכן', path: '/ai-studio' },
+    ],
+  },
+  {
+    title: 'עסקי ותשלומים', icon: '💳',
+    items: [
+      { icon: '💳', label: 'מנוי ותשלומים', desc: 'התוכנית שלך וניהול התשלום', path: '/billing' },
+      { icon: '🧾', label: 'חשבוניות וקבלות', desc: 'הפקת מסמכים ללקוחות', path: '/documents' },
+      { icon: '📤', label: 'ייצוא נתונים', desc: 'הורדת כל הנתונים שלך', path: '/export-data' },
+    ],
+  },
+];
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -20,6 +56,10 @@ export default function SettingsPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetScope, setResetScope] = useState<'activity' | 'full'>('activity');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => { if (!loading && !firebaseUser) router.push('/login'); }, [loading, firebaseUser, router]);
 
@@ -55,28 +95,44 @@ export default function SettingsPage() {
     finally { setSaving(false); }
   };
 
-  if (loading || dataLoading || !s) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  const openReset = (scope: 'activity' | 'full') => { setResetScope(scope); setResetConfirm(''); setResetOpen(true); };
 
-  const Section = SettingsSection;
+  const doReset = async () => {
+    if (!bizId) return;
+    setResetting(true);
+    try {
+      await resetBusiness(bizId, resetScope);
+      showToast(resetScope === 'activity' ? 'הנתונים אופסו — העסק נקי' : 'העסק אופס לחלוטין', 'success');
+      setResetOpen(false);
+      setTimeout(() => router.push(resetScope === 'full' ? '/onboarding' : '/dashboard'), 800);
+    } catch (e) { showToast('שגיאה: ' + (e as Error).message, 'error'); }
+    finally { setResetting(false); }
+  };
+
+  if (loading || dataLoading || !s) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bg }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+
+  const confirmWord = resetScope === 'full' ? 'איפוס מלא' : 'איפוס';
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>הגדרות עסק</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>הגדרות</Typography>
         <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
       </Box>
 
-      <Box className="zk-page" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        {/* Logo + name */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5 }}>
-          {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 1.5, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 1.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}
+      <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
+        {/* Logo + name quick edit */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 3, p: 2.5 }}>
+          {s.logo ? <Box component="img" src={s.logo} sx={{ width: 64, height: 64, borderRadius: 2, objectFit: 'cover' }} /> : <Box sx={{ width: 64, height: 64, borderRadius: 2, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{s.businessName?.[0] || '?'}</Box>}
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{s.businessName || 'העסק שלי'}</Typography>
             <Button component="label" size="small" sx={{ color: c.accent, fontWeight: 600, px: 0 }}>שנה לוגו<input type="file" accept="image/*" hidden onChange={handleLogo} /></Button>
           </Box>
+          <Button onClick={() => router.push('/onboarding')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, whiteSpace: 'nowrap' }}>אשף הקמה</Button>
         </Box>
 
+        {/* Quick business details */}
         <Section title="פרטי העסק">
           <TextField fullWidth size="small" label="שם העסק" value={s.businessName} onChange={(e) => set('businessName', e.target.value)} sx={{ mb: 2 }} />
           <TextField select fullWidth size="small" label="סוג העסק" value={s.businessType} onChange={(e) => set('businessType', e.target.value)} sx={{ mb: 2 }}>
@@ -96,6 +152,28 @@ export default function SettingsPage() {
           </Box>
         </Section>
 
+        {/* Categorized settings hub */}
+        {CATEGORIES.map((cat) => (
+          <Box key={cat.title} sx={{ mb: 3.5 }}>
+            <Typography sx={{ fontSize: 12.5, fontWeight: 800, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <span>{cat.icon}</span>{cat.title}
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {cat.items.map((item) => (
+                <Box key={item.path} onClick={() => router.push(item.path)} className="zk-card" sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.75, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2.5, p: 2 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 21, flexShrink: 0 }}>{item.icon}</Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{item.label}</Typography>
+                    <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{item.desc}</Typography>
+                  </Box>
+                  <Box sx={{ color: c.text3, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>‹</Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        ))}
+
+        {/* Preferences */}
         <Section title="העדפות">
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pb: 2, borderBottom: `1px solid ${c.border}` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -120,15 +198,53 @@ export default function SettingsPage() {
           <TextField fullWidth size="small" label="מדיניות ביטול" value={s.cancellationPolicy} onChange={(e) => set('cancellationPolicy', e.target.value)} multiline rows={2} placeholder="למשל: ביטול עד 24 שעות לפני התור" />
         </Section>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 1.5, fontWeight: 700, mb: 3 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 2, fontWeight: 700, mb: 3 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור הגדרות'}
         </Button>
 
         {/* Danger zone */}
-        <Box sx={{ borderTop: `1px solid ${c.border}`, pt: 3 }}>
-          <Button onClick={() => logout()} fullWidth variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 600, color: c.hot, borderColor: c.border2, '&:hover': { borderColor: c.hot, bgcolor: c.hotDim } }}>התנתק מהחשבון</Button>
+        <Box sx={{ borderTop: `1px solid ${c.hot}33`, mt: 2, pt: 3 }}>
+          <Typography sx={{ fontSize: 12.5, fontWeight: 800, color: c.hot, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>⚠️ אזור מסוכן</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, bgcolor: c.surface1, border: `1px solid ${c.hot}33`, borderRadius: 2.5, p: 2 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>איפוס נתונים</Typography>
+                <Typography sx={{ fontSize: 12.5, color: c.text3 }}>מוחק תורים, לקוחות והוצאות. שומר שירותים, שעות ודף הזמנות.</Typography>
+              </Box>
+              <Button onClick={() => openReset('activity')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, color: c.hot, borderColor: `${c.hot}55`, whiteSpace: 'nowrap' }}>אפס</Button>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, bgcolor: c.surface1, border: `1px solid ${c.hot}33`, borderRadius: 2.5, p: 2 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>איפוס עסק מלא</Typography>
+                <Typography sx={{ fontSize: 12.5, color: c.text3 }}>מוחק את הכל ומתחיל מאפס — כמו עסק חדש.</Typography>
+              </Box>
+              <Button onClick={() => openReset('full')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, color: c.hot, borderColor: `${c.hot}55`, whiteSpace: 'nowrap' }}>אפס הכל</Button>
+            </Box>
+          </Box>
+          <Button onClick={() => logout()} fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 600, color: c.text2, borderColor: c.border2 }}>התנתק מהחשבון</Button>
         </Box>
       </Box>
+
+      {/* Reset confirmation dialog */}
+      <Dialog open={resetOpen} onClose={() => !resetting && setResetOpen(false)} PaperProps={{ sx: { bgcolor: c.surface1, borderRadius: 3, maxWidth: 420, m: 2 } }}>
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ width: 52, height: 52, borderRadius: '50%', bgcolor: c.hotDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, mb: 2 }}>⚠️</Box>
+          <Typography sx={{ fontSize: 19, fontWeight: 800, color: c.text, mb: 1 }}>{resetScope === 'full' ? 'איפוס עסק מלא' : 'איפוס נתונים'}</Typography>
+          <Typography sx={{ fontSize: 14, color: c.text2, mb: 2, lineHeight: 1.6 }}>
+            {resetScope === 'full'
+              ? 'פעולה זו תמחק את כל הנתונים — תורים, לקוחות, שירותים, שעות, דף הזמנות — ותחזיר את העסק למצב חדש לחלוטין. לא ניתן לשחזר.'
+              : 'פעולה זו תמחק את כל התורים, הלקוחות, ההוצאות והביקורות. השירותים, השעות ודף ההזמנות יישמרו. לא ניתן לשחזר.'}
+          </Typography>
+          <Typography sx={{ fontSize: 13, color: c.text3, mb: 1 }}>הקלד <b style={{ color: c.hot }}>{confirmWord}</b> לאישור:</Typography>
+          <TextField fullWidth size="small" value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder={confirmWord} sx={{ mb: 2.5 }} />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button onClick={() => setResetOpen(false)} disabled={resetting} fullWidth variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, color: c.text2, borderColor: c.border2 }}>ביטול</Button>
+            <Button onClick={doReset} disabled={resetConfirm !== confirmWord || resetting} fullWidth variant="contained" sx={{ borderRadius: 2, fontWeight: 700, bgcolor: c.hot, '&:hover': { bgcolor: c.hot, filter: 'brightness(0.9)' } }}>
+              {resetting ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : resetScope === 'full' ? 'אפס הכל' : 'אפס'}
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
     </Box>
   );
 }
@@ -141,3 +257,5 @@ function SettingsSection({ title, children }: { title: string; children: React.R
     </Box>
   );
 }
+
+const Section = SettingsSection;

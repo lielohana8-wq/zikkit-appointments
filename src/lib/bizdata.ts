@@ -78,6 +78,40 @@ export async function patchBiz(bizId: string, partial: Record<string, unknown>):
   await setDoc(ref, { ...existing, ...partial }, { merge: true });
 }
 
+/**
+ * Reset business data. Two scopes:
+ *  - 'activity': clears bookings, customers, expenses, reviews, waitlist — keeps
+ *    setup (services, hours, branding, team). For "start the season fresh".
+ *  - 'full': wipes everything back to a blank business — as if newly created.
+ * Both keep the account itself (owner can rebuild). Irreversible.
+ */
+export async function resetBusiness(bizId: string, scope: 'activity' | 'full'): Promise<void> {
+  const db = getFirestoreDb();
+  const ref = doc(db, BIZ_COLLECTION, bizId);
+  const snap = await getDoc(ref);
+  const existing = (snap.exists() ? snap.data() : {}) as Record<string, unknown>;
+
+  if (scope === 'activity') {
+    // Clear operational data, preserve configuration
+    const next = {
+      ...existing,
+      appointments: { ...(existing.appointments as Record<string, unknown> || {}), bookings: [] },
+      customers: { items: [] },
+      expenses: { items: [] },
+      reviews: { items: [] },
+      waitlist: { items: [] },
+      notifications: { items: [] },
+    };
+    await setDoc(ref, next, { merge: false });
+  } else {
+    // Full wipe — keep only the owner identity in cfg, blank everything else
+    const cfg = (existing.cfg as Record<string, unknown>) || {};
+    await setDoc(ref, {
+      cfg: { owner_email: cfg.owner_email || '', owner_uid: cfg.owner_uid || '', createdAt: cfg.createdAt || new Date().toISOString() },
+    }, { merge: false });
+  }
+}
+
 // ---------- Bookings ----------
 export async function getBookings(bizId: string): Promise<Booking[]> {
   const biz = await loadBiz(bizId);

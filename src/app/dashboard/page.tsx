@@ -366,7 +366,8 @@ export default function DashboardPage() {
               { icon: '🎟️', label: 'מבצעים', path: '/promos', staff: false },
               { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
               { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
-              { icon: '🤖', label: 'יועץ AI', path: '/ai-studio', staff: false },
+              { icon: '📈', label: 'מרכז צמיחה', path: '/growth', staff: false },
+              { icon: '🎨', label: 'סטודיו תוכן', path: '/ai-studio', staff: false },
             ],
           },
           {

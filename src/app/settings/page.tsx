@@ -34,7 +34,8 @@ const CATEGORIES: Array<{ title: string; icon: string; items: Array<{ icon: stri
     items: [
       { icon: '📞', label: 'דנה — מענה טלפוני', desc: 'הגדרת המזכירה החכמה שעונה 24/7', path: '/setup' },
       { icon: '⚡', label: 'אוטומציות', desc: 'תזכורות והודעות אוטומטיות', path: '/automations' },
-      { icon: '🧠', label: 'סטודיו AI', desc: 'כלי AI לשיווק ותוכן', path: '/ai-studio' },
+      { icon: '📈', label: 'מרכז צמיחה', desc: 'תובנות AI, קמפיינים ופילוחי לקוחות', path: '/growth' },
+      { icon: '🎨', label: 'סטודיו תוכן', desc: 'תמונה → פוסט · דף נחיתה אוטומטי', path: '/ai-studio' },
     ],
   },
   {

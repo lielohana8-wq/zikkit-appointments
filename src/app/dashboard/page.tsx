@@ -1,11 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
+/**
+ * Dashboard — a daily cockpit, not a catalog.
+ * Answers one question: "what's happening today and what's the next step".
+ * Everything else lives one tap away in the "all tools" drawer.
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import { Box, Typography, Button, CircularProgress, Drawer, TextField, Collapse } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBizDocCached } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
+import { findChurning } from '@/lib/revenue-engine';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { useThemeMode } from '@/components/ThemeMode';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
@@ -25,7 +32,46 @@ interface Booking {
   status: string;
   staff?: string;
   price?: number;
+  manageToken?: string;
 }
+interface CustomerLite { id: string; name: string; phone: string; visits: number; lastVisit?: string; totalSpent: number; createdAt: string }
+
+// Full tool catalog — lives behind the 🧰 drawer so the home stays a cockpit.
+const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: string; path: string; staff: boolean }> }> = [
+  { title: 'יומיומי', items: [
+    { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
+    { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
+    { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
+    { icon: '🔔', label: 'רשימת המתנה', path: '/waitlist', staff: true },
+    { icon: '📋', label: 'מחירון ושירותים', path: '/services', staff: false },
+  ]},
+  { title: 'כספים', items: [
+    { icon: '⚡', label: 'מנוע הכנסות', path: '/revenue', staff: false },
+    { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
+    { icon: '📈', label: 'אנליטיקס', path: '/analytics', staff: false },
+    { icon: '💰', label: 'רווחיות והוצאות', path: '/expenses', staff: false },
+    { icon: '🧾', label: 'קבלות ומסמכים', path: '/documents', staff: false },
+    { icon: '📤', label: 'ייצוא נתונים', path: '/export-data', staff: false },
+  ]},
+  { title: 'שיווק וצמיחה', items: [
+    { icon: '📈', label: 'מרכז צמיחה', path: '/growth', staff: false },
+    { icon: '🎨', label: 'סטודיו תוכן', path: '/ai-studio', staff: false },
+    { icon: '🎟️', label: 'מבצעים', path: '/promos', staff: false },
+    { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
+    { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
+  ]},
+  { title: 'העסק והגדרות', items: [
+    { icon: '🚀', label: 'מוכנות להפעלה', path: '/activate', staff: false },
+    { icon: '📞', label: 'דנה — מענה טלפוני', path: '/setup', staff: false },
+    { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: false },
+    { icon: '🤝', label: 'צוות', path: '/team', staff: false },
+    { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
+    { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
+    { icon: '💳', label: 'מנוי ותשלומים', path: '/billing', staff: false },
+    { icon: '📨', label: 'בקשות פיילוט', path: '/pilot-requests', staff: false },
+    { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
+  ]},
+];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -34,11 +80,16 @@ export default function DashboardPage() {
   const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [customers, setCustomers] = useState<CustomerLite[]>([]);
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [bizName, setBizName] = useState('');
   const [setupState, setSetupState] = useState({ hasServices: false, hasHours: false, bookingEnabled: false, hasBooking: false });
   const [danaPhone, setDanaPhone] = useState('');
   const [dataLoading, setDataLoading] = useState(true);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [toolsQuery, setToolsQuery] = useState('');
+  const [showTomorrow, setShowTomorrow] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   useEffect(() => {
     if (!loading && !firebaseUser) { router.push('/login'); return; }
@@ -50,10 +101,9 @@ export default function DashboardPage() {
       try {
         const raw = await getBizDocCached(bizId);
         if (raw) {
-          const data = raw as { cfg?: { biz_name?: string; hours?: unknown }; dana?: { phoneNumber?: string; services?: unknown[] }; hours?: unknown; booking?: { enabled?: boolean }; appointments?: { bookings?: unknown[] } };
+          const data = raw as { cfg?: { biz_name?: string; hours?: unknown }; dana?: { phoneNumber?: string; services?: unknown[] }; hours?: unknown; booking?: { enabled?: boolean }; appointments?: { bookings?: unknown[] }; customers?: { items?: CustomerLite[] } };
           setBizName(data.cfg?.biz_name || '');
           setDanaPhone(data.dana?.phoneNumber || '');
-          // Onboarding checklist state
           setSetupState({
             hasServices: ((data.dana?.services as unknown[]) || []).length > 0,
             hasHours: !!data.hours || !!data.cfg?.hours,
@@ -61,22 +111,80 @@ export default function DashboardPage() {
             hasBooking: ((data.appointments?.bookings as unknown[]) || []).length > 0,
           });
           let bks = (data.appointments?.bookings || []) as Booking[];
-          if (user?.role === 'staff' && staffName) {
-            bks = bks.filter((b) => b.staff === staffName);
-          }
+          if (user?.role === 'staff' && staffName) bks = bks.filter((b) => b.staff === staffName);
           setBookings(bks);
-          // Load notifications (owner only)
+          setCustomers(data.customers?.items || []);
           if (user?.role !== 'staff') {
             try { setNotifs(await getNotifications(bizId)); } catch { /* ignore */ }
           }
         }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setDataLoading(false);
-      }
+      } catch (e) { console.error(e); } finally { setDataLoading(false); }
     })();
   }, [bizId, user?.role, staffName]);
+
+  const isStaff = user?.role === 'staff';
+  const isPlatformOwner = ['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase());
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayBookings = bookings.filter((b) => b.date === today);
+  const upcoming = bookings.filter((b) => b.date > today).slice(0, 5);
+  const todayRevenue = todayBookings
+    .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
+    .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().split('T')[0];
+  const weekRevenue = bookings
+    .filter((b) => b.date >= weekAgoStr && b.date <= today && b.status === 'completed')
+    .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowBookings = bookings.filter((b) => b.date === tomorrowStr && b.status !== 'cancelled');
+
+  // ===== Smart alerts — one compact row, max 3, straight from the engines =====
+  const unreadNotifs = notifs.filter((n) => !n.read);
+  const alerts = useMemo(() => {
+    if (isStaff) return [] as Array<{ icon: string; text: string; onClick: () => void; hot?: boolean }>;
+    const out: Array<{ icon: string; text: string; onClick: () => void; hot?: boolean }> = [];
+    if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
+    const steps = [setupState.hasServices, setupState.hasHours, setupState.bookingEnabled, setupState.hasBooking];
+    const done = steps.filter(Boolean).length;
+    if (done < steps.length) out.push({ icon: '🚀', text: `העסק מוכן ב-${Math.round((done / steps.length) * 100)}% — השלם את ההקמה`, onClick: () => router.push('/activate') });
+    try {
+      const churn = findChurning(customers as never, bookings as never);
+      if (churn.length > 0) out.push({ icon: '🎯', text: `${churn.length} לקוחות בסיכון נטישה — החזר אותם`, onClick: () => router.push('/revenue') });
+    } catch { /* engine is best-effort */ }
+    if (tomorrowBookings.length > 0) out.push({ icon: '⏰', text: `${tomorrowBookings.length} תזכורות למחר — שלח בלחיצה`, onClick: () => setShowTomorrow((v) => !v) });
+    if (!danaPhone) out.push({ icon: '🎙️', text: 'דנה כבויה — הפעל מענה 24/7', onClick: () => router.push('/setup') });
+    const ins = computeInsights(bookings as never);
+    if (ins.length > 0) out.push({ icon: '💡', text: ins[0], onClick: () => router.push('/reports') });
+    return out.slice(0, 3);
+  }, [isStaff, unreadNotifs.length, setupState, customers, bookings, tomorrowBookings.length, danaPhone, router]);
+
+  // ===== Quick actions — 6 big thumb-friendly tiles =====
+  const quickActions = (isStaff
+    ? [
+        { icon: '📅', label: 'יומן', onClick: () => router.push('/calendar') },
+        { icon: '👥', label: 'לקוחות', onClick: () => router.push('/customers') },
+        { icon: '🧰', label: 'כל הכלים', onClick: () => setToolsOpen(true) },
+      ]
+    : [
+        { icon: '📅', label: 'יומן', onClick: () => router.push('/calendar') },
+        { icon: '👥', label: 'לקוחות', onClick: () => router.push('/customers') },
+        { icon: '⚡', label: 'מנוע הכנסות', onClick: () => router.push('/revenue') },
+        { icon: '📈', label: 'מרכז צמיחה', onClick: () => router.push('/growth') },
+        { icon: '🔗', label: 'לינק הזמנות', onClick: () => { const url = `${window.location.origin}/book/${bizId}`; navigator.clipboard?.writeText(url); showToast('הלינק הועתק — שלח ללקוחות!', 'success'); } },
+        { icon: '🧰', label: 'כל הכלים', onClick: () => setToolsOpen(true) },
+      ]);
+
+  const filteredTools = ALL_TOOLS.map((sec) => ({
+    ...sec,
+    items: sec.items.filter((t) => {
+      if (t.path === '/pilot-requests' && !isPlatformOwner) return false;
+      if (isStaff && !t.staff) return false;
+      if (toolsQuery.trim() && !t.label.includes(toolsQuery.trim())) return false;
+      return true;
+    }),
+  })).filter((sec) => sec.items.length > 0);
 
   if (loading || dataLoading) {
     return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
@@ -107,26 +215,6 @@ export default function DashboardPage() {
     );
   }
 
-  // (legacy fallback retained below, no longer reached)
-  const today = new Date().toISOString().split('T')[0];
-  const todayBookings = bookings.filter((b) => b.date === today);
-  const upcoming = bookings.filter((b) => b.date > today).slice(0, 10);
-  // Today's expected revenue (from non-cancelled bookings today)
-  const todayRevenue = todayBookings
-    .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
-    .reduce((sum, b) => sum + (Number((b as { price?: number }).price) || 0), 0);
-  // This week's completed revenue
-  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekAgoStr = weekAgo.toISOString().split('T')[0];
-  const weekRevenue = bookings
-    .filter((b) => b.date >= weekAgoStr && b.date <= today && b.status === 'completed')
-    .reduce((sum, b) => sum + (Number((b as { price?: number }).price) || 0), 0);
-  // Tomorrow's bookings — for one-tap WhatsApp reminders
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
-  const tomorrowBookings = bookings.filter((b) => b.date === tomorrowStr && b.status !== 'cancelled');
-  const insights = user?.role !== 'staff' ? computeInsights(bookings as never) : [];
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       {/* Header */}
@@ -134,9 +222,10 @@ export default function DashboardPage() {
         <ZikkitLogo size={34} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
+          <Button onClick={() => setToolsOpen(true)} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>🧰</Button>
           <Button onClick={toggleTheme} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>{themeMode === 'dark' ? '☀️' : '🌙'}</Button>
           <Button onClick={() => router.push('/settings')} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>⚙️</Button>
-          {['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase()) && (
+          {isPlatformOwner && (
             <Button onClick={() => router.push('/hq')} sx={{ color: '#fff', bgcolor: c.text, fontWeight: 800, fontSize: 12, minWidth: 'auto', px: 1.25, py: 0.5, borderRadius: 1, letterSpacing: '0.05em', '&:hover': { bgcolor: c.accent } }}>HQ</Button>
           )}
           <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
@@ -144,8 +233,8 @@ export default function DashboardPage() {
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 940, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 5 } }}>
-        {/* Greeting — editorial */}
-        <Box sx={{ mb: 4 }}>
+        {/* Greeting */}
+        <Box sx={{ mb: 3 }}>
           <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.12em', mb: 1 }}>
             {(() => { const d = new Date(); return `${['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'][d.getDay()]} · ${d.getDate()}.${d.getMonth()+1}`; })()}
           </Typography>
@@ -192,25 +281,57 @@ export default function DashboardPage() {
             </Box>
           );
         })()}
-        {notifs.filter((n) => !n.read).length > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.accent, animation: 'pulse 2s infinite' }} />
-                <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>{notifs.filter((n) => !n.read).length} התראות חדשות</Typography>
+
+        {/* ===== Smart alerts — max 3, from the engines ===== */}
+        {alerts.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+            {alerts.map((a, i) => (
+              <Box key={i} onClick={a.onClick} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: a.hot ? c.accentDim : c.surface1, border: `1px solid ${a.hot ? c.accentMid : c.border2}`, borderRadius: 2, px: 2, py: 1.5, transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
+                <Box sx={{ fontSize: 19 }}>{a.icon}</Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, flex: 1 }}>{a.text}</Typography>
+                <Box sx={{ color: c.accent, fontSize: 17, fontWeight: 700 }}>‹</Box>
               </Box>
-              <Button size="small" onClick={async () => { if (bizId) { await markNotificationsRead(bizId); setNotifs((p) => p.map((n) => ({ ...n, read: true }))); } }} sx={{ fontSize: 12.5, color: c.text3 }}>סמן הכל כנקרא</Button>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              {notifs.filter((n) => !n.read).slice(0, 5).map((n) => (
-                <Typography key={n.id} sx={{ fontSize: 13.5, color: c.text2, bgcolor: c.surface2, borderRadius: 2.5, px: 1.75, py: 1.25 }}>{n.text}</Typography>
-              ))}
-            </Box>
+            ))}
           </Box>
         )}
 
-        {/* Stats — editorial bordered block */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', mb: 4, border: `1.5px solid ${c.border}`, borderRadius: 2, overflow: 'hidden' }}>
+        {/* Notifications — expands from the 🔔 alert */}
+        <Collapse in={showNotifs && unreadNotifs.length > 0}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {unreadNotifs.slice(0, 5).map((n) => (
+                <Typography key={n.id} sx={{ fontSize: 13.5, color: c.text2, bgcolor: c.surface2, borderRadius: 2.5, px: 1.75, py: 1.25 }}>{n.text}</Typography>
+              ))}
+            </Box>
+            <Button size="small" onClick={async () => { if (bizId) { await markNotificationsRead(bizId); setNotifs((p) => p.map((n) => ({ ...n, read: true }))); setShowNotifs(false); } }} sx={{ fontSize: 12.5, color: c.text3, mt: 1 }}>סמן הכל כנקרא</Button>
+          </Box>
+        </Collapse>
+
+        {/* Tomorrow reminders — expands from the ⏰ alert */}
+        <Collapse in={showTomorrow && tomorrowBookings.length > 0}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {tomorrowBookings.map((b, i) => {
+                if (!b.customerPhone) return null;
+                const manageUrl = b.manageToken && bizId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/manage/${bizId}/${b.manageToken}` : undefined;
+                const msg = messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: b.customerName, service: b.service, date: b.date, time: b.time, manageUrl });
+                return (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface2, borderRadius: 1.5, px: 1.75, py: 1.25 }}>
+                    <Box sx={{ fontSize: 14, fontWeight: 800, color: c.accent, minWidth: 44 }}>{b.time}</Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
+                      <Typography sx={{ fontSize: 12, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service}</Typography>
+                    </Box>
+                    <Button href={waLink(b.customerPhone, msg)} target="_blank" size="small" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12.5, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' }, whiteSpace: 'nowrap', flexShrink: 0 }}>💬 תזכורת</Button>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        </Collapse>
+
+        {/* Stats */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', mb: 3, border: `1.5px solid ${c.border}`, borderRadius: 2, overflow: 'hidden' }}>
           {[
             { label: 'תורים היום', value: String(todayBookings.length), accent: true },
             { label: 'צפי הכנסה היום', value: `₪${todayRevenue.toLocaleString()}`, accent: false },
@@ -223,202 +344,27 @@ export default function DashboardPage() {
           ))}
         </Box>
 
-        {/* Share booking link — drives bookings */}
-        {setupState.bookingEnabled && bizId && (
-          <Box sx={{ bgcolor: c.accentDim, border: `1px solid ${c.accentMid}`, borderRadius: 2, p: 2.5, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔗</Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: 12, color: c.accent, fontWeight: 700 }}>לינק ההזמנות שלך</Typography>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{`${typeof window !== 'undefined' ? window.location.origin : ''}/book/${bizId}`}</Typography>
-              </Box>
+        {/* ===== 6 quick actions — big, thumb-friendly ===== */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: `repeat(${Math.min(quickActions.length, 6)}, 1fr)` }, gap: 1.25, mb: 4 }}>
+          {quickActions.map((q) => (
+            <Box key={q.label} onClick={q.onClick} className="zk-card" sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2.5, py: 2.25, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' }, '&:active': { transform: 'scale(0.98)' } }}>
+              <Box sx={{ fontSize: 26, mb: 0.75 }}>{q.icon}</Box>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text, letterSpacing: '-0.01em' }}>{q.label}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1, mt: 1.75 }}>
-              <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; navigator.clipboard?.writeText(url); showToast('הלינק הועתק!', 'success'); }} variant="contained" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>📋 העתק</Button>
-              <Button onClick={() => { const url = `${window.location.origin}/book/${bizId}`; window.open(`https://wa.me/?text=${encodeURIComponent('קבעו תור אצלי: ' + url)}`, '_blank'); }} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1, color: c.green, borderColor: c.border2 }}>💬 שתף בוואטסאפ</Button>
-              <Button onClick={() => window.open(`/book/${bizId}`, '_blank')} variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}>👁 תצוגה</Button>
-            </Box>
-          </Box>
-        )}
-
-        {/* Tomorrow's reminders — one-tap WhatsApp, kills no-shows without any SMS provider */}
-        {user?.role !== 'staff' && tomorrowBookings.length > 0 && (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-              <Box>
-                <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>⏰ תזכורות למחר</Typography>
-                <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{tomorrowBookings.length} תורים · שלח תזכורת בלחיצה</Typography>
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              {tomorrowBookings.map((b, i) => {
-                const bk = b as { customerName?: string; customerPhone?: string; service?: string; time: string; date: string; manageToken?: string };
-                if (!bk.customerPhone) return null;
-                const manageUrl = bk.manageToken && bizId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/manage/${bizId}/${bk.manageToken}` : undefined;
-                const msg = messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: bk.customerName, service: bk.service, date: bk.date, time: bk.time, manageUrl });
-                return (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface2, borderRadius: 1.5, px: 1.75, py: 1.25 }}>
-                    <Box sx={{ fontSize: 14, fontWeight: 800, color: c.accent, minWidth: 44 }}>{bk.time}</Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.customerName}</Typography>
-                      <Typography sx={{ fontSize: 12, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.service}</Typography>
-                    </Box>
-                    <Button href={waLink(bk.customerPhone, msg)} target="_blank" size="small" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12.5, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' }, whiteSpace: 'nowrap', flexShrink: 0 }}>💬 תזכורת</Button>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        )}
-
-        {/* Dana add-on (subtle) */}
-        {danaPhone ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 12, color: c.text3, fontWeight: 600 }}>מספר דנה — מענה אוטומטי</Typography>
-              <Typography sx={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'monospace', letterSpacing: '-0.02em' }}>{danaPhone}</Typography>
-            </Box>
-          </Box>
-        ) : (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📞</Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>דנה — מענה טלפוני אוטומטי</Typography>
-              <Typography sx={{ fontSize: 12.5, color: c.text3 }}>אופציונלי · מישהי שעונה לטלפון וקובעת תורים 24/7</Typography>
-            </Box>
-            <Button onClick={() => router.push('/setup')} variant="outlined" size="small" sx={{ borderRadius: 2.5, fontWeight: 600, whiteSpace: 'nowrap' }}>הפעל</Button>
-          </Box>
-        )}
-
-        {/* Onboarding checklist — only while incomplete */}
-        {user?.role !== 'staff' && (() => {
-          const steps = [
-            { done: setupState.hasServices, label: 'הוסף שירותים ומחירים', path: '/services', icon: '📋' },
-            { done: setupState.hasHours, label: 'הגדר שעות פעילות', path: '/hours', icon: '🕐' },
-            { done: setupState.bookingEnabled, label: 'הפעל דף הזמנות', path: '/booking-page', icon: '🔗' },
-            { done: setupState.hasBooking, label: 'קבל את התור הראשון', path: '/calendar', icon: '📅' },
-          ];
-          const doneCount = steps.filter((s) => s.done).length;
-          if (doneCount === steps.length) return null;
-          return (
-            <Box sx={{ mb: 4, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>בוא נסיים את ההגדרה 🚀</Typography>
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.accent }}>{doneCount}/{steps.length}</Typography>
-              </Box>
-              <Box sx={{ height: 6, bgcolor: c.surface3, borderRadius: 99, overflow: 'hidden', mb: 2.5 }}>
-                <Box sx={{ width: `${(doneCount / steps.length) * 100}%`, height: '100%', background: `linear-gradient(to right, ${c.accent}, ${c.accent2})`, borderRadius: 99, transition: 'width 0.5s' }} />
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {steps.map((s) => (
-                  <Box key={s.path} onClick={() => !s.done && router.push(s.path)} sx={{ cursor: s.done ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: 1.5, bgcolor: s.done ? 'transparent' : c.surface2, opacity: s.done ? 0.6 : 1, transition: 'all 0.2s', '&:hover': { bgcolor: s.done ? 'transparent' : c.surface3 } }}>
-                    <Box sx={{ width: 26, height: 26, borderRadius: '50%', bgcolor: s.done ? c.green : c.surface4, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{s.done ? '✓' : ''}</Box>
-                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text, textDecoration: s.done ? 'line-through' : 'none', flex: 1 }}>{s.label}</Typography>
-                    {!s.done && <Typography sx={{ fontSize: 18 }}>{s.icon}</Typography>}
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          );
-        })()}
-
-        {/* Smart insights */}
-        {user?.role !== 'staff' && insights.length > 0 && (
-          <Box sx={{ mb: 4 }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תובנות חכמות</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {insights.slice(0, 3).map((ins, i) => (
-                <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2 }}>
-                  <Typography sx={{ fontSize: 13.5, color: c.text, fontWeight: 500 }}>{ins}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        {/* Feature navigation — organized by category */}
-        {([
-          {
-            title: 'יומיומי',
-            items: [
-              { icon: '📅', label: 'יומן תורים', path: '/calendar', staff: true },
-              { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
-              { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
-              { icon: '🔔', label: 'רשימת המתנה', path: '/waitlist', staff: true },
-              { icon: '📋', label: 'מחירון', path: '/services', staff: false },
-            ],
-          },
-          {
-            title: 'כספים',
-            items: [
-              { icon: '⚡', label: 'מנוע הכנסות', path: '/revenue', staff: false },
-              { icon: '📊', label: 'דוחות', path: '/reports', staff: false },
-              { icon: '📈', label: 'אנליטיקס', path: '/analytics', staff: false },
-              { icon: '💰', label: 'רווחיות', path: '/expenses', staff: false },
-              { icon: '🧾', label: 'קבלות', path: '/documents', staff: false },
-              { icon: '📤', label: 'ייצוא', path: '/export-data', staff: false },
-            ],
-          },
-          {
-            title: 'שיווק וצמיחה',
-            items: [
-              { icon: '🎟️', label: 'מבצעים', path: '/promos', staff: false },
-              { icon: '⭐', label: 'ביקורות', path: '/reviews', staff: false },
-              { icon: '⚡', label: 'אוטומציות', path: '/automations', staff: false },
-              { icon: '📈', label: 'מרכז צמיחה', path: '/growth', staff: false },
-              { icon: '🎨', label: 'סטודיו תוכן', path: '/ai-studio', staff: false },
-            ],
-          },
-          {
-            title: 'הגדרות העסק',
-            items: [
-              { icon: '🚀', label: 'מוכנות להפעלה', path: '/activate', staff: false },
-              { icon: '📞', label: 'דנה', path: '/setup', staff: false },
-              { icon: '💳', label: 'מנוי ותשלומים', path: '/billing', staff: false },
-              { icon: '📨', label: 'בקשות פיילוט', path: '/pilot-requests', staff: false },
-              { icon: '🧑‍🤝‍🧑', label: 'צוות', path: '/team', staff: false },
-              { icon: '🕐', label: 'שעות', path: '/hours', staff: false },
-              { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
-              { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
-              { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
-            ],
-          },
-        ] as const).map((section) => {
-          const ownerEmails = ['ohanaliel@gmail.com'];
-          const isPlatformOwner = ownerEmails.includes((firebaseUser?.email || '').toLowerCase());
-          const visible = section.items.filter((t) => {
-            if (t.path === '/pilot-requests' && !isPlatformOwner) return false; // owner-only platform tile
-            return user?.role !== 'staff' || t.staff;
-          });
-          if (visible.length === 0) return null;
-          return (
-            <Box key={section.title} sx={{ mb: 3.5 }}>
-              <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.14em' }}>{section.title}</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 0, border: `1.5px solid ${c.border}`, borderRadius: 2, overflow: 'hidden' }}>
-                {visible.map((t, idx) => (
-                  <Box key={t.path} onClick={() => router.push(t.path)} sx={{ cursor: 'pointer', bgcolor: c.surface1, borderRight: `1px solid ${c.border2}`, borderBottom: `1px solid ${c.border2}`, p: 2.25, transition: 'all 0.15s ease', position: 'relative', '&:hover': { bgcolor: c.text, '& .tile-label': { color: c.bg }, '& .tile-icon': { filter: 'grayscale(0)' } }, '&:active': { bgcolor: c.text } }}>
-                    <Box className="tile-icon" sx={{ fontSize: 24, mb: 1, transition: 'all 0.15s' }}>{t.icon}</Box>
-                    <Typography className="tile-label" sx={{ fontSize: 14, fontWeight: 700, color: c.text, transition: 'color 0.15s', letterSpacing: '-0.01em' }}>{t.label}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          );
-        })}
-        <Box sx={{ mb: 2 }} />
+          ))}
+        </Box>
 
         {/* Today */}
         <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>
         {todayBookings.length === 0 ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 5, textAlign: 'center' }}>
+          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 5, textAlign: 'center', mb: 4 }}>
             <Box sx={{ fontSize: 32, mb: 1, opacity: 0.5 }}>☕</Box>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>אין תורים היום</Typography>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 4 }}>
             {todayBookings.sort((a, b) => a.time.localeCompare(b.time)).map((b) => (
-              <BookingRow key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />
+              <BookingRow key={b.id} booking={b} bizName={bizName} onClick={() => setSelectedBooking(b)} />
             ))}
           </Box>
         )}
@@ -428,14 +374,39 @@ export default function DashboardPage() {
           <>
             <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, mt: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תורים קרובים</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              {upcoming.map((b) => <BookingRow key={b.id} booking={b} showDate onClick={() => setSelectedBooking(b)} />)}
+              {upcoming.map((b) => <BookingRow key={b.id} booking={b} bizName={bizName} showDate onClick={() => setSelectedBooking(b)} />)}
             </Box>
           </>
         )}
       </Box>
 
+      {/* ===== All tools drawer ===== */}
+      <Drawer anchor="bottom" open={toolsOpen} onClose={() => setToolsOpen(false)} PaperProps={{ sx: { bgcolor: c.bg, borderRadius: '20px 20px 0 0', maxHeight: '86vh', maxWidth: 720, mx: 'auto', width: '100%' } }}>
+        <Box sx={{ p: { xs: 2.5, sm: 3 }, pb: 4 }}>
+          <Box sx={{ width: 44, height: 5, borderRadius: 99, bgcolor: c.border2, mx: 'auto', mb: 2 }} />
+          <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text, mb: 1.5 }}>🧰 כל הכלים</Typography>
+          <TextField fullWidth size="small" placeholder="חפש כלי..." value={toolsQuery} onChange={(e) => setToolsQuery(e.target.value)} sx={{ mb: 2 }} />
+          <Box sx={{ overflowY: 'auto', maxHeight: '58vh' }}>
+            {filteredTools.map((sec) => (
+              <Box key={sec.title} sx={{ mb: 2.5 }}>
+                <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, mb: 1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{sec.title}</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 1 }}>
+                  {sec.items.map((t) => (
+                    <Box key={t.path} onClick={() => { setToolsOpen(false); router.push(t.path); }} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, py: 1.75, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
+                      <Box sx={{ fontSize: 22, mb: 0.5 }}>{t.icon}</Box>
+                      <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: c.text, lineHeight: 1.25 }}>{t.label}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ))}
+            {filteredTools.length === 0 && <Typography sx={{ fontSize: 14, color: c.text3, textAlign: 'center', py: 3 }}>לא נמצא כלי בשם הזה</Typography>}
+          </Box>
+        </Box>
+      </Drawer>
+
       <BookingDetailDialog booking={selectedBooking as never} bizId={bizId} onClose={() => setSelectedBooking(null)} onChanged={() => window.location.reload()} />
-      {user?.role !== 'staff' && <WelcomeWizard bizId={bizId} hasServices={setupState.hasServices} hasHours={setupState.hasHours} bookingEnabled={setupState.bookingEnabled} />}
+      {!isStaff && <WelcomeWizard bizId={bizId} hasServices={setupState.hasServices} hasHours={setupState.hasHours} bookingEnabled={setupState.bookingEnabled} />}
 
       {/* Quick-add FAB */}
       <Box onClick={() => router.push('/calendar?add=1')} sx={{ position: 'fixed', bottom: 24, left: 24, width: 60, height: 60, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 300, cursor: 'pointer', boxShadow: `0 8px 28px ${c.accent}66`, zIndex: 50, transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { transform: 'scale(1.08) translateY(-2px)', boxShadow: `0 12px 36px ${c.accent}88` }, '&:active': { transform: 'scale(1.0)' } }}>+</Box>
@@ -443,7 +414,8 @@ export default function DashboardPage() {
   );
 }
 
-function BookingRow({ booking, showDate, onClick }: { booking: Booking; showDate?: boolean; onClick?: () => void }) {
+function BookingRow({ booking, bizName, showDate, onClick }: { booking: Booking; bizName?: string; showDate?: boolean; onClick?: () => void }) {
+  const msg = booking.customerPhone ? messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: booking.customerName, service: booking.service, date: booking.date, time: booking.time }) : '';
   return (
     <Box onClick={onClick} sx={{ cursor: onClick ? 'pointer' : 'default', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': onClick ? { borderColor: c.border, bgcolor: c.surface2 } : {} }}>
       <Box sx={{ textAlign: 'center', minWidth: 56, bgcolor: c.accentDim, borderRadius: 1.5, py: 1, px: 1.25 }}>
@@ -454,6 +426,9 @@ function BookingRow({ booking, showDate, onClick }: { booking: Booking; showDate
         <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{booking.customerName}</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3 }}>{booking.service || 'טיפול'}{booking.staff ? ` · ${booking.staff}` : ''} · {booking.duration} דק'</Typography>
       </Box>
+      {booking.customerPhone && (
+        <Box component="a" href={waLink(booking.customerPhone, msg)} target="_blank" onClick={(e: React.MouseEvent) => e.stopPropagation()} sx={{ width: 38, height: 38, borderRadius: '50%', bgcolor: '#25D36622', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, textDecoration: 'none', flexShrink: 0 }}>💬</Box>
+      )}
       {onClick && <Box sx={{ color: c.text3, fontSize: 18 }}>‹</Box>}
     </Box>
   );

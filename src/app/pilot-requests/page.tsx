@@ -16,6 +16,7 @@ interface PilotRequest {
   bizType: string;
   note: string;
   status: string;
+  inviteCode?: string;
   createdAt: string;
 }
 
@@ -57,8 +58,8 @@ export default function PilotRequestsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-        showToast(status === 'approved' ? 'הבקשה אושרה' : status === 'rejected' ? 'הבקשה נדחתה' : 'עודכן', 'success');
+        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status, inviteCode: data.inviteCode || r.inviteCode } : r)));
+        showToast(status === 'approved' ? `אושר! קוד הזמנה: ${data.inviteCode}` : status === 'rejected' ? 'הבקשה נדחתה' : 'עודכן', 'success');
       } else showToast(data.error || 'שגיאה', 'error');
     } catch (e) { showToast((e as Error).message, 'error'); }
     finally { setBusyId(null); }
@@ -152,6 +153,18 @@ export default function PilotRequestsPage() {
                     <Button onClick={() => setStatus(r.id, 'new')} disabled={busyId === r.id} size="small" sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: 12.5, color: c.text3 }}>החזר לחדש</Button>
                   )}
                 </Box>
+                {/* Invite code for approved requests */}
+                {r.status === 'approved' && r.inviteCode && (
+                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${c.border2}`, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Box sx={{ bgcolor: c.accentDim, borderRadius: 1.5, px: 1.5, py: 0.75, fontFamily: 'monospace', fontSize: 15, fontWeight: 800, color: c.accent, letterSpacing: '0.05em' }}>{r.inviteCode}</Box>
+                    <Button onClick={() => { navigator.clipboard?.writeText(r.inviteCode || ''); showToast('הקוד הועתק', 'success'); }} size="small" sx={{ fontWeight: 700, fontSize: 12, minWidth: 'auto' }}>📋 העתק</Button>
+                    <Button
+                      href={`https://wa.me/972${(r.phone || '').replace(/\D/g, '').replace(/^0/, '').replace(/^972/, '')}?text=${encodeURIComponent(`שלום ${r.name?.split(' ')[0] || ''}! 🎉 אושרת לפיילוט של Zikkit!\n\nהקוד שלך: ${r.inviteCode}\n\nהיכנס ל: ${typeof window !== 'undefined' ? window.location.origin : ''}/login?register=1\nהזן את הקוד, בחר סיסמה — והעסק שלך מוכן! 💜`)}`}
+                      target="_blank" size="small" variant="contained"
+                      sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' } }}
+                    >💬 שלח קוד</Button>
+                  </Box>
+                )}
               </Box>
             ))}
           </Box>

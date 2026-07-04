@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { ZikkitLogo } from '@/components/ZikkitLogo';
 import { zikkitColors as c } from '@/styles/theme';
 
-type View = 'landing' | 'login' | 'request' | 'sent';
+type View = 'landing' | 'login' | 'request' | 'sent' | 'signup';
 
 export default function AuthPageWrapper() {
   return (
@@ -20,7 +20,7 @@ export default function AuthPageWrapper() {
 function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, loginWithGoogle, firebaseUser, error, clearError } = useAuth();
+  const { login, loginWithGoogle, register, firebaseUser, error, clearError } = useAuth();
   const [view, setView] = useState<View>('landing');
   const [bizName, setBizName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,6 +32,10 @@ function AuthPage() {
   const [reqBizType, setReqBizType] = useState('');
   const [reqNote, setReqNote] = useState('');
   const [reqError, setReqError] = useState('');
+  // Invite-code signup
+  const [inviteCode, setInviteCode] = useState('');
+  const [signupError, setSignupError] = useState('');
+  const [codeVerified, setCodeVerified] = useState(false);
 
   useEffect(() => { if (searchParams.get('register')) setView('request'); }, [searchParams]);
   useEffect(() => { if (firebaseUser) router.push('/dashboard'); }, [firebaseUser, router]);
@@ -63,6 +67,38 @@ function AuthPage() {
   };
 
   const goTo = (v: View) => { clearError(); setView(v); };
+
+  // Invite-code signup: verify code, then create the account.
+  const verifyAndSignup = async () => {
+    setSignupError('');
+    if (!inviteCode.trim()) { setSignupError('צריך קוד הזמנה'); return; }
+    if (!email.trim() || !password.trim()) { setSignupError('צריך אימייל וסיסמה'); return; }
+    if (password.length < 6) { setSignupError('הסיסמה צריכה לפחות 6 תווים'); return; }
+    setLoading(true);
+    try {
+      // 1. Verify the invite code
+      const vr = await fetch('/api/verify-invite', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inviteCode.trim() }),
+      });
+      const vdata = await vr.json();
+      if (!vdata.valid) { setSignupError(vdata.error || 'קוד לא תקין'); setLoading(false); return; }
+
+      // 2. Create the Firebase account (register also seeds the biz doc + trial)
+      await register(email.trim(), password, vdata.lead?.bizName || bizName || 'העסק שלי');
+
+      // 3. Mark the code as used
+      await fetch('/api/verify-invite', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inviteCode.trim(), markUsed: true }),
+      });
+      // AuthProvider redirect effect will take over → onboarding via dashboard
+      router.push('/onboarding');
+    } catch (e) {
+      setSignupError((e as Error).message.includes('email') ? 'האימייל כבר רשום — נסה להתחבר' : 'ההרשמה נכשלה, נסה שוב');
+    } finally { setLoading(false); }
+  };
+
 
   const features = [
     { icon: '📅', title: 'יומן תורים חכם', desc: 'נהל את כל התורים במקום אחד' },
@@ -187,8 +223,44 @@ function AuthPage() {
             </Box>
 
             <Typography sx={{ fontSize: 14, color: c.text2, textAlign: 'center', mt: 3 }}>
+              יש לכם קוד הזמנה?{' '}
+              <Box component="span" onClick={() => goTo('signup')} sx={{ color: c.accent, fontWeight: 700, cursor: 'pointer' }}>הירשמו כאן</Box>
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: c.text2, textAlign: 'center', mt: 1 }}>
               כבר יש לכם חשבון?{' '}
               <Box component="span" onClick={() => goTo('login')} sx={{ color: c.accent, fontWeight: 700, cursor: 'pointer' }}>התחברו</Box>
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* ===== SIGNUP WITH INVITE CODE ===== */}
+      {view === 'signup' && (
+        <Box sx={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+          <Box className="zk-fade-up" sx={{ maxWidth: 420, width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', mb: 3 }}>
+              <IconButton onClick={() => goTo('request')} sx={{ position: 'absolute', right: 0, color: c.text3 }}>→</IconButton>
+              <ZikkitLogo useImage size={40} />
+            </Box>
+            <Box sx={{ bgcolor: c.surface1, borderRadius: 2, p: { xs: 3, sm: 4.5 }, boxShadow: c.shadowLg, border: `1px solid ${c.border2}` }}>
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: c.accentDim, color: c.accent, borderRadius: 99, px: 1.5, py: 0.5, fontSize: 12.5, fontWeight: 700, mb: 1.5 }}>🎉 אושרת לפיילוט</Box>
+              <Typography sx={{ fontSize: 24, fontWeight: 800, color: c.text, letterSpacing: '-0.02em' }}>יצירת החשבון שלך</Typography>
+              <Typography sx={{ fontSize: 14, color: c.text3, mb: 3, mt: 0.5, lineHeight: 1.5 }}>הזן את קוד ההזמנה שקיבלת, בחר אימייל וסיסמה — והעסק שלך מוכן.</Typography>
+
+              <TextField fullWidth placeholder="קוד הזמנה (ZK-XXXX)" value={inviteCode} onChange={(e) => setInviteCode(e.target.value.toUpperCase())} sx={{ mb: 1.75, '& input': { fontFamily: 'monospace', letterSpacing: '0.1em', fontWeight: 700 } }} />
+              <TextField fullWidth placeholder="שם העסק" value={bizName} onChange={(e) => setBizName(e.target.value)} sx={{ mb: 1.75 }} />
+              <TextField fullWidth type="email" placeholder="אימייל *" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 1.75 }} />
+              <TextField fullWidth type="password" placeholder="סיסמה (6+ תווים) *" value={password} onChange={(e) => setPassword(e.target.value)} sx={{ mb: 2 }} />
+
+              {signupError && <Box sx={{ bgcolor: c.hotDim, borderRadius: 2.5, px: 2, py: 1.25, mb: 2 }}><Typography sx={{ fontSize: 13, color: c.hot, fontWeight: 500 }}>{signupError}</Typography></Box>}
+
+              <Button onClick={verifyAndSignup} disabled={loading || !inviteCode.trim() || !email.trim() || !password.trim()} fullWidth variant="contained" sx={{ py: 1.5, borderRadius: 1.5, fontWeight: 700, fontSize: 15.5 }}>
+                {loading ? <CircularProgress size={21} sx={{ color: '#fff' }} /> : 'צור חשבון והתחל →'}
+              </Button>
+            </Box>
+            <Typography sx={{ fontSize: 14, color: c.text2, textAlign: 'center', mt: 3 }}>
+              אין לכם קוד עדיין?{' '}
+              <Box component="span" onClick={() => goTo('request')} sx={{ color: c.accent, fontWeight: 700, cursor: 'pointer' }}>בקשו גישה</Box>
             </Typography>
           </Box>
         </Box>

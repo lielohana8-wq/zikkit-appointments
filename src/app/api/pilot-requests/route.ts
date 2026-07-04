@@ -58,14 +58,26 @@ export async function PATCH(req: NextRequest) {
     if (!id || !status) return NextResponse.json({ error: 'missing id or status' }, { status: 400 });
     const { getAccessToken } = await import('@/lib/firestore-admin');
     const token = await getAccessToken();
-    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/pilot_requests/${id}?updateMask.fieldPaths=status`;
+
+    // On approval, generate a one-time invite code the owner sends to the lead.
+    let inviteCode = '';
+    const fields: Record<string, unknown> = { status: { stringValue: status } };
+    let mask = 'updateMask.fieldPaths=status';
+    if (status === 'approved') {
+      inviteCode = 'ZK-' + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+      fields.inviteCode = { stringValue: inviteCode };
+      fields.inviteUsed = { booleanValue: false };
+      mask += '&updateMask.fieldPaths=inviteCode&updateMask.fieldPaths=inviteUsed';
+    }
+
+    const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/pilot_requests/${id}?${mask}`;
     const r = await fetch(url, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ fields: { status: { stringValue: status } } }),
+      body: JSON.stringify({ fields }),
     });
     if (!r.ok) return NextResponse.json({ error: 'update failed' }, { status: 500 });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, inviteCode });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

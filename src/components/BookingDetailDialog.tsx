@@ -114,6 +114,18 @@ export function BookingDetailDialog({ booking, bizId, onClose, onChanged }: Prop
             {booking.price ? <DetailRow label="מחיר" value={`₪${booking.price}`} /> : null}
             {booking.notes && <DetailRow label="הערות" value={booking.notes} />}
 
+            {/* Pending approval */}
+            {booking.status === 'pending' && (
+              <Box sx={{ bgcolor: '#FEF9EC', border: '1px solid #F5D98F', borderRadius: 2, p: 1.75, mt: 2 }}>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#92600A', mb: 1 }}>⏳ התור ממתין לאישור שלך</Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button onClick={() => setStatus('confirmed')} fullWidth variant="contained" sx={{ borderRadius: 2, fontWeight: 800, bgcolor: '#16A34A', '&:hover': { bgcolor: '#15803D' } }}>✓ אשר תור</Button>
+                  <Button onClick={() => setStatus('cancelled')} variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, color: c.hot, borderColor: c.border2, whiteSpace: 'nowrap' }}>דחה</Button>
+                </Box>
+                {booking.customerPhone && <Typography sx={{ fontSize: 11.5, color: '#92600A', mt: 1 }}>💡 אחרי האישור — עדכן את הלקוח דרך &quot;שלח הודעה&quot;</Typography>}
+              </Box>
+            )}
+
             {/* Quick actions */}
             {booking.customerPhone && (
               <>

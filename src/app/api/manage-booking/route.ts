@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
       duration: booking.duration, staff: booking.staff || null,
       status: booking.status, customerName: booking.customerName,
     },
+    cancelWindowH: ((biz.booking as Record<string, unknown>)?.cancelWindowH as number) || 0,
   });
 }
 
@@ -82,6 +83,13 @@ export async function POST(req: NextRequest) {
     const bizName = ((biz.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
 
     if (action === 'cancel') {
+      const windowH = ((biz.booking as Record<string, unknown>)?.cancelWindowH as number) || 0;
+      if (windowH > 0) {
+        const start = new Date(`${booking.date}T${booking.time}:00`).getTime();
+        if (start - Date.now() < windowH * 3600000) {
+          return NextResponse.json({ success: false, error: `לא ניתן לבטל פחות מ-${windowH} שעות לפני התור. לשינויים — צרו קשר עם העסק.` }, { status: 403 });
+        }
+      }
       const updated = bookings.map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b));
       await setBizField(bizId, ['appointments', 'bookings'], updated);
       // Notify owner

@@ -311,6 +311,11 @@ export async function deleteService(bizId: string, id: string): Promise<void> {
 
 // ---------- Booking page branding ----------
 export interface BookingBranding {
+  slotInterval?: number;        // minutes between offered slots (15/30/45/60)
+  cancelWindowH?: number;       // customers can't self-cancel within this many hours (0 = anytime)
+  approvalMode?: 'auto' | 'manual'; // manual = new bookings arrive as 'pending'
+  policyOn?: boolean;           // show business policy during booking
+  policyText?: string;          // the policy text itself
   logo: string;          // data URL
   banner: string;        // data URL (optional hero image)
   brandColor: string;

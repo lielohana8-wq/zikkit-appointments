@@ -296,6 +296,36 @@ export default function BookingPageSettings() {
           <TextField fullWidth size="small" label="טיקטוק (שם משתמש)" value={b.tiktok} onChange={(e) => set('tiktok', e.target.value)} placeholder="@mybusiness" />
         </Section>
 
+        {/* Booking rules */}
+        <Section title="כללי קביעת תורים">
+          <TextField select fullWidth size="small" label="מרווח בין תורים מוצעים" value={b.slotInterval || 15} onChange={(e) => set('slotInterval', Number(e.target.value))} sx={{ mb: 2 }} SelectProps={{ native: true }} helperText="כל כמה זמן להציע שעה בדף ההזמנות">
+            {[15, 30, 45, 60].map((m) => <option key={m} value={m}>{`כל ${m} דקות`}</option>)}
+          </TextField>
+          <TextField select fullWidth size="small" label="ביטול עצמי של לקוחות" value={b.cancelWindowH ?? 0} onChange={(e) => set('cancelWindowH', Number(e.target.value))} sx={{ mb: 2 }} SelectProps={{ native: true }} helperText="פחות מזה — הלקוח לא יוכל לבטל לבד">
+            <option value={0}>אפשר לבטל תמיד</option>
+            <option value={12}>עד 12 שעות לפני התור</option>
+            <option value={24}>עד 24 שעות לפני התור</option>
+            <option value={48}>עד 48 שעות לפני התור</option>
+          </TextField>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, color: c.text }}>אישור תורים ידני</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>{b.approvalMode === 'manual' ? 'תור חדש ממתין לאישור שלך לפני שהוא נקבע' : 'כבוי — כל תור מאושר אוטומטית'}</Typography>
+            </Box>
+            <Switch checked={b.approvalMode === 'manual'} onChange={(e) => set('approvalMode', e.target.checked ? 'manual' : 'auto')} />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, color: c.text }}>תקנון בקביעת תור</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>הלקוח יאשר את התקנון לפני הקביעה</Typography>
+            </Box>
+            <Switch checked={!!b.policyOn} onChange={(e) => set('policyOn', e.target.checked)} />
+          </Box>
+          {b.policyOn && (
+            <TextField fullWidth size="small" multiline rows={4} label="נוסח התקנון" value={b.policyText || ''} onChange={(e) => set('policyText', e.target.value)} sx={{ mt: 1.5 }} placeholder={'למשל:\n· איחור של יותר מ-15 דקות = ביטול התור\n· ביטול פחות מ-24 שעות מראש יחויב במקדמה\n· אין להגיע עם מלווים'} />
+          )}
+        </Section>
+
         {/* Options */}
         <Section title="אפשרויות">
           {[

@@ -32,7 +32,7 @@ export default function ManageBookingPage() {
     fetch(`/api/manage-booking?bizId=${bizId}&token=${token}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.booking) { setBooking(d.booking); setBizName(d.bizName); }
+        if (d.booking) { setBooking(d.booking); setBizName(d.bizName); setCancelWindowH(d.cancelWindowH || 0); }
         else setError('התור לא נמצא או שהקישור פג תוקף.');
       })
       .catch(() => setError('שגיאה בטעינת התור.'))
@@ -51,6 +51,10 @@ export default function ManageBookingPage() {
   }, [bizId, token]);
 
   useEffect(() => { if (mode === 'reschedule' && newDate) loadSlots(newDate); }, [mode, newDate, loadSlots]);
+
+  const [cancelWindowH, setCancelWindowH] = useState(0);
+  const tooLateToCancel = booking && cancelWindowH > 0 &&
+    (new Date(`${booking.date}T${booking.time}:00`).getTime() - Date.now()) < cancelWindowH * 3600000;
 
   const cancel = async () => {
     if (!confirm('לבטל את התור?')) return;
@@ -129,7 +133,13 @@ export default function ManageBookingPage() {
               {booking.status !== 'cancelled' && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   <Button onClick={() => { setMode('reschedule'); setNewDate(booking.date); }} variant="contained" sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, fontSize: 16, bgcolor: accent, boxShadow: `0 8px 24px ${accent}40`, '&:hover': { bgcolor: '#6D28D9' } }}>📅 שנה מועד</Button>
-                  <Button onClick={cancel} disabled={busy} sx={{ borderRadius: 3, fontWeight: 700, py: 1.25, color: '#E5484D', '&:hover': { bgcolor: '#FEF2F2' } }}>{busy ? <CircularProgress size={20} /> : 'בטל תור'}</Button>
+                  {tooLateToCancel ? (
+                    <Box sx={{ bgcolor: '#FEF9EC', border: '1px solid #F5D98F', borderRadius: 2, p: 1.5, textAlign: 'center' }}>
+                      <Typography sx={{ fontSize: 13, color: '#92600A', fontWeight: 600 }}>⏰ לא ניתן לבטל פחות מ-{cancelWindowH} שעות לפני התור.<br/>לשינויים — צרו קשר עם העסק.</Typography>
+                    </Box>
+                  ) : (
+                    <Button onClick={cancel} disabled={busy} sx={{ borderRadius: 3, fontWeight: 700, py: 1.25, color: '#E5484D', '&:hover': { bgcolor: '#FEF2F2' } }}>{busy ? <CircularProgress size={20} /> : 'בטל תור'}</Button>
+                  )}
                 </Box>
               )}
             </Box>

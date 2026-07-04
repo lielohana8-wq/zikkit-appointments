@@ -94,6 +94,10 @@ export async function GET(req: NextRequest) {
         showDuration: booking.showDuration !== false,
         requireEmail: booking.requireEmail === true,
         requirePhone: booking.requirePhone !== false,
+        slotInterval: (booking.slotInterval as number) || 15,
+        approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
+        policyOn: booking.policyOn === true,
+        policyText: booking.policyText || '',
         gallery: booking.gallery || [],
         galleryTitle: booking.galleryTitle || 'העבודות שלנו',
         announcement: booking.announcement || '',
@@ -176,6 +180,8 @@ export async function POST(req: NextRequest) {
     }
 
     const manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    const pageCfg = (biz.booking as Record<string, unknown>) || {};
+    const needsApproval = pageCfg.approvalMode === 'manual';
     const newBooking = {
       id: 'apt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       source: 'online',
@@ -186,7 +192,7 @@ export async function POST(req: NextRequest) {
       date: booking.date,
       time: booking.time,
       price: booking.price || 0,
-      status: 'confirmed',
+      status: needsApproval ? 'pending' : 'confirmed',
       reminded: false,
       isNew: true,
       manageToken,

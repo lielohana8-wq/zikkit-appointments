@@ -281,9 +281,9 @@ export default function CalendarPage() {
                     <Box key={b.id} onClick={(e) => { e.stopPropagation(); openEdit(b); }}
                       sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: 2, cursor: 'pointer', overflow: 'hidden',
                         bgcolor: blocked ? c.surface3 : `${col}1F`, opacity: blocked ? 0.8 : 1,
-                        border: blocked ? `1.5px dashed ${c.border}` : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
+                        border: blocked ? `1.5px dashed ${c.border}` : b.status === 'pending' ? '1.5px solid #F59E0B' : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
                         transition: 'box-shadow 0.15s', '&:hover': { boxShadow: c.shadowMd, zIndex: 4 } }}>
-                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : col, lineHeight: 1.3 }}>{b.time} · {b.duration} דק'</Typography>
+                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{b.time} · {b.duration} דק'</Typography>
                       <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                       {h > 48 && <Typography sx={{ fontSize: 10.5, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || (blocked ? '' : 'טיפול')}{!blocked && b.source === 'dana' ? ' · 🎙️ דנה' : ''}{!blocked && b.source === 'online' ? ' · 🔗' : ''}</Typography>}
                     </Box>

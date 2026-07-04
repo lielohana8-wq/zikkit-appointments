@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -43,6 +43,7 @@ export default function PublicBookingPage() {
   const [info, setInfo] = useState<BizInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done' | 'waitlist' | 'waitlisted'>('service');
+  const [policyOk, setPolicyOk] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -104,7 +105,7 @@ export default function PublicBookingPage() {
       ? info.bookings.filter((b) => b.staff === selectedStaff.name)
       : info.bookings;
     const capacity = selectedStaff ? 1 : info.stations;
-    for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += 15) {
+    for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += (info.branding.slotInterval || 15)) {
       const overlap = relevantBookings.filter((b) => {
         if (b.date !== date) return false;
         const bs = toMin(b.time); const be = bs + (b.duration || 30);
@@ -489,7 +490,19 @@ export default function PublicBookingPage() {
                 </Box>
               );
             })()}
-            <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking} fullWidth sx={{ py: 1.85, borderRadius: 1.5, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
+            {info.branding.policyOn && info.branding.policyText && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ bgcolor: '#FAFAF9', border: '1px solid #E7E5E4', borderRadius: 2, p: 1.75, maxHeight: 130, overflowY: 'auto', mb: 1 }}>
+                  <Typography sx={{ fontSize: 12.5, fontWeight: 800, color: '#57534E', mb: 0.5 }}>📋 תקנון העסק</Typography>
+                  <Typography sx={{ fontSize: 12.5, color: '#78716C', whiteSpace: 'pre-line', lineHeight: 1.6 }}>{info.branding.policyText}</Typography>
+                </Box>
+                <Box onClick={() => setPolicyOk(!policyOk)} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 20, height: 20, borderRadius: 1, border: `2px solid ${policyOk ? accent : '#D6D3D1'}`, bgcolor: policyOk ? accent : 'transparent', color: '#fff', fontSize: 13, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>{policyOk ? '✓' : ''}</Box>
+                  <Typography sx={{ fontSize: 13, color: '#57534E', fontWeight: 600 }}>קראתי ואני מאשר/ת את התקנון</Typography>
+                </Box>
+              </Box>
+            )}
+            <Button onClick={submit} disabled={!form.name || (info.branding.requirePhone !== false && !form.phone) || booking || (info.branding.policyOn && !!info.branding.policyText && !policyOk)} fullWidth sx={{ py: 1.85, borderRadius: 1.5, fontWeight: 800, fontSize: 16.5, color: '#fff', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, boxShadow: `0 6px 20px ${accent}55`, '&:hover': { filter: 'brightness(1.05)' }, '&.Mui-disabled': { background: '#D6D3D1', color: '#fff' } }}>
               {booking ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : info.branding.depositOn ? '💳 המשך לתשלום מקדמה' : '✓ אישור התור'}
             </Button>
             {info.branding.cancellationNote && <Typography sx={{ fontSize: 11.5, color: '#A8A29E', textAlign: 'center', mt: 1.5 }}>{info.branding.cancellationNote}</Typography>}
@@ -524,7 +537,7 @@ export default function PublicBookingPage() {
         {stage === 'done' && (
           <Box sx={{ textAlign: 'center', py: 5, animation: 'fadeIn 0.5s' }}>
             <Box sx={{ width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 8px 30px ${accent}55`, animation: 'pop 0.5s' }}>✓</Box>
-            <Typography sx={{ fontSize: 28, fontWeight: 900, color: '#1C1917', mb: 1 }}>התור נקבע! 🎉</Typography>
+            <Typography sx={{ fontSize: 28, fontWeight: 900, color: '#1C1917', mb: 1 }}>{info.branding.approvalMode === 'manual' ? 'הבקשה נשלחה! ⏳' : 'התור נקבע! 🎉'}</Typography>
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mt: 3, mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', textAlign: 'right' }}>
               <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917', mb: 1 }}>{selectedService?.name}</Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
@@ -538,7 +551,7 @@ export default function PublicBookingPage() {
                 </Box>
               )}
             </Box>
-            <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה! 💜'}</Typography>
+            <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{info.branding.approvalMode === 'manual' ? 'העסק יאשר את התור בהקדם ותקבלו עדכון 💜' : (info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה! 💜')}</Typography>
 
             {/* Add to calendar — reduces no-shows */}
             <Button

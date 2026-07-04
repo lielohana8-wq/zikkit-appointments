@@ -147,6 +147,8 @@ export default function DashboardPage() {
     if (isStaff) return [] as Array<{ icon: string; text: string; onClick: () => void; hot?: boolean }>;
     const out: Array<{ icon: string; text: string; onClick: () => void; hot?: boolean }> = [];
     if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
+    const pendingCount = bookings.filter((b) => b.status === 'pending' && b.date >= today).length;
+    if (pendingCount > 0) out.push({ icon: '⏳', text: `${pendingCount} תורים ממתינים לאישור שלך`, onClick: () => router.push('/calendar'), hot: true });
     const steps = [setupState.hasServices, setupState.hasHours, setupState.bookingEnabled, setupState.hasBooking];
     const done = steps.filter(Boolean).length;
     if (done < steps.length) out.push({ icon: '🚀', text: `העסק מוכן ב-${Math.round((done / steps.length) * 100)}% — השלם את ההקמה`, onClick: () => router.push('/activate') });
@@ -159,7 +161,7 @@ export default function DashboardPage() {
     const ins = computeInsights(bookings as never);
     if (ins.length > 0) out.push({ icon: '💡', text: ins[0], onClick: () => router.push('/reports') });
     return out.slice(0, 3);
-  }, [isStaff, unreadNotifs.length, setupState, customers, bookings, tomorrowBookings.length, danaPhone, router]);
+  }, [isStaff, unreadNotifs.length, setupState, customers, bookings, today, tomorrowBookings.length, danaPhone, router]);
 
   // ===== Quick actions — 6 big thumb-friendly tiles =====
   const quickActions = (isStaff

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; approvalMode?: string; policyOn?: boolean; policyText?: string; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -123,13 +123,30 @@ export default function PublicBookingPage() {
       ? info.bookings.filter((b) => b.staff === selectedStaff.name)
       : info.bookings;
     const capacity = selectedStaff ? 1 : info.stations;
-    for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += (info.branding.slotInterval || 15)) {
-      const overlap = relevantBookings.filter((b) => {
-        if (b.date !== date) return false;
+    const open = toMin(dh.start); const close = toMin(dh.end);
+    const overlapAt = (t: number) => relevantBookings.filter((b) => {
+      if (b.date !== date) return false;
+      const bs = toMin(b.time); const be = bs + (b.duration || 30);
+      return t < be && t + dur > bs;
+    }).length;
+
+    if (info.branding.slotMode === 'packed') {
+      // Smart packing: offer only times that touch a booking edge (or the day's
+      // start/end) — so mixed 60/75/90-min services never leave dead time.
+      const candidates = new Set<number>([open, close - dur]);
+      relevantBookings.filter((b) => b.date === date).forEach((b) => {
         const bs = toMin(b.time); const be = bs + (b.duration || 30);
-        return t < be && t + dur > bs;
-      }).length;
-      if (overlap < capacity) slots.push(toStr(t));
+        candidates.add(be);                       // right after an existing booking
+        if (bs - dur >= open) candidates.add(bs - dur); // finish exactly when one starts
+      });
+      Array.from(candidates).sort((a, b) => a - b).forEach((t) => {
+        if (t >= open && t + dur <= close && overlapAt(t) < capacity) slots.push(toStr(t));
+      });
+      return slots;
+    }
+
+    for (let t = open; t + dur <= close; t += (info.branding.slotInterval || 15)) {
+      if (overlapAt(t) < capacity) slots.push(toStr(t));
     }
     return slots;
   }, [info, selectedService, selectedStaff]);

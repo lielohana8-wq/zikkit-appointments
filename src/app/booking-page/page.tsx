@@ -298,6 +298,22 @@ export default function BookingPageSettings() {
 
         {/* Booking rules */}
         <Section title="כללי קביעת תורים">
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>איך להציע שעות ללקוחות?</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+            {[
+              { v: 'packed', icon: '🧲', title: 'חכם — צמוד, בלי שעות מתות (מומלץ)', desc: 'כל תור חדש נצמד לסוף התור הקודם. מושלם כשיש טיפולים באורכים שונים (60/75/90 דק\') — היומן נשאר מלא.' },
+              { v: 'interval', icon: '⏱️', title: 'מרווח קבוע', desc: 'שעות במרווחים קבועים מתחילת היום. מתאים כשכל הטיפולים באותו אורך.' },
+            ].map((m) => (
+              <Box key={m.v} onClick={() => set('slotMode', m.v as 'packed' | 'interval')} sx={{ cursor: 'pointer', display: 'flex', gap: 1.5, alignItems: 'flex-start', border: `1.5px solid ${(b.slotMode || 'interval') === m.v ? c.accent : c.border2}`, bgcolor: (b.slotMode || 'interval') === m.v ? c.accentDim : 'transparent', borderRadius: 2, p: 1.5, transition: 'all 0.15s' }}>
+                <Box sx={{ fontSize: 20 }}>{m.icon}</Box>
+                <Box>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: c.text }}>{m.title}</Typography>
+                  <Typography sx={{ fontSize: 12, color: c.text3, lineHeight: 1.5 }}>{m.desc}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+          {(b.slotMode || 'interval') === 'interval' && (
           <Box sx={{ mb: 2 }}>
             <TextField fullWidth size="small" type="number" label="מרווח בין תורים מוצעים (דקות)" value={b.slotInterval || 15}
               onChange={(e) => set('slotInterval', Math.max(10, Math.min(240, Number(e.target.value) || 15)))}
@@ -308,6 +324,7 @@ export default function BookingPageSettings() {
               ))}
             </Box>
           </Box>
+          )}
           <TextField select fullWidth size="small" label="ביטול עצמי של לקוחות" value={b.cancelWindowH ?? 0} onChange={(e) => set('cancelWindowH', Number(e.target.value))} sx={{ mb: 2 }} SelectProps={{ native: true }} helperText="פחות מזה — הלקוח לא יוכל לבטל לבד">
             <option value={0}>אפשר לבטל תמיד</option>
             <option value={12}>עד 12 שעות לפני התור</option>

@@ -95,6 +95,7 @@ export async function GET(req: NextRequest) {
         requireEmail: booking.requireEmail === true,
         requirePhone: booking.requirePhone !== false,
         slotInterval: (booking.slotInterval as number) || 15,
+        slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
         policyOn: booking.policyOn === true,
         policyText: booking.policyText || '',

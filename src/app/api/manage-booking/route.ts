@@ -47,7 +47,18 @@ export async function GET(req: NextRequest) {
       // Only this staff's bookings block when the booking has a staff; else station capacity.
       const relevant = booking.staff ? bookings.filter((b) => b.staff === booking.staff) : bookings;
       const capacity = booking.staff ? 1 : stations;
-      const slotStep = ((biz.booking as Record<string, unknown>)?.slotInterval as number) || 15;
+      const pageCfg2 = (biz.booking as Record<string, unknown>) || {};
+      const slotStep = (pageCfg2.slotInterval as number) || 15;
+      if (pageCfg2.slotMode === 'packed') {
+        const open = toMin(dh.start); const close = toMin(dh.end);
+        const dayBk = bookings.filter((b) => b.manageToken !== token && b.status !== 'cancelled' && b.date === slotsDate);
+        const overlapAt = (t: number) => dayBk.filter((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); return t < be && t + dur > bs; }).length;
+        const cand = new Set<number>([open, close - dur]);
+        dayBk.forEach((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); cand.add(be); if (bs - dur >= open) cand.add(bs - dur); });
+        const stations2 = ((biz.appointments as Record<string, unknown>)?.stations as number) || 1;
+        const packed = Array.from(cand).sort((a, b) => a - b).filter((t) => t >= open && t + dur <= close && overlapAt(t) < stations2).map(toStr);
+        return NextResponse.json({ slots: packed });
+      }
       for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += slotStep) {
         const overlap = relevant.filter((b) => {
           // exclude the booking being rescheduled, and cancelled ones

@@ -298,9 +298,16 @@ export default function BookingPageSettings() {
 
         {/* Booking rules */}
         <Section title="כללי קביעת תורים">
-          <TextField select fullWidth size="small" label="מרווח בין תורים מוצעים" value={b.slotInterval || 15} onChange={(e) => set('slotInterval', Number(e.target.value))} sx={{ mb: 2 }} SelectProps={{ native: true }} helperText="כל כמה זמן להציע שעה בדף ההזמנות">
-            {[15, 30, 45, 60].map((m) => <option key={m} value={m}>{`כל ${m} דקות`}</option>)}
-          </TextField>
+          <Box sx={{ mb: 2 }}>
+            <TextField fullWidth size="small" type="number" label="מרווח בין תורים מוצעים (דקות)" value={b.slotInterval || 15}
+              onChange={(e) => set('slotInterval', Math.max(10, Math.min(240, Number(e.target.value) || 15)))}
+              helperText={(() => { const iv = b.slotInterval || 15; const start = 9 * 60; const ex = [0, 1, 2, 3].map((k) => { const m = start + k * iv; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }).join(' · '); return `כל ערך בין 10 ל-240. למשל מ-09:00: ${ex}...`; })()} />
+            <Box sx={{ display: 'flex', gap: 0.75, mt: 1, flexWrap: 'wrap' }}>
+              {[15, 30, 45, 60, 75, 90, 120].map((m) => (
+                <Box key={m} onClick={() => set('slotInterval', m)} sx={{ cursor: 'pointer', px: 1.5, py: 0.4, borderRadius: 99, fontSize: 12, fontWeight: 700, border: `1.5px solid ${(b.slotInterval || 15) === m ? c.accent : c.border2}`, color: (b.slotInterval || 15) === m ? c.accent : c.text3, bgcolor: (b.slotInterval || 15) === m ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>{m} דק&apos;</Box>
+              ))}
+            </Box>
+          </Box>
           <TextField select fullWidth size="small" label="ביטול עצמי של לקוחות" value={b.cancelWindowH ?? 0} onChange={(e) => set('cancelWindowH', Number(e.target.value))} sx={{ mb: 2 }} SelectProps={{ native: true }} helperText="פחות מזה — הלקוח לא יוכל לבטל לבד">
             <option value={0}>אפשר לבטל תמיד</option>
             <option value={12}>עד 12 שעות לפני התור</option>

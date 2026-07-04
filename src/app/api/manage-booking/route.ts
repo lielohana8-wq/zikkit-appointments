@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
       // Only this staff's bookings block when the booking has a staff; else station capacity.
       const relevant = booking.staff ? bookings.filter((b) => b.staff === booking.staff) : bookings;
       const capacity = booking.staff ? 1 : stations;
-      for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += 15) {
+      const slotStep = ((biz.booking as Record<string, unknown>)?.slotInterval as number) || 15;
+      for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += slotStep) {
         const overlap = relevant.filter((b) => {
           // exclude the booking being rescheduled, and cancelled ones
           if (b.manageToken === token || b.status === 'cancelled' || b.date !== slotsDate) return false;

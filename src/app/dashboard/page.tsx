@@ -69,6 +69,7 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
     { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },
     { icon: '💳', label: 'מנוי ותשלומים', path: '/billing', staff: false },
     { icon: '📨', label: 'בקשות פיילוט', path: '/pilot-requests', staff: false },
+    { icon: '📲', label: 'התקן אפליקציה', path: '/app', staff: true },
     { icon: '⚙️', label: 'הגדרות', path: '/settings', staff: false },
   ]},
 ];

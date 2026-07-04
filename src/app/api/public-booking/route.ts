@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       stations: (apt.stations as number) || 1,
       team,
       reviews,
-      hours: cfg.hours || null,
+      hours: ((cfg.hours as { days?: unknown })?.days as never) || null,
       blockedDates: ((cfg.hours as Record<string, unknown>)?.blockedDates as string[]) || [],
       bookings: ((apt.bookings as Array<Record<string, unknown>>) || [])
         .filter((b) => b.status !== 'cancelled')

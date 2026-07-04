@@ -140,8 +140,8 @@ export async function addBooking(bizId: string, booking: Partial<Booking>): Prom
     staff: booking.staff || null,
     station: booking.station || null,
     notes: booking.notes || '',
-    status: 'confirmed',
-    price: resolvedPrice,
+    status: (booking.status as Booking['status']) || 'confirmed',
+    price: booking.status === 'blocked' ? 0 : resolvedPrice,
     reminded: false,
     createdAt: new Date().toISOString(),
   };
@@ -256,6 +256,7 @@ export interface Service {
   name: string;
   category: string;
   price: number;
+  priceFrom?: boolean;   // display as "starting from ₪X" (variable pricing)
   duration: number;      // minutes
   description: string;
   whatToAsk?: string;    // what Dana should ask before booking

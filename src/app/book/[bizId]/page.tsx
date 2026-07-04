@@ -5,7 +5,7 @@ import { Box, Typography, Button, CircularProgress, TextField } from '@mui/mater
 import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
-interface Service { id: string; name: string; duration: number; price?: string | number; description?: string; category?: string; }
+interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
 interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
@@ -294,7 +294,7 @@ export default function PublicBookingPage() {
                       {info.branding.showDuration !== false && <Typography sx={{ fontSize: 12.5, color: '#A8A29E', fontWeight: 500 }}>🕐 {s.duration} דק'</Typography>}
                     </Box>
                   </Box>
-                  {info.branding.showPrices && s.price ? <Box sx={{ textAlign: 'center', bgcolor: `${accent}0D`, borderRadius: 2, px: 1.5, py: 0.75 }}><Typography sx={{ fontSize: 18, fontWeight: 900, color: accent, lineHeight: 1, letterSpacing: '-0.02em' }}>₪{s.price}</Typography></Box> : null}
+                  {info.branding.showPrices && s.price ? <Box sx={{ textAlign: 'center', bgcolor: `${accent}0D`, borderRadius: 2, px: 1.5, py: 0.75 }}><Typography sx={{ fontSize: 18, fontWeight: 900, color: accent, lineHeight: 1, letterSpacing: '-0.02em' }}>{s.priceFrom ? <span style={{ fontSize: 11, fontWeight: 700, display: 'block', marginBottom: 2 }}>{'החל מ־'}</span> : null}₪{s.price}</Typography></Box> : null}
                   <Box sx={{ color: accent, fontSize: 24, fontWeight: 300, opacity: 0.6 }}>‹</Box>
                 </Box>
               ))}
@@ -463,7 +463,7 @@ export default function PublicBookingPage() {
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, mb: 1.5, borderBottom: '1px solid #F5F3F0' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917' }}>{selectedService.name}</Typography>
-                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>₪{selectedService.price}</Typography> : null}
+                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>{selectedService.priceFrom ? 'החל מ־' : ''}₪{selectedService.price}</Typography> : null}
               </Box>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Typography sx={{ fontSize: 13.5, color: '#57534E' }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>

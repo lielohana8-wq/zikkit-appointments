@@ -9,9 +9,9 @@ import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
 
 interface Draft {
-  name: string; category: string; price: number; duration: number; description: string; whatToAsk: string;
+  name: string; category: string; price: number; priceFrom: boolean; duration: number; description: string; whatToAsk: string;
 }
-const emptyDraft: Draft = { name: '', category: '', price: 0, duration: 30, description: '', whatToAsk: '' };
+const emptyDraft: Draft = { name: '', category: '', price: 0, priceFrom: false, duration: 30, description: '', whatToAsk: '' };
 
 export default function ServicesPage() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function ServicesPage() {
 
   const openNew = () => { setDraft(emptyDraft); setEditId(null); setOpen(true); };
   const openEdit = (s: Service) => {
-    setDraft({ name: s.name, category: s.category, price: s.price, duration: s.duration, description: s.description, whatToAsk: s.whatToAsk || '' });
+    setDraft({ name: s.name, category: s.category, price: s.price, priceFrom: s.priceFrom || false, duration: s.duration, description: s.description, whatToAsk: s.whatToAsk || '' });
     setEditId(s.id); setOpen(true);
   };
 
@@ -141,7 +141,7 @@ export default function ServicesPage() {
                         </Box>
                       </Box>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography sx={{ fontSize: 21, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>₪{s.price}</Typography>
+                        <Typography sx={{ fontSize: 21, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>{s.priceFrom ? <span style={{ fontSize: 12, fontWeight: 700 }}>{'החל מ־'}</span> : null}₪{s.price}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
                         <Button onClick={() => openEdit(s)} size="small" sx={{ minWidth: 32, color: c.text3, '&:hover': { color: c.accent } }}>✎</Button>
@@ -165,6 +165,10 @@ export default function ServicesPage() {
           <TextField select label="משך" value={draft.duration} onChange={(e) => setDraft((p) => ({ ...p, duration: Number(e.target.value) }))} sx={{ flex: 1 }}>
             {[15, 30, 45, 60, 90, 120, 150, 180].map((d) => <MenuItem key={d} value={d}>{d} דק'</MenuItem>)}
           </TextField>
+        </Box>
+        <Box onClick={() => setDraft((p) => ({ ...p, priceFrom: !p.priceFrom }))} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.25, mb: 2, mt: -0.5 }}>
+          <Box sx={{ width: 20, height: 20, borderRadius: 1, border: `2px solid ${draft.priceFrom ? c.accent : c.border2}`, bgcolor: draft.priceFrom ? c.accent : 'transparent', color: '#fff', fontSize: 13, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>{draft.priceFrom ? '✓' : ''}</Box>
+          <Typography sx={{ fontSize: 13.5, color: c.text2, fontWeight: 600 }}>{'מחיר משתנה — יוצג ללקוחות כ"החל מ־₪' + (draft.price || 0) + '"'}</Typography>
         </Box>
         <TextField fullWidth label="תיאור (אופציונלי)" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
         <TextField fullWidth label="מה דנה צריכה לשאול?" placeholder="למשל: גבר/אישה, אורך שיער" value={draft.whatToAsk} onChange={(e) => setDraft((p) => ({ ...p, whatToAsk: e.target.value }))} sx={{ mb: 3 }} multiline rows={2} helperText="🤖 דנה תשאל את זה לפני קביעת התור" />

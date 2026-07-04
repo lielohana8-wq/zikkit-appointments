@@ -127,8 +127,8 @@ export default function DashboardPage() {
   const isPlatformOwner = ['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase());
 
   const today = new Date().toISOString().split('T')[0];
-  const todayBookings = bookings.filter((b) => b.date === today);
-  const upcoming = bookings.filter((b) => b.date > today).slice(0, 5);
+  const todayBookings = bookings.filter((b) => b.date === today && b.status !== 'blocked');
+  const upcoming = bookings.filter((b) => b.date > today && b.status !== 'blocked').slice(0, 5);
   const todayRevenue = todayBookings
     .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
     .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
@@ -139,7 +139,7 @@ export default function DashboardPage() {
     .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
-  const tomorrowBookings = bookings.filter((b) => b.date === tomorrowStr && b.status !== 'cancelled');
+  const tomorrowBookings = bookings.filter((b) => b.date === tomorrowStr && b.status !== 'cancelled' && b.status !== 'blocked');
 
   // ===== Smart alerts — one compact row, max 3, straight from the engines =====
   const unreadNotifs = notifs.filter((n) => !n.read);
@@ -258,7 +258,7 @@ export default function DashboardPage() {
           const nowStr = now.toISOString().split('T')[0];
           const nowTime = now.toTimeString().slice(0, 5);
           const next = bookings
-            .filter((b) => b.status !== 'cancelled' && (b.date > nowStr || (b.date === nowStr && b.time >= nowTime)))
+            .filter((b) => b.status !== 'cancelled' && b.status !== 'blocked' && (b.date > nowStr || (b.date === nowStr && b.time >= nowTime)))
             .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))[0];
           if (!next) return null;
           const isToday = next.date === nowStr;

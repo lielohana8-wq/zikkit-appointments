@@ -25,7 +25,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4 });
+  const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4, isBlock: false });
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
   const [reschedule, setReschedule] = useState({ date: '', time: '', staff: '' });
 
@@ -57,23 +57,26 @@ export default function CalendarPage() {
   }, []);
 
   const submit = async () => {
-    if (!bizId || !form.customerName) return;
+    if (!bizId || (!form.customerName && !form.isBlock)) return;
     setSaving(true);
     const staffAssign = user?.role === 'staff' && staffName ? staffName : form.staff;
     // Optimistic: show the booking immediately
     const optimistic: Booking = {
-      id: 'temp_' + Date.now(), source: 'manual', customerName: form.customerName,
-      customerPhone: form.customerPhone, service: form.service, duration: form.duration,
+      id: 'temp_' + Date.now(), source: 'manual',
+      customerName: form.isBlock ? '🚫 חסימה' : form.customerName,
+      customerPhone: form.isBlock ? '' : form.customerPhone,
+      service: form.isBlock ? (form.notes || 'לא זמינה') : form.service,
+      duration: form.duration,
       date: selectedDate, time: form.time, staff: staffAssign, notes: form.notes,
-      status: 'confirmed', createdAt: new Date().toISOString(),
+      status: form.isBlock ? 'blocked' : 'confirmed', createdAt: new Date().toISOString(),
     };
     setBookings((prev) => [optimistic, ...prev]);
     setAddOpen(false);
     const repeat = form.repeat;
     const repeatCount = form.repeatCount;
-    setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4 });
+    setForm({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4, isBlock: false });
     try {
-      const base = { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, duration: optimistic.duration, staff: staffAssign, notes: optimistic.notes, time: optimistic.time, source: 'manual' as const };
+      const base = { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, duration: optimistic.duration, staff: staffAssign, notes: optimistic.notes, time: optimistic.time, source: 'manual' as const, status: optimistic.status };
       if (repeat === 'none') {
         await addBooking(bizId, { ...base, date: selectedDate });
       } else {
@@ -182,8 +185,8 @@ export default function CalendarPage() {
                     {dayBks.length === 0 ? (
                       <Box sx={{ textAlign: 'center', py: 2, color: c.text3, fontSize: 10 }}>—</Box>
                     ) : dayBks.map((b) => (
-                      <Box key={b.id} onClick={() => openEdit(b)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRight: `3px solid ${staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75, transition: 'all 0.15s', '&:hover': { bgcolor: c.surface2 } }}>
-                        <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: staffColor(b.staff) }}>{b.time}</Typography>
+                      <Box key={b.id} onClick={() => openEdit(b)} sx={{ cursor: 'pointer', bgcolor: b.status === 'blocked' ? c.surface2 : c.surface1, opacity: b.status === 'blocked' ? 0.75 : 1, border: b.status === 'blocked' ? `1px dashed ${c.border}` : `1px solid ${c.border2}`, borderRight: `3px solid ${b.status === 'blocked' ? c.text3 : staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75, transition: 'all 0.15s', '&:hover': { bgcolor: c.surface2 } }}>
+                        <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: b.status === 'blocked' ? c.text3 : staffColor(b.staff) }}>{b.time}</Typography>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: c.text, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                         <Typography sx={{ fontSize: 9, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || 'טיפול'}</Typography>
                       </Box>
@@ -252,9 +255,15 @@ export default function CalendarPage() {
       )}
 
       <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 420, width: '100%' } }}>
-        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>תור חדש</Typography>
-        <Typography sx={{ fontSize: 13, color: c.text3, mb: 2.5 }}>{selectedDate}</Typography>
-        <Autocomplete
+        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>{form.isBlock ? '🚫 חסימת זמן' : 'תור חדש'}</Typography>
+        <Typography sx={{ fontSize: 13, color: c.text3, mb: 1.5 }}>{selectedDate}</Typography>
+        <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
+          {[{ v: false, l: '📅 תור' }, { v: true, l: '🚫 חסימה' }].map((m) => (
+            <Box key={String(m.v)} onClick={() => setForm((p) => ({ ...p, isBlock: m.v }))} sx={{ cursor: 'pointer', flex: 1, textAlign: 'center', py: 0.9, borderRadius: 2, fontSize: 13.5, fontWeight: 700, border: `1.5px solid ${form.isBlock === m.v ? c.accent : c.border2}`, color: form.isBlock === m.v ? c.accent : c.text3, bgcolor: form.isBlock === m.v ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>{m.l}</Box>
+          ))}
+        </Box>
+        {form.isBlock && <Typography sx={{ fontSize: 12.5, color: c.text3, mb: 2, mt: -1 }}>הזמן ייחסם ביומן — לקוחות לא יוכלו לקבוע בו בדף ההזמנות</Typography>}
+        {!form.isBlock && <Autocomplete
           freeSolo
           options={customers}
           getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.name}
@@ -275,9 +284,9 @@ export default function CalendarPage() {
           )}
           renderInput={(params) => <TextField {...params} label="שם הלקוח" placeholder="חפש או הקלד חדש" />}
           sx={{ mb: 2 }}
-        />
-        <TextField fullWidth label="טלפון" value={form.customerPhone} onChange={(e) => setForm((p) => ({ ...p, customerPhone: e.target.value }))} sx={{ mb: 2 }} />
-        {services.length > 0 ? (
+        />}
+        {!form.isBlock && <TextField fullWidth label="טלפון" value={form.customerPhone} onChange={(e) => setForm((p) => ({ ...p, customerPhone: e.target.value }))} sx={{ mb: 2 }} />}
+        {!form.isBlock && (services.length > 0 ? (
           <TextField select fullWidth label="טיפול" value={form.service} onChange={(e) => {
             const svc = services.find((s) => s.name === e.target.value);
             setForm((p) => ({ ...p, service: e.target.value, duration: svc?.duration || p.duration }));
@@ -286,11 +295,11 @@ export default function CalendarPage() {
           </TextField>
         ) : (
           <TextField fullWidth label="טיפול" value={form.service} onChange={(e) => setForm((p) => ({ ...p, service: e.target.value }))} sx={{ mb: 2 }} />
-        )}
+        ))}
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField label="שעה" type="time" value={form.time} onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))} sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} />
           <TextField select label="משך" value={form.duration} onChange={(e) => setForm((p) => ({ ...p, duration: Number(e.target.value) }))} sx={{ flex: 1 }}>
-            {[15, 30, 45, 60, 90, 120, 180].map((d) => <MenuItem key={d} value={d}>{d} דק'</MenuItem>)}
+            {(form.isBlock ? [30, 60, 90, 120, 180, 240, 300, 360, 480] : [15, 30, 45, 60, 90, 120, 180]).map((d) => <MenuItem key={d} value={d}>{d} דק'</MenuItem>)}
           </TextField>
         </Box>
         {team.length > 0 && (
@@ -299,11 +308,11 @@ export default function CalendarPage() {
             {team.map((m) => <MenuItem key={m.id} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</MenuItem>)}
           </TextField>
         )}
-        <TextField fullWidth label="הערות" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
+        <TextField fullWidth label={form.isBlock ? "סיבה (הפסקה / סידורים / אישי)" : "הערות"} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
 
         {/* Recurring */}
         <TextField select fullWidth label="חזרה" value={form.repeat} onChange={(e) => setForm((p) => ({ ...p, repeat: e.target.value }))} sx={{ mb: form.repeat !== 'none' ? 2 : 3 }} SelectProps={{ native: true }}>
-          <option value="none">תור חד-פעמי</option>
+          <option value="none">{form.isBlock ? "חד-פעמי" : "תור חד-פעמי"}</option>
           <option value="weekly">כל שבוע</option>
           <option value="biweekly">כל שבועיים</option>
           <option value="monthly">כל חודש</option>
@@ -313,8 +322,8 @@ export default function CalendarPage() {
             {[2, 3, 4, 5, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} תורים</option>)}
           </TextField>
         )}
-        <Button onClick={submit} variant="contained" fullWidth disabled={!form.customerName || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
-          {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'קבע תור'}
+        <Button onClick={submit} variant="contained" fullWidth disabled={(!form.customerName && !form.isBlock) || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
+          {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : form.isBlock ? '🚫 חסום את הזמן' : 'קבע תור'}
         </Button>
       </Dialog>
 

@@ -155,6 +155,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: 'נרשמת לרשימת ההמתנה!' });
     }
 
+    // ---- Find my bookings: phone lookup so customers who lost the manage
+    // link can still cancel/reschedule. Strictly rate-limited (enumeration guard). ----
+    if (action === 'find') {
+      const strict = enforceRateLimit(req, 'public-booking-find', 5, 60_000);
+      if (strict) return strict;
+      const raw = String(body.phone || '').replace(/\D/g, '');
+      if (raw.length < 7) return NextResponse.json({ success: false, error: 'מספר טלפון לא תקין' }, { status: 400 });
+      const key = raw.slice(-9); // Israeli numbers: compare the last 9 digits (05X / +9725X agnostic)
+      const apt2 = (biz.appointments as Record<string, unknown>) || {};
+      const all = (apt2.bookings as Array<Record<string, unknown>>) || [];
+      const today = new Date().toISOString().split('T')[0];
+      let changed = false;
+      const matches = all.filter((b) => {
+        const bp = String(b.customerPhone || '').replace(/\D/g, '').slice(-9);
+        return bp && bp === key && b.status !== 'cancelled' && String(b.date || '') >= today;
+      });
+      // Manual bookings have no manage link — mint one on demand so every booking is manageable
+      for (const m of matches) {
+        if (!m.manageToken) { m.manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); changed = true; }
+      }
+      if (changed) await setBizField(bizId, ['appointments', 'bookings'], all);
+      return NextResponse.json({
+        success: true,
+        bookings: matches
+          .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.time).localeCompare(String(b.time)))
+          .slice(0, 5)
+          .map((b) => ({ service: b.service || 'טיפול', date: b.date, time: b.time, token: b.manageToken })),
+      });
+    }
+
     if (!booking) return NextResponse.json({ error: 'missing data' }, { status: 400 });
     const bookingCfg = (biz.booking as Record<string, unknown>) || {};
     if (bookingCfg.enabled === false) {

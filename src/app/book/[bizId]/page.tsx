@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Button, CircularProgress, TextField } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, TextField , Dialog } from '@mui/material';
 import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
@@ -44,6 +44,24 @@ export default function PublicBookingPage() {
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done' | 'waitlist' | 'waitlisted'>('service');
   const [policyOk, setPolicyOk] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [findPhone, setFindPhone] = useState('');
+  const [findBusy, setFindBusy] = useState(false);
+  const [findErr, setFindErr] = useState('');
+  const [findResults, setFindResults] = useState<Array<{ service: string; date: string; time: string; token: string }> | null>(null);
+
+  const findMyBookings = async () => {
+    setFindBusy(true); setFindErr(''); setFindResults(null);
+    try {
+      const res = await fetch('/api/public-booking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bizId, action: 'find', phone: findPhone }),
+      });
+      const data = await res.json();
+      if (data.success) setFindResults(data.bookings || []);
+      else setFindErr(data.error || 'שגיאה בחיפוש');
+    } catch { setFindErr('שגיאה בחיפוש — נסו שוב'); } finally { setFindBusy(false); }
+  };
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -596,7 +614,41 @@ export default function PublicBookingPage() {
         )}
       </Box>
 
-      <Typography sx={{ textAlign: 'center', mt: 5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Box onClick={() => { setFindOpen(true); setFindResults(null); setFindErr(''); }} sx={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: '#fff', border: '1px solid #E7E5E4', borderRadius: 99, px: 2.5, py: 1.1, fontSize: 13.5, fontWeight: 700, color: '#57534E', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', '&:hover': { borderColor: accent, color: accent } }}>
+          📅 כבר קבעתם תור? ניהול / ביטול תור
+        </Box>
+      </Box>
+      <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
+
+      {/* Find my bookings dialog */}
+      <Dialog open={findOpen} onClose={() => setFindOpen(false)} fullWidth PaperProps={{ sx: { borderRadius: 3, maxWidth: 400, m: 2, p: 3 } }}>
+        <Typography sx={{ fontSize: 19, fontWeight: 900, color: '#1C1917', mb: 0.5 }}>📅 התורים שלי</Typography>
+        <Typography sx={{ fontSize: 13, color: '#78716C', mb: 2 }}>הזינו את מספר הטלפון שאיתו קבעתם — ונמצא את התור.</Typography>
+        <TextField fullWidth size="small" type="tel" label="מספר טלפון" placeholder="050-1234567" value={findPhone}
+          onChange={(e) => setFindPhone(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') findMyBookings(); }} sx={{ mb: 1.5 }} />
+        <Button onClick={findMyBookings} disabled={findBusy || findPhone.replace(/\D/g, '').length < 9} fullWidth variant="contained" sx={{ borderRadius: 2, fontWeight: 800, py: 1.25, bgcolor: accent, '&:hover': { bgcolor: accentDark } }}>
+          {findBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'מצאו את התור שלי'}
+        </Button>
+        {findErr && <Typography sx={{ fontSize: 13, color: '#DC2626', mt: 1.5, textAlign: 'center' }}>{findErr}</Typography>}
+        {findResults && findResults.length === 0 && (
+          <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 2, textAlign: 'center' }}>לא נמצא תור עתידי למספר הזה 🤔<br/>אולי נקבע עם מספר אחר?</Typography>
+        )}
+        {findResults && findResults.length > 0 && (
+          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {findResults.map((r, i) => (
+              <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${r.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #E7E5E4', borderRadius: 2, p: 1.75, '&:hover': { borderColor: accent, bgcolor: `${accent}08` } }}>
+                <Box sx={{ textAlign: 'center', bgcolor: `${accent}12`, borderRadius: 1.5, px: 1.5, py: 0.75, minWidth: 62 }}>
+                  <Typography sx={{ fontSize: 14, fontWeight: 900, color: accent, lineHeight: 1.1 }}>{r.time}</Typography>
+                  <Typography sx={{ fontSize: 10.5, color: accent, opacity: 0.8 }}>{r.date?.slice(5).split('-').reverse().join('/')}</Typography>
+                </Box>
+                <Typography sx={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#1C1917' }}>{r.service}</Typography>
+                <Typography sx={{ fontSize: 13, color: accent, fontWeight: 800 }}>נהל ←</Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Dialog>
       <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
     </Box>
   );

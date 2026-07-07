@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
       await setBizField(bizId, ['waitlist', 'items'], [entry, ...existing].slice(0, 200));
       // Notify owner
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (ownerPhone) sendSms(ownerPhone, `רשימת המתנה: ${wl.name} (${wl.phone}) מחכה לתור${wl.service ? ' ל' + wl.service : ''}${wl.preferredDate ? ' · ' + wl.preferredDate : ''}`, bizId).catch(() => {});
+      if (ownerPhone) await sendSms(ownerPhone, `רשימת המתנה: ${wl.name} (${wl.phone}) מחכה לתור${wl.service ? ' ל' + wl.service : ''}${wl.preferredDate ? ' · ' + wl.preferredDate : ''}`, bizId).catch(() => {});
       // In-app notification
       const notifications = ((biz.notifications as Record<string, unknown>)?.items as unknown[]) || [];
       await setBizField(bizId, ['notifications', 'items'], [{ id: 'notif_' + Date.now(), type: 'waitlist', text: `${wl.name} נרשם/ה לרשימת המתנה`, read: false, createdAt: new Date().toISOString() }, ...notifications].slice(0, 50));
@@ -292,18 +292,18 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
     const manageUrl = `${baseUrl}/manage/${bizId}/${manageToken}`;
     if (booking.customerPhone) {
-      sendSms(booking.customerPhone, needsApproval ? `הבקשה שלך ל${bizName} התקבלה! ⏳\n${booking.date} בשעה ${booking.time}\nנעדכן אותך ברגע שהעסק יאשר.\nלביטול: ${manageUrl}` : `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`, bizId).catch(() => {});
+      await sendSms(booking.customerPhone, needsApproval ? `הבקשה שלך ל${bizName} התקבלה! ⏳\n${booking.date} בשעה ${booking.time}\nנעדכן אותך ברגע שהעסק יאשר.\nלביטול: ${manageUrl}` : `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`, bizId).catch(() => {});
     }
     // Notify owner
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
       || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
     if (ownerPhone) {
-      sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`, bizId).catch(() => {});
+      await sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`, bizId).catch(() => {});
     }
     if (assignedStaff) {
       const member = teamMembers.find((m) => String(m.name) === assignedStaff);
       const staffPhone = member && (member.phone as string);
-      if (staffPhone) sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
+      if (staffPhone) await sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
     }
 
     return NextResponse.json({ success: true, message: 'התור נקבע בהצלחה!', manageToken });

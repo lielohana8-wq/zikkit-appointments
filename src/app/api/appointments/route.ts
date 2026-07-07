@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       // SMS confirmation
       if (booking.customerPhone) {
         const bizName = (biz?.cfg as Record<string, unknown>)?.biz_name || 'העסק';
-        sendSms(booking.customerPhone, `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}`).catch(() => {});
+        await sendSms(booking.customerPhone, `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}`).catch(() => {});
       }
     } else if (action === 'cancel') {
       bookings = bookings.map((b) => (b.id === booking.id ? { ...b, status: 'cancelled' } : b));

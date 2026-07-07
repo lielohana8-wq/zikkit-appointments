@@ -311,6 +311,7 @@ export async function deleteService(bizId: string, id: string): Promise<void> {
 
 // ---------- Booking page branding ----------
 export interface BookingBranding {
+  bookingWindowDays?: number;   // how many days ahead customers can book (default 14)
   slotMode?: 'interval' | 'packed'; // packed = slots chain to booking edges (zero dead time)
   slotInterval?: number;        // minutes between offered slots (interval mode)
   cancelWindowH?: number;       // customers can't self-cancel within this many hours (0 = anytime)

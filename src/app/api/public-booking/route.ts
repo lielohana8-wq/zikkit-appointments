@@ -96,6 +96,7 @@ export async function GET(req: NextRequest) {
         requirePhone: booking.requirePhone !== false,
         slotInterval: (booking.slotInterval as number) || 15,
         staffCount: (teamData.members || []).filter((m) => m.active !== false).length,
+        bookingWindowDays: (booking.bookingWindowDays as number) || 14,
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
         policyOn: booking.policyOn === true,
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
       await setBizField(bizId, ['waitlist', 'items'], [entry, ...existing].slice(0, 200));
       // Notify owner
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (ownerPhone) sendSms(ownerPhone, `רשימת המתנה: ${wl.name} (${wl.phone}) מחכה לתור${wl.service ? ' ל' + wl.service : ''}${wl.preferredDate ? ' · ' + wl.preferredDate : ''}`).catch(() => {});
+      if (ownerPhone) sendSms(ownerPhone, `רשימת המתנה: ${wl.name} (${wl.phone}) מחכה לתור${wl.service ? ' ל' + wl.service : ''}${wl.preferredDate ? ' · ' + wl.preferredDate : ''}`, bizId).catch(() => {});
       // In-app notification
       const notifications = ((biz.notifications as Record<string, unknown>)?.items as unknown[]) || [];
       await setBizField(bizId, ['notifications', 'items'], [{ id: 'notif_' + Date.now(), type: 'waitlist', text: `${wl.name} נרשם/ה לרשימת המתנה`, read: false, createdAt: new Date().toISOString() }, ...notifications].slice(0, 50));
@@ -210,6 +211,31 @@ export async function POST(req: NextRequest) {
       return newStart < bEnd && newEnd > bStart;
     }).length;
 
+    // Booking window: reject dates beyond what the business opened
+    const winDays = (((biz.booking as Record<string, unknown>)?.bookingWindowDays as number) || 14);
+    const maxDate = new Date(Date.now() + winDays * 86400000).toISOString().split('T')[0];
+    if (String(booking.date) > maxDate) {
+      return NextResponse.json({ success: false, error: `אפשר לקבוע עד ${winDays} ימים קדימה בלבד` }, { status: 400 });
+    }
+
+    // Same customer can't sit in two chairs at once: block an overlapping
+    // booking with the SAME name + SAME phone. (Same phone with a different
+    // name — e.g. a mom booking for her kid too — is allowed on purpose.)
+    const custPhoneKey = String(booking.customerPhone || '').replace(/\D/g, '').slice(-9);
+    const custNameKey = String(booking.customerName || '').trim();
+    if (custPhoneKey) {
+      const selfOverlap = existing.some((b) => {
+        if (b.date !== booking.date || b.status === 'cancelled') return false;
+        const bp = String(b.customerPhone || '').replace(/\D/g, '').slice(-9);
+        if (bp !== custPhoneKey || String(b.customerName || '').trim() !== custNameKey) return false;
+        const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30);
+        return newStart < be && newEnd > bs;
+      });
+      if (selfOverlap) {
+        return NextResponse.json({ success: false, error: 'כבר יש לך תור אצלנו בשעה הזו 😊 אפשר לצפות בו ולנהל אותו דרך "כבר קבעתם תור?" בתחתית הדף.' }, { status: 409 });
+      }
+    }
+
     let assignedStaff: string | null = (booking.staff as string) || null;
     if (assignedStaff) {
       // A specific barber was chosen — they can hold exactly one booking at a time
@@ -266,18 +292,18 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
     const manageUrl = `${baseUrl}/manage/${bizId}/${manageToken}`;
     if (booking.customerPhone) {
-      sendSms(booking.customerPhone, `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`).catch(() => {});
+      sendSms(booking.customerPhone, needsApproval ? `הבקשה שלך ל${bizName} התקבלה! ⏳\n${booking.date} בשעה ${booking.time}\nנעדכן אותך ברגע שהעסק יאשר.\nלביטול: ${manageUrl}` : `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`, bizId).catch(() => {});
     }
     // Notify owner
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
       || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
     if (ownerPhone) {
-      sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`).catch(() => {});
+      sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`, bizId).catch(() => {});
     }
     if (assignedStaff) {
       const member = teamMembers.find((m) => String(m.name) === assignedStaff);
       const staffPhone = member && (member.phone as string);
-      if (staffPhone) sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`).catch(() => {});
+      if (staffPhone) sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
     }
 
     return NextResponse.json({ success: true, message: 'התור נקבע בהצלחה!', manageToken });

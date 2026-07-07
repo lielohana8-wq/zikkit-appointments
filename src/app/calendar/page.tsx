@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem, Autocomplete } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -24,6 +24,9 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [addOpen, setAddOpen] = useState(false);
+  const [resize, setResize] = useState<{ id: string; startY: number; orig: number; dur: number } | null>(null);
+  const [move, setMove] = useState<{ id: string; startY: number; orig: number; min: number; started: boolean } | null>(null);
+  const justResized = useRef(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ customerName: '', customerPhone: '', service: '', duration: 30, time: '10:00', notes: '', staff: '', repeat: 'none', repeatCount: 4, isBlock: false });
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
@@ -259,7 +262,63 @@ export default function CalendarPage() {
                 ))}
               </Box>
               {/* grid */}
-              <Box onClick={gridClick} sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, overflow: 'hidden', cursor: 'copy' }}>
+              <Box onClick={(e) => { if (justResized.current) { justResized.current = false; return; } gridClick(e); }}
+                onPointerMove={(e) => {
+                  if (move) {
+                    const b = gridBks.find((x) => x.id === move.id); if (!b) return;
+                    const deltaMin = ((e.clientY - move.startY) / HOUR_PX) * 60;
+                    const started = move.started || Math.abs(e.clientY - move.startY) > 6;
+                    const dur = b.duration || 30;
+                    let min = Math.round((move.orig + deltaMin) / 15) * 15;
+                    min = Math.max(START, Math.min(min, END - dur));
+                    if (min !== move.min || started !== move.started) setMove({ ...move, min, started });
+                    return;
+                  }
+                  if (!resize) return;
+                  const b = gridBks.find((x) => x.id === resize.id); if (!b) return;
+                  const deltaMin = ((e.clientY - resize.startY) / HOUR_PX) * 60;
+                  let dur = Math.round((resize.orig + deltaMin) / 15) * 15;
+                  // clamp: at least 15min, and don't run into the next booking of the same barber (or day end)
+                  const myStart = toMin(b.time);
+                  const nexts = gridBks.filter((x) => x.id !== b.id && (!b.staff || x.staff === b.staff) && toMin(x.time) >= myStart + 15).map((x) => toMin(x.time));
+                  const limit = Math.min(nexts.length ? Math.min(...nexts) : END, END) - myStart;
+                  dur = Math.max(15, Math.min(dur, limit));
+                  if (dur !== resize.dur) setResize({ ...resize, dur });
+                }}
+                onPointerUp={async () => {
+                  if (move) {
+                    const m = move; setMove(null);
+                    if (m.started && bizId) {
+                      justResized.current = true;
+                      const b = gridBks.find((x) => x.id === m.id);
+                      if (b && m.min !== m.orig) {
+                        const dur = b.duration || 30;
+                        const conflict = gridBks.some((x) => {
+                          if (x.id === b.id) return false;
+                          if (b.staff && x.staff !== b.staff) return false;
+                          const xs = toMin(x.time); const xe = xs + (x.duration || 30);
+                          return m.min < xe && m.min + dur > xs;
+                        });
+                        if (conflict) { showToast('מתנגש עם תור קיים — לא הוזז', 'error'); }
+                        else {
+                          const newTime = `${String(Math.floor(m.min / 60)).padStart(2, '0')}:${String(m.min % 60).padStart(2, '0')}`;
+                          setBookings((prev) => prev.map((x) => (x.id === m.id ? { ...x, time: newTime } : x)));
+                          try { await updateBooking(bizId, m.id, { time: newTime }); } catch { load(); }
+                        }
+                      }
+                    }
+                    if (resize) setResize(null);
+                    return;
+                  }
+                  if (!resize) return;
+                  const { id, orig, dur } = resize; setResize(null);
+                  if (dur !== orig && bizId) {
+                    justResized.current = true;
+                    setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, duration: dur } : x)));
+                    try { await updateBooking(bizId, id, { duration: dur }); } catch { load(); }
+                  }
+                }}
+                sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, overflow: 'hidden', cursor: 'copy', touchAction: resize ? 'none' : 'auto' }}>
                 {Array.from({ length: (END - START) / 60 }, (_, i) => (
                   <Box key={i} sx={{ position: 'absolute', top: i * HOUR_PX, left: 0, right: 0, borderTop: i === 0 ? 'none' : `1px solid ${c.border}`, height: HOUR_PX }}>
                     <Box sx={{ position: 'absolute', top: HOUR_PX / 2, left: 0, right: 0, borderTop: `1px dashed ${c.border}`, opacity: 0.5 }} />
@@ -272,20 +331,32 @@ export default function CalendarPage() {
                   </Box>
                 )}
                 {gridBks.map((b) => {
-                  const st = Math.max(toMin(b.time), START);
-                  const h = Math.max(((b.duration || 30) / 60) * HOUR_PX - 3, 26);
+                  const st = Math.max(move?.id === b.id && move.started ? move.min : toMin(b.time), START);
+                  const liveDur = resize?.id === b.id ? resize.dur : (b.duration || 30);
+                  const liveTime = move?.id === b.id && move.started ? `${String(Math.floor(st / 60)).padStart(2, '0')}:${String(st % 60).padStart(2, '0')}` : b.time;
+                  const h = Math.max((liveDur / 60) * HOUR_PX - 3, 26);
                   const lane = Math.min(lanes.get(b.id) || 0, laneCount - 1);
                   const blocked = b.status === 'blocked';
                   const col = staffColor(b.staff);
                   return (
-                    <Box key={b.id} onClick={(e) => { e.stopPropagation(); openEdit(b); }}
-                      sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: 2, cursor: 'pointer', overflow: 'hidden',
+                    <Box key={b.id}
+                      onClick={(e) => { e.stopPropagation(); if (justResized.current) { justResized.current = false; return; } openEdit(b); }}
+                      onPointerDown={(e) => { if ((e.target as HTMLElement).closest('.rzone')) return; setMove({ id: b.id, startY: e.clientY, orig: toMin(b.time), min: toMin(b.time), started: false }); }}
+                      sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: move?.id === b.id ? 5 : 2, cursor: move?.id === b.id && move.started ? 'grabbing' : 'pointer', overflow: 'hidden', touchAction: 'none',
                         bgcolor: blocked ? c.surface3 : `${col}1F`, opacity: blocked ? 0.8 : 1,
                         border: blocked ? `1.5px dashed ${c.border}` : b.status === 'pending' ? '1.5px solid #F59E0B' : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
                         transition: 'box-shadow 0.15s', '&:hover': { boxShadow: c.shadowMd, zIndex: 4 } }}>
-                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{b.time} · {b.duration} דק'</Typography>
+                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{liveTime} · {liveDur} דק'{resize?.id === b.id ? ' ↕' : ''}{move?.id === b.id && move.started ? ' ✥' : ''}</Typography>
                       <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                       {h > 48 && <Typography sx={{ fontSize: 10.5, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || (blocked ? '' : 'טיפול')}{!blocked && b.source === 'dana' ? ' · 🎙️ דנה' : ''}{!blocked && b.source === 'online' ? ' · 🔗' : ''}</Typography>}
+                      {/* drag-to-resize handle */}
+                      <Box
+                        onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); setResize({ id: b.id, startY: e.clientY, orig: b.duration || 30, dur: b.duration || 30 }); }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rzone"
+                        sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 14, cursor: 'ns-resize', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', pb: '2px', touchAction: 'none', '&:hover .rz': { opacity: 1 } }}>
+                        <Box className="rz" sx={{ width: 34, height: 4, borderRadius: 99, bgcolor: blocked ? c.text3 : col, opacity: resize?.id === b.id ? 1 : 0.45, transition: 'opacity 0.15s' }} />
+                      </Box>
                     </Box>
                   );
                 })}

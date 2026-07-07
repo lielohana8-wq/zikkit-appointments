@@ -120,18 +120,44 @@ export async function listAllBiz(): Promise<Array<{ id: string; data: Record<str
   }));
 }
 
-export async function sendSms(to: string, body: string): Promise<boolean> {
+export async function sendSms(to: string, body: string, logBizId?: string): Promise<boolean> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_PHONE_IL || process.env.TWILIO_PHONE_NUMBER;
-  if (!sid || !token || !from) return false;
   let toNum = to.replace(/[^\d]/g, '');
   if (toNum.startsWith('0')) toNum = '972' + toNum.slice(1);
   if (!toNum.startsWith('+')) toNum = '+' + toNum;
-  const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-    method: 'POST',
-    headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ From: from, To: toNum, Body: body }),
-  });
-  return res.ok;
+
+  let ok = false; let err = '';
+  if (!sid || !token || !from) {
+    err = 'TWILIO env חסר';
+  } else {
+    try {
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+        method: 'POST',
+        headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ From: from, To: toNum, Body: body }),
+      });
+      ok = res.ok;
+      if (!ok) {
+        try { const j = await res.json() as { code?: number; message?: string }; err = `${j.code || res.status}: ${j.message || ''}`.slice(0, 140); }
+        catch { err = 'HTTP ' + res.status; }
+      }
+    } catch (e) { err = 'network: ' + (e as Error).message; }
+  }
+  if (!ok) console.error('[sms failed]', toNum, err);
+
+  // Per-business SMS log (last 30) — so "sometimes it sends, sometimes not"
+  // becomes a visible list instead of a mystery.
+  if (logBizId) {
+    try {
+      const biz = await getBiz(logBizId);
+      if (biz) {
+        const log = (((biz.smsLog as Record<string, unknown>)?.items as unknown[]) || []);
+        const entry = { at: new Date().toISOString(), to: toNum, ok, err, preview: body.slice(0, 60) };
+        await setBizField(logBizId, ['smsLog', 'items'], [entry, ...log].slice(0, 30));
+      }
+    } catch { /* logging must never break the flow */ }
+  }
+  return ok;
 }

@@ -15,7 +15,9 @@ const emptyDraft: Draft = { name: '', category: '', price: 0, priceFrom: false, 
 
 export default function ServicesPage() {
   const router = useRouter();
-  const { firebaseUser, bizId, loading } = useAuth();
+  const { firebaseUser, bizId, loading, user, staffName } = useAuth();
+  const isStaff = user?.role === 'staff';
+  const [allowedServices, setAllowedServices] = useState<Set<string> | null>(null);
   const { showToast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -29,8 +31,16 @@ export default function ServicesPage() {
 
   const load = useCallback(async () => {
     if (!bizId) return;
-    try { setServices(await getServices(bizId)); } finally { setDataLoading(false); }
-  }, [bizId]);
+    try {
+      setServices(await getServices(bizId));
+      if (isStaff && staffName) {
+        const { getTeam } = await import('@/lib/bizdata');
+        const team = await getTeam(bizId);
+        const me = team.find((m) => m.name === staffName);
+        setAllowedServices(new Set(me?.services || []));
+      }
+    } finally { setDataLoading(false); }
+  }, [bizId, isStaff, staffName]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -50,7 +60,7 @@ export default function ServicesPage() {
     } finally { setSaving(false); }
   };
 
-  const remove = async (id: string) => { if (bizId) { await deleteService(bizId, id); await load(); } };
+  const remove = async (id: string) => { if (isStaff) return; if (bizId) { await deleteService(bizId, id); await load(); } };
 
   // AI: suggest a full price list from the business name
   const suggestWithAI = async () => {
@@ -90,14 +100,16 @@ export default function ServicesPage() {
   if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   // Group by category
-  const categories = Array.from(new Set(services.map((s) => s.category || 'כללי')));
+  // Staff members see and edit only the services assigned to them
+  const visibleServices = isStaff && allowedServices !== null ? services.filter((sv) => allowedServices.has(sv.name)) : services;
+  const categories = Array.from(new Set(visibleServices.map((s) => s.category || 'כללי')));
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
         <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>מחירון ושירותים</Typography>
-        <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ שירות</Button>
+        {!isStaff && <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ שירות</Button>}
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
@@ -130,7 +142,7 @@ export default function ServicesPage() {
               <Box key={cat} sx={{ mb: 3.5 }}>
                 <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cat}</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                  {services.filter((s) => (s.category || 'כללי') === cat).map((s) => (
+                  {visibleServices.filter((s) => (s.category || 'כללי') === cat).map((s) => (
                     <Box key={s.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { boxShadow: c.shadowMd } }}>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: c.text }}>{s.name}</Typography>

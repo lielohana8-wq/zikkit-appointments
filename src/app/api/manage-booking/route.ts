@@ -33,6 +33,9 @@ export async function GET(req: NextRequest) {
 
   // If a date is requested, compute REAL free slots for that date (excluding this booking).
   if (slotsDate) {
+    const winDays2 = (((biz.booking as Record<string, unknown>)?.bookingWindowDays as number) || 14);
+    const maxDate2 = new Date(Date.now() + winDays2 * 86400000).toISOString().split('T')[0];
+    if (slotsDate > maxDate2) return NextResponse.json({ slots: [] });
     const cfg = (biz.cfg as Record<string, unknown>) || {};
     const apt = (biz.appointments as Record<string, unknown>) || {};
     const hours = (cfg.hours as Record<number, { open: boolean; start: string; end: string }>) || null;
@@ -102,16 +105,16 @@ export async function POST(req: NextRequest) {
         }
       }
       const cancelOwner = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (cancelOwner) sendSms(cancelOwner, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${booking.staff ? ' · אצל ' + booking.staff : ''}`).catch(() => {});
+      if (cancelOwner) sendSms(cancelOwner, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${booking.staff ? ' · אצל ' + booking.staff : ''}`, bizId).catch(() => {});
       if (booking.staff) {
         const mem = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).find((m) => String(m.name) === booking.staff);
-        if (mem && mem.phone) sendSms(String(mem.phone), `בוטל תור אצלך: ${booking.customerName} · ${booking.date} בשעה ${booking.time}`).catch(() => {});
+        if (mem && mem.phone) sendSms(String(mem.phone), `בוטל תור אצלך: ${booking.customerName} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
       }
       const updated = bookings.map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b));
       await setBizField(bizId, ['appointments', 'bookings'], updated);
       // Notify owner
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (ownerPhone) sendSms(ownerPhone, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}`).catch(() => {});
+      if (ownerPhone) sendSms(ownerPhone, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}`, bizId).catch(() => {});
       return NextResponse.json({ success: true, status: 'cancelled' });
     }
 
@@ -134,8 +137,8 @@ export async function POST(req: NextRequest) {
       const updated = bookings.map((b) => (b.manageToken === token ? { ...b, date, time } : b));
       await setBizField(bizId, ['appointments', 'bookings'], updated);
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (ownerPhone) sendSms(ownerPhone, `שינוי תור: ${booking.customerName} · ${booking.service}\nל-${date} ${time}`).catch(() => {});
-      if (booking.customerPhone) sendSms(booking.customerPhone, `התור שלך ב${bizName} עודכן ל-${date} בשעה ${time}. נתראה!`).catch(() => {});
+      if (ownerPhone) sendSms(ownerPhone, `שינוי תור: ${booking.customerName} · ${booking.service}\nל-${date} ${time}`, bizId).catch(() => {});
+      if (booking.customerPhone) sendSms(booking.customerPhone, `התור שלך ב${bizName} עודכן ל-${date} בשעה ${time}. נתראה!`, bizId).catch(() => {});
       return NextResponse.json({ success: true, status: 'rescheduled' });
     }
 

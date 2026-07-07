@@ -313,6 +313,15 @@ export default function BookingPageSettings() {
               </Box>
             ))}
           </Box>
+          <Box sx={{ mb: 2 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>כמה ימים קדימה היומן פתוח לקביעה?</Typography>
+            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              {[{ v: 7, l: 'שבוע' }, { v: 14, l: 'שבועיים' }, { v: 21, l: '3 שבועות' }, { v: 30, l: 'חודש' }, { v: 60, l: 'חודשיים' }].map((o) => (
+                <Box key={o.v} onClick={() => set('bookingWindowDays', o.v)} sx={{ cursor: 'pointer', px: 1.75, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 700, border: `1.5px solid ${(b.bookingWindowDays || 14) === o.v ? c.accent : c.border2}`, color: (b.bookingWindowDays || 14) === o.v ? c.accent : c.text3, bgcolor: (b.bookingWindowDays || 14) === o.v ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>{o.l}</Box>
+              ))}
+            </Box>
+            <Typography sx={{ fontSize: 11.5, color: c.text3, mt: 0.75 }}>למשל &quot;שבוע&quot; ביום רביעי = לקוחות רואים עד רביעי הבא בלבד</Typography>
+          </Box>
           {(b.slotMode || 'interval') === 'interval' && (
           <Box sx={{ mb: 2 }}>
             <TextField fullWidth size="small" type="number" label="מרווח בין תורים מוצעים (דקות)" value={b.slotInterval || 15}

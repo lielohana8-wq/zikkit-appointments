@@ -103,7 +103,7 @@ async function danaWhatsAppReply(bizId: string, from: string, message: string): 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, system: systemPrompt, messages }),
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 500, system: systemPrompt, messages }),
   });
   if (!res.ok) return 'מצטערים, יש תקלה זמנית.';
   const data = await res.json();

@@ -19,7 +19,7 @@ export async function GET() {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
     });
     if (res.ok) {
       return NextResponse.json({ ok: true, keyPresent: true, keyWorks: true, message: 'ה-AI חי ועובד ✅' });

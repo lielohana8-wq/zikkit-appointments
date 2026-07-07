@@ -15,7 +15,7 @@ interface BizInfo {
   error?: string;
   businessName: string;
   services: Service[];
-  stations: number;
+  stations: number; staffCount?: number;
   team?: Staff[];
   reviews?: Review[];
   hours: Record<number, { open: boolean; start: string; end: string }> | null;
@@ -122,7 +122,7 @@ export default function PublicBookingPage() {
     const relevantBookings = selectedStaff
       ? info.bookings.filter((b) => b.staff === selectedStaff.name)
       : info.bookings;
-    const capacity = selectedStaff ? 1 : info.stations;
+    const capacity = selectedStaff ? 1 : (info.staffCount || info.stations);
     const open = toMin(dh.start); const close = toMin(dh.end);
     const overlapAt = (t: number) => relevantBookings.filter((b) => {
       if (b.date !== date) return false;

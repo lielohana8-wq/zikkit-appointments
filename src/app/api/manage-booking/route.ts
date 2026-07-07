@@ -51,12 +51,11 @@ export async function GET(req: NextRequest) {
       const slotStep = (pageCfg2.slotInterval as number) || 15;
       if (pageCfg2.slotMode === 'packed') {
         const open = toMin(dh.start); const close = toMin(dh.end);
-        const dayBk = bookings.filter((b) => b.manageToken !== token && b.status !== 'cancelled' && b.date === slotsDate);
+        const dayBk = relevant.filter((b) => b.manageToken !== token && b.status !== 'cancelled' && b.date === slotsDate);
         const overlapAt = (t: number) => dayBk.filter((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); return t < be && t + dur > bs; }).length;
         const cand = new Set<number>([open, close - dur]);
         dayBk.forEach((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); cand.add(be); if (bs - dur >= open) cand.add(bs - dur); });
-        const stations2 = ((biz.appointments as Record<string, unknown>)?.stations as number) || 1;
-        const packed = Array.from(cand).sort((a, b) => a - b).filter((t) => t >= open && t + dur <= close && overlapAt(t) < stations2).map(toStr);
+        const packed = Array.from(cand).sort((a, b) => a - b).filter((t) => t >= open && t + dur <= close && overlapAt(t) < capacity).map(toStr);
         return NextResponse.json({ slots: packed });
       }
       for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += slotStep) {
@@ -102,6 +101,12 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ success: false, error: `לא ניתן לבטל פחות מ-${windowH} שעות לפני התור. לשינויים — צרו קשר עם העסק.` }, { status: 403 });
         }
       }
+      const cancelOwner = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
+      if (cancelOwner) sendSms(cancelOwner, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${booking.staff ? ' · אצל ' + booking.staff : ''}`).catch(() => {});
+      if (booking.staff) {
+        const mem = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).find((m) => String(m.name) === booking.staff);
+        if (mem && mem.phone) sendSms(String(mem.phone), `בוטל תור אצלך: ${booking.customerName} · ${booking.date} בשעה ${booking.time}`).catch(() => {});
+      }
       const updated = bookings.map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b));
       await setBizField(bizId, ['appointments', 'bookings'], updated);
       // Notify owner
@@ -117,12 +122,14 @@ export async function POST(req: NextRequest) {
       const stations = (apt.stations as number) || 1;
       const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
       const ns = toMin(time); const ne = ns + (booking.duration || 30);
+      const bStaff = (booking.staff as string) || null;
       const overlap = bookings.filter((b) => {
         if (b.manageToken === token || b.date !== date || b.status === 'cancelled') return false;
+        if (bStaff && b.staff !== bStaff) return false; // the booking keeps its barber
         const bs = toMin(b.time); const be = bs + (b.duration || 30);
         return ns < be && ne > bs;
       }).length;
-      if (overlap >= stations) return NextResponse.json({ error: 'slot_taken' }, { status: 409 });
+      if (overlap >= (bStaff ? 1 : stations)) return NextResponse.json({ error: 'slot_taken' }, { status: 409 });
 
       const updated = bookings.map((b) => (b.manageToken === token ? { ...b, date, time } : b));
       await setBizField(bizId, ['appointments', 'bookings'], updated);

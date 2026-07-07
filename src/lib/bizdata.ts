@@ -439,6 +439,7 @@ export interface TeamMember {
   id: string;
   name: string;
   role: string;          // e.g. "ספר בכיר", "קוסמטיקאית"
+  phone?: string;        // for SMS notifications about their bookings
   photo: string;         // data URL or hosted URL
   description: string;
   services: string[];    // names of services this member provides

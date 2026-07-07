@@ -13,12 +13,12 @@ const DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 const COLORS = ['#9333EA', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#6366F1', '#EF4444', '#8B5CF6'];
 
 interface Draft {
-  name: string; role: string; photo: string; description: string;
+  name: string; role: string; phone: string; photo: string; description: string;
   services: string[]; station: number | null; color: string;
   loginEmail: string; loginPassword: string; createLogin: boolean;
 }
 
-const emptyDraft: Draft = { name: '', role: '', photo: '', description: '', services: [], station: null, color: COLORS[0], loginEmail: '', loginPassword: '', createLogin: false };
+const emptyDraft: Draft = { name: '', role: '', phone: '', photo: '', description: '', services: [], station: null, color: COLORS[0], loginEmail: '', loginPassword: '', createLogin: false };
 
 export default function TeamPage() {
   const router = useRouter();
@@ -50,7 +50,7 @@ export default function TeamPage() {
 
   const openNew = () => { setDraft(emptyDraft); setEditId(null); setOpen(true); };
   const openEdit = (m: TeamMember) => {
-    setDraft({ name: m.name, role: m.role, photo: m.photo, description: m.description, services: m.services, station: m.station, color: m.color, loginEmail: m.loginEmail || '', loginPassword: '', createLogin: false });
+    setDraft({ name: m.name, role: m.role, phone: m.phone || '', photo: m.photo, description: m.description, services: m.services, station: m.station, color: m.color, loginEmail: m.loginEmail || '', loginPassword: '', createLogin: false });
     setEditId(m.id); setOpen(true);
   };
 
@@ -219,6 +219,7 @@ export default function TeamPage() {
 
         <TextField fullWidth label="שם" value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="תפקיד (למשל: ספר בכיר)" value={draft.role} onChange={(e) => setDraft((p) => ({ ...p, role: e.target.value }))} sx={{ mb: 2 }} />
+        <TextField fullWidth label="טלפון (ל-SMS על תורים חדשים)" type="tel" placeholder="050-1234567" value={draft.phone} onChange={(e) => setDraft((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="תיאור קצר" value={draft.description} onChange={(e) => setDraft((p) => ({ ...p, description: e.target.value }))} sx={{ mb: 2 }} multiline rows={2} />
 
         {/* Station */}

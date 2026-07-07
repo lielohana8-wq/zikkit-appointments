@@ -95,6 +95,7 @@ export async function GET(req: NextRequest) {
         requireEmail: booking.requireEmail === true,
         requirePhone: booking.requirePhone !== false,
         slotInterval: (booking.slotInterval as number) || 15,
+        staffCount: (teamData.members || []).filter((m) => m.active !== false).length,
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
         policyOn: booking.policyOn === true,
@@ -200,14 +201,30 @@ export async function POST(req: NextRequest) {
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
     const newStart = toMin(booking.time);
     const newEnd = newStart + (booking.duration || 30);
-    const overlapping = existing.filter((b) => {
+    const teamMembers = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).filter((m) => m.active !== false);
+    const overlapsWith = (staffName: string | null) => existing.filter((b) => {
       if (b.date !== booking.date || b.status === 'cancelled') return false;
+      if (staffName && b.staff !== staffName) return false; // per-barber check
       const bStart = toMin(b.time as string);
       const bEnd = bStart + ((b.duration as number) || 30);
       return newStart < bEnd && newEnd > bStart;
     }).length;
-    if (overlapping >= stations) {
-      return NextResponse.json({ success: false, error: 'התור הזה כבר נתפס. בחר שעה אחרת.' }, { status: 409 });
+
+    let assignedStaff: string | null = (booking.staff as string) || null;
+    if (assignedStaff) {
+      // A specific barber was chosen — they can hold exactly one booking at a time
+      if (overlapsWith(assignedStaff) >= 1) {
+        return NextResponse.json({ success: false, error: 'השעה הזו כבר נתפסה אצל איש הצוות. בחרו שעה אחרת.' }, { status: 409 });
+      }
+    } else {
+      // No preference: capacity = team size (each barber = one chair), else stations
+      const capacity = teamMembers.length > 0 ? teamMembers.length : stations;
+      if (overlapsWith(null) >= capacity) {
+        return NextResponse.json({ success: false, error: 'התור הזה כבר נתפס. בחר שעה אחרת.' }, { status: 409 });
+      }
+      // Auto-assign a free barber so the calendar always knows who takes it
+      const free = teamMembers.find((m) => overlapsWith(String(m.name)) === 0);
+      if (free) assignedStaff = String(free.name);
     }
 
     const manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -222,6 +239,7 @@ export async function POST(req: NextRequest) {
       duration: booking.duration || 30,
       date: booking.date,
       time: booking.time,
+      staff: assignedStaff,
       price: booking.price || 0,
       status: needsApproval ? 'pending' : 'confirmed',
       reminded: false,
@@ -254,7 +272,12 @@ export async function POST(req: NextRequest) {
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
       || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
     if (ownerPhone) {
-      sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}`).catch(() => {});
+      sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`).catch(() => {});
+    }
+    if (assignedStaff) {
+      const member = teamMembers.find((m) => String(m.name) === assignedStaff);
+      const staffPhone = member && (member.phone as string);
+      if (staffPhone) sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`).catch(() => {});
     }
 
     return NextResponse.json({ success: true, message: 'התור נקבע בהצלחה!', manageToken });

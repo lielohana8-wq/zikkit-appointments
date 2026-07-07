@@ -267,7 +267,7 @@ function LandingTab({ bizId }: { bizId: string | null }) {
           <Box sx={{ bgcolor: c.accentDim, border: `2px solid ${c.accent}`, borderRadius: 3, p: 3, mb: 2 }}>
             <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.accent, mb: 1 }}>✓ הדף שלך מוכן!</Typography>
             <Typography sx={{ fontSize: 13, color: c.text2, mb: 2 }}>הכותרת: <strong>{result.heroTitle as string}</strong></Typography>
-            <Button href={`/site/${result.slug}`} target="_blank" variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>
+            <Button href={`/site/${bizId}`} target="_blank" variant="contained" sx={{ borderRadius: 3, fontWeight: 700 }}>
               🌐 צפה בדף שלך
             </Button>
           </Box>

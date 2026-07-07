@@ -82,6 +82,13 @@ export default function CalendarPage() {
       const base = { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, duration: optimistic.duration, staff: staffAssign, notes: optimistic.notes, time: optimistic.time, source: 'manual' as const, status: optimistic.status };
       if (repeat === 'none') {
         await addBooking(bizId, { ...base, date: selectedDate });
+      // SMS confirmations for manual bookings (customer + assigned member) — fire & forget
+      if (!form.isBlock) {
+        try {
+          const idToken = await firebaseUser?.getIdToken();
+          if (idToken) fetch('/api/notify-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, idToken, booking: { customerName: optimistic.customerName, customerPhone: optimistic.customerPhone, service: optimistic.service, date: selectedDate, time: form.time, staff: staffAssign } }) }).catch(() => {});
+        } catch { /* never block booking on SMS */ }
+      }
       } else {
         // Create a series: weekly or every 2 weeks or monthly
         const stepDays = repeat === 'weekly' ? 7 : repeat === 'biweekly' ? 14 : 30;

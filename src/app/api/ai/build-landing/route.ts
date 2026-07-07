@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const { bizId, businessName, industry, services = [], contactPhone, vibe, audience, highlights, extraPrompt } = body;
     if (!businessName) return NextResponse.json({ error: 'חסר שם עסק' }, { status: 400 });
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'AI לא זמין כרגע' }, { status: 500 });
+    if (!apiKey) return NextResponse.json({ error: 'ה-AI לא מוגדר — פתח /api/ai/health לאבחון מדויק' }, { status: 500 });
 
     const servicesText = services.map((s: Record<string, unknown>) => `${s.name}${s.price ? ` (₪${s.price})` : ''}`).join(', ');
     const systemPrompt = `אתה קופירייטר מומחה לדפי נחיתה לעסקי תור בישראל (מספרות, קוסמטיקה, קליניקות). צור תוכן מלא ומשכנע שמתאים בדיוק לאופי ולאווירה שהעסק ביקש. התאם את הטון, הכותרות והצבע לאווירה המבוקשת.
@@ -36,7 +36,7 @@ ${extraPrompt ? `בקשות נוספות: ${extraPrompt}` : ''}`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-3-5-sonnet-20241022', max_tokens: 2500, system: systemPrompt, messages: [{ role: 'user', content: userMsg }] }),
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2500, system: systemPrompt, messages: [{ role: 'user', content: userMsg }] }),
     });
     if (!res.ok) return NextResponse.json({ error: 'AI נכשל' }, { status: 500 });
     const data = await res.json();

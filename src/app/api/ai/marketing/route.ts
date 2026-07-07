@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const { bizId, summary } = await req.json();
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'AI לא זמין כרגע' }, { status: 500 });
+    if (!apiKey) return NextResponse.json({ error: 'ה-AI לא מוגדר — פתח /api/ai/health לאבחון מדויק' }, { status: 500 });
 
     let businessSummary = summary || '';
     if (bizId && !businessSummary) {

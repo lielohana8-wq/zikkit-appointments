@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'AI לא זמין כרגע' }, { status: 500 });
+      return NextResponse.json({ error: 'ה-AI לא מוגדר — פתח /api/ai/health לאבחון מדויק' }, { status: 500 });
     }
 
     const toneDesc = ({
@@ -55,7 +55,7 @@ ${serviceType ? `סוג השירות: ${serviceType}` : ''}
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1500,
         system: systemPrompt,
         messages: [{
@@ -71,7 +71,8 @@ ${serviceType ? `סוג השירות: ${serviceType}` : ''}
     if (!res.ok) {
       const err = await res.text();
       console.error('[AI post-from-photo]', err);
-      return NextResponse.json({ error: 'AI נכשל לנתח את התמונה' }, { status: 500 });
+      const hint = String(err).includes('credit') ? ' (נראה שאין יתרה בחשבון Anthropic)' : String(err).includes('authentication') ? ' (המפתח לא תקין)' : '';
+      return NextResponse.json({ error: `AI נכשל לנתח את התמונה${hint} — בדוק /api/ai/health` }, { status: 500 });
     }
 
     const data = await res.json();

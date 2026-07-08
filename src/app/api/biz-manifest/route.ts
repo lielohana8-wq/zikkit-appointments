@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const iconUrl = hasLogo ? `/api/biz-icon?bizId=${bizId}` : '/icon-512.png';
   return NextResponse.json({
     name,
-    short_name: name.slice(0, 12),
+    short_name: name,
     start_url: `/book/${bizId}`,
     scope: `/book/${bizId}`,
     display: 'standalone',

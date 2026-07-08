@@ -174,7 +174,11 @@ export default function PublicBookingPage() {
     if (!info || !selectedService) return [];
     if (info.blockedDates && info.blockedDates.includes(date)) return []; // holiday/vacation
     const dow = new Date(date).getDay();
-    const dh = info.hours?.[dow] || { open: dow !== 6, start: '09:00', end: '19:00' };
+    let dh = info.hours?.[dow] || { open: dow !== 6, start: '09:00', end: '19:00' };
+    if (selectedStaff) {
+      const member = (info.team || []).find((t) => t.name === (selectedStaff as unknown as { name?: string })?.name) as { hours?: Record<number, { open: boolean; start: string; end: string }> } | undefined;
+      if (member?.hours?.[dow]) dh = member.hours[dow]; // personal hours override
+    }
     if (!dh.open) return [];
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
     const toStr = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
@@ -289,32 +293,42 @@ export default function PublicBookingPage() {
   const fontStack = "'Heebo', 'Assistant', -apple-system, sans-serif";
 
   if (mustRegister) {
+    const bgImg = info.branding.banner || info.branding.gallery?.[0] || '';
     return (
-      <Box sx={{ minHeight: '100vh', background: `linear-gradient(170deg, ${accent} 0%, ${accentDark} 100%)`, direction: 'rtl', fontFamily: fontStack, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 3 }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap');`}</style>
-        <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#0C0714', direction: 'rtl', fontFamily: fontStack, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap');
+          @keyframes gateUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+          @keyframes gatePop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`}</style>
+        {/* Cinematic backdrop: banner if exists, else the logo — HUGE and blurred */}
+        {bgImg ? (
+          <Box component="img" src={bgImg} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(3px) brightness(0.6)', transform: 'scale(1.08)' }} />
+        ) : info.branding.logo ? (
+          <Box component="img" src={info.branding.logo} sx={{ position: 'absolute', top: '50%', left: '50%', width: 560, height: 560, objectFit: 'cover', transform: 'translate(-50%, -52%) rotate(-8deg)', filter: 'blur(64px) saturate(1.3)', opacity: 0.55 }} />
+        ) : null}
+        <Box sx={{ position: 'absolute', inset: 0, background: `linear-gradient(175deg, ${accent}55 0%, rgba(6,3,14,0.82) 62%, rgba(6,3,14,0.95) 100%)` }} />
+
+        <Box sx={{ position: 'relative', width: '100%', maxWidth: 400, textAlign: 'center' }}>
           {info.branding.logo ? (
-            <Box component="img" src={info.branding.logo} sx={{ width: 92, height: 92, borderRadius: 4, objectFit: 'cover', mb: 2, boxShadow: '0 14px 40px rgba(0,0,0,0.3)' }} />
-          ) : (
-            <Box sx={{ width: 92, height: 92, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.15)', fontSize: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>✂️</Box>
-          )}
-          <Typography sx={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{info.businessName}</Typography>
-          <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', mt: 0.75, mb: 3 }}>האפליקציה הרשמית · הצטרפו כדי להיכנס</Typography>
-          <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', textAlign: 'right' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mb: 2.5 }}>
-              {['📅 קביעת תורים בשניות', '🔔 מעקב ותזכורות על התורים שלך', '💜 הטבות לחברי האפליקציה'].map((t) => (
-                <Typography key={t} sx={{ fontSize: 13.5, color: '#57534E', fontWeight: 600 }}>{t}</Typography>
-              ))}
+            <Box sx={{ width: 112, height: 112, borderRadius: '50%', mx: 'auto', mb: 2.25, p: '4px', background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.35))', boxShadow: `0 22px 60px rgba(0,0,0,0.55), 0 0 0 8px ${accent}22`, animation: 'gatePop 0.5s cubic-bezier(0.16,1,0.3,1)' }}>
+              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
             </Box>
+          ) : (
+            <Box sx={{ width: 112, height: 112, borderRadius: '50%', mx: 'auto', mb: 2.25, bgcolor: 'rgba(255,255,255,0.12)', fontSize: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'gatePop 0.5s' }}>✂️</Box>
+          )}
+          <Typography sx={{ fontSize: 34, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, textShadow: '0 3px 18px rgba(0,0,0,0.5)', animation: 'gateUp 0.55s 0.08s both' }}>{info.businessName}</Typography>
+          <Typography sx={{ fontSize: 13.5, color: 'rgba(255,255,255,0.72)', mt: 1, mb: 3, letterSpacing: '0.04em', animation: 'gateUp 0.55s 0.16s both' }}>· האפליקציה הרשמית ·</Typography>
+
+          <Box sx={{ bgcolor: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(20px)', borderRadius: 5, p: 3, boxShadow: '0 30px 80px rgba(0,0,0,0.5)', textAlign: 'right', animation: 'gateUp 0.55s 0.24s both' }}>
+            <Typography sx={{ fontSize: 17, fontWeight: 900, color: '#1C1917', textAlign: 'center', mb: 2 }}>הצטרפו כדי להיכנס 💜</Typography>
             <TextField fullWidth size="small" label="שם מלא" value={regName} onChange={(e) => setRegName(e.target.value)} sx={{ mb: 1.5 }} />
-            <TextField fullWidth size="small" type="tel" label="טלפון" placeholder="050-1234567" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') registerNow(); }} sx={{ mb: 2 }} />
+            <TextField fullWidth size="small" type="tel" label="טלפון" placeholder="050-1234567" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') registerNow(); }} sx={{ mb: 1.5 }} />
             {regErr && <Typography sx={{ fontSize: 12.5, color: '#DC2626', mb: 1.5, textAlign: 'center' }}>{regErr}</Typography>}
-            <Typography sx={{ fontSize: 12, color: '#78716C', mb: 1.5, textAlign: 'center', lineHeight: 1.5 }}>💡 כבר קבעתם אצלנו תור? הזינו את אותו מספר טלפון — והתורים שלכם יופיעו מיד</Typography>
-            <Button disabled={regBusy || !regName.trim() || regPhone.replace(/\D/g, '').length < 9} onClick={registerNow} fullWidth variant="contained" sx={{ bgcolor: accent, borderRadius: 3, fontWeight: 900, py: 1.5, fontSize: 15.5, '&:hover': { bgcolor: accentDark } }}>
-              {regBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : '🎉 הצטרפות וכניסה'}
+            <Button disabled={regBusy || !regName.trim() || regPhone.replace(/\D/g, '').length < 9} onClick={registerNow} fullWidth variant="contained" sx={{ bgcolor: accent, borderRadius: 3, fontWeight: 900, py: 1.5, fontSize: 15.5, boxShadow: `0 10px 28px ${accent}66`, '&:hover': { bgcolor: accentDark } }}>
+              {regBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'כניסה לאפליקציה ←'}
             </Button>
+            <Typography sx={{ fontSize: 11.5, color: '#A8A29E', mt: 1.5, textAlign: 'center', lineHeight: 1.5 }}>כבר קבעתם אצלנו? הזינו את אותו טלפון — הכל יופיע מיד</Typography>
           </Box>
-          <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', mt: 3 }}>מופעל ע"י Zikkit</Typography>
+          <Typography sx={{ fontSize: 10.5, color: 'rgba(255,255,255,0.4)', mt: 3 }}>מופעל ע"י Zikkit</Typography>
         </Box>
       </Box>
     );
@@ -921,8 +935,8 @@ export default function PublicBookingPage() {
       <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, bgcolor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid #EEECF3', display: 'flex', justifyContent: 'space-around', pt: 0.75, pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
         {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
           t === '__book__' ? (
-            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: info.branding.logo ? '#fff' : `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : '#fff'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
-              {info.branding.logo ? <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Box sx={{ fontSize: 24, color: '#fff' }}>📅</Box>}
+            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : '#fff'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
+              {info.branding.logo ? <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.18)' }} /> : <Box sx={{ fontSize: 24, color: '#fff' }}>📅</Box>}
             </Box>
           ) : (
           <Box key={t} onClick={() => { setTab(t as 'home' | 'gallery' | 'profile' | 'info'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 1.5, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>

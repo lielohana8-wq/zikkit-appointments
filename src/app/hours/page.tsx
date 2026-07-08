@@ -11,7 +11,8 @@ const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 
 
 export default function HoursPage() {
   const router = useRouter();
-  const { firebaseUser, bizId, loading } = useAuth();
+  const { firebaseUser, bizId, loading, user, staffName } = useAuth();
+  const isStaff = user?.role === 'staff' && !!staffName;
   const [hours, setHoursState] = useState<BizHours | null>(null);
   const [newBlockDate, setNewBlockDate] = useState('');
 
@@ -36,7 +37,18 @@ export default function HoursPage() {
 
   const load = useCallback(async () => {
     if (!bizId) return;
-    try { setHoursState(await getHours(bizId)); } finally { setDataLoading(false); }
+    try {
+      const bizHours = await getHours(bizId);
+      if (isStaff) {
+        const { loadBiz } = await import('@/lib/bizdata');
+        const biz = await loadBiz(bizId);
+        const members = ((biz as Record<string, unknown>).team as { members?: Array<{ name: string; hours?: BizHours['days'] }> })?.members || [];
+        const mine = members.find((m) => m.name === staffName);
+        setHoursState(mine?.hours ? { days: mine.hours } : bizHours);
+      } else {
+        setHoursState(bizHours);
+      }
+    } finally { setDataLoading(false); }
   }, [bizId]);
 
   useEffect(() => { load(); }, [load]);
@@ -48,7 +60,18 @@ export default function HoursPage() {
   const save = async () => {
     if (!bizId || !hours) return;
     setSaving(true);
-    try { await setHours(bizId, hours); setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    try {
+      if (isStaff) {
+        const { loadBiz, patchBiz } = await import('@/lib/bizdata');
+        const biz = await loadBiz(bizId);
+        const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
+        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, hours: hours.days } : m));
+        await patchBiz(bizId, { team: { ...teamWrap, members } });
+      } else {
+        await setHours(bizId, hours);
+      }
+      setSaved(true); setTimeout(() => setSaved(false), 2000);
+    }
     finally { setSaving(false); }
   };
 
@@ -58,7 +81,7 @@ export default function HoursPage() {
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>שעות פעילות</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>{isStaff ? 'השעות שלי' : 'שעות פעילות'}</Typography>
         <Box sx={{ width: 80 }} />
       </Box>
 
@@ -88,6 +111,7 @@ export default function HoursPage() {
           })}
         </Box>
 
+        {!isStaff && (<>
         {/* Blocked dates — holidays / vacation */}
         <Box sx={{ mt: 4 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 0.5 }}>🚫 ימים חסומים</Typography>
@@ -106,6 +130,7 @@ export default function HoursPage() {
             {(hours.blockedDates || []).length === 0 && <Typography sx={{ fontSize: 13, color: c.text3 }}>אין ימים חסומים</Typography>}
           </Box>
         </Box>
+        </>)}
 
         <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שעות'}

@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     // Only active staff, only public-safe fields
     const team = (teamData.members || [])
       .filter((m) => m.active !== false)
-      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [] }));
+      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [], hours: m.hours || null }));
 
     // Only published reviews, public-safe fields
     const reviews = (reviewsData.items || [])

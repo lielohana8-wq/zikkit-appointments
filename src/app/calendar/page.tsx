@@ -25,6 +25,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [addOpen, setAddOpen] = useState(false);
   const [resize, setResize] = useState<{ id: string; startY: number; orig: number; dur: number } | null>(null);
+  const [staffFilter, setStaffFilter] = useState<string | null>(null);
   const [move, setMove] = useState<{ id: string; startY: number; orig: number; min: number; started: boolean } | null>(null);
   const justResized = useRef(false);
   const [saving, setSaving] = useState(false);
@@ -216,16 +217,33 @@ export default function CalendarPage() {
 
       {viewMode === 'day' && (
       <Box sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        {dayBookings.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Box sx={{ flex: 1, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.25 }}>
-              <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.02em' }}>{dayBookings.length}</Typography>
-              <Typography sx={{ fontSize: 12.5, color: c.text3, fontWeight: 500 }}>תורים היום</Typography>
+        {/* Day header */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 2 }}>
+          <Box>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', lineHeight: 1 }}>
+              {(() => { const d = new Date(selectedDate + 'T00:00:00'); return `יום ${HEBREW_DAYS[d.getDay()]}`; })()}
+            </Typography>
+            <Typography sx={{ fontSize: 13, color: c.text3, fontWeight: 600, mt: 0.5 }}>
+              {(() => { const d = new Date(selectedDate + 'T00:00:00'); return `${d.getDate()}.${d.getMonth() + 1}`; })()} · {dayBookings.filter((b) => b.status !== 'cancelled' && b.status !== 'blocked').length} תורים
+            </Typography>
+          </Box>
+          {dayBookings.length > 0 && (
+            <Box sx={{ textAlign: 'left', bgcolor: c.accentDim, borderRadius: 2, px: 1.75, py: 0.9 }}>
+              <Typography sx={{ fontSize: 18, fontWeight: 900, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>₪{dayRevenue.toLocaleString()}</Typography>
+              <Typography sx={{ fontSize: 10.5, color: c.accent, fontWeight: 700, opacity: 0.8 }}>צפי הכנסה</Typography>
             </Box>
-            <Box sx={{ flex: 1, bgcolor: c.accent, borderRadius: 2, p: 2.25 }}>
-              <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>₪{dayRevenue.toLocaleString()}</Typography>
-              <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>הכנסה צפויה</Typography>
-            </Box>
+          )}
+        </Box>
+
+        {/* Staff filter — tap a barber to see only their column */}
+        {team.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 0.75, mb: 2, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+            <Box onClick={() => setStaffFilter(null)} sx={{ cursor: 'pointer', flexShrink: 0, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, border: `1.5px solid ${!staffFilter ? c.accent : c.border2}`, color: !staffFilter ? c.accent : c.text3, bgcolor: !staffFilter ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>הכל</Box>
+            {team.map((m) => (
+              <Box key={m.id} onClick={() => setStaffFilter(staffFilter === m.name ? null : m.name)} sx={{ cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, border: `1.5px solid ${staffFilter === m.name ? m.color : c.border2}`, color: staffFilter === m.name ? m.color : c.text3, bgcolor: staffFilter === m.name ? `${m.color}15` : 'transparent', transition: 'all 0.15s' }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: m.color }} />{m.name}
+              </Box>
+            ))}
           </Box>
         )}
 
@@ -233,7 +251,7 @@ export default function CalendarPage() {
         {(() => {
           const START = 8 * 60, END = 21 * 60, HOUR_PX = 64;
           const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
-          const gridBks = dayBookings.filter((b) => b.status !== 'cancelled');
+          const gridBks = dayBookings.filter((b) => b.status !== 'cancelled' && (!staffFilter || b.staff === staffFilter));
           // Overlap lanes: greedy assignment so concurrent bookings sit side-by-side
           const sorted = [...gridBks].sort((a, b) => toMin(a.time) - toMin(b.time));
           const laneEnd: number[] = [];
@@ -264,7 +282,7 @@ export default function CalendarPage() {
               <Box sx={{ width: 44, flexShrink: 0 }}>
                 {Array.from({ length: (END - START) / 60 }, (_, i) => (
                   <Box key={i} sx={{ height: HOUR_PX, position: 'relative' }}>
-                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: c.text3, position: 'absolute', top: -7 }}>{String(8 + i).padStart(2, '0')}:00</Typography>
+                    <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, position: 'absolute', top: -7, left: 4, letterSpacing: '-0.01em' }}>{String(8 + i).padStart(2, '0')}:00</Typography>
                   </Box>
                 ))}
               </Box>
@@ -328,13 +346,18 @@ export default function CalendarPage() {
                 sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, overflow: 'hidden', cursor: 'copy', touchAction: resize ? 'none' : 'auto' }}>
                 {Array.from({ length: (END - START) / 60 }, (_, i) => (
                   <Box key={i} sx={{ position: 'absolute', top: i * HOUR_PX, left: 0, right: 0, borderTop: i === 0 ? 'none' : `1px solid ${c.border}`, height: HOUR_PX }}>
-                    <Box sx={{ position: 'absolute', top: HOUR_PX / 2, left: 0, right: 0, borderTop: `1px dashed ${c.border}`, opacity: 0.5 }} />
+                    <Box sx={{ position: 'absolute', top: HOUR_PX / 2, left: 0, right: 0, borderTop: `1px dashed ${c.border}`, opacity: 0.3 }} />
                   </Box>
                 ))}
                 {isToday && nowMin >= START && nowMin <= END && (
                   <Box sx={{ position: 'absolute', top: ((nowMin - START) / 60) * HOUR_PX, left: 0, right: 0, zIndex: 3, pointerEvents: 'none' }}>
                     <Box sx={{ borderTop: `2px solid ${c.hot}` }} />
                     <Box sx={{ position: 'absolute', right: -4, top: -4, width: 8, height: 8, borderRadius: '50%', bgcolor: c.hot }} />
+                  </Box>
+                )}
+                {gridBks.length === 0 && (
+                  <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <Typography sx={{ fontSize: 13.5, color: c.text3, fontWeight: 600 }}>{staffFilter ? `אין תורים ל${staffFilter} ביום זה` : 'לחץ על שעה כדי לקבוע תור ✨'}</Typography>
                   </Box>
                 )}
                 {gridBks.map((b) => {
@@ -350,7 +373,7 @@ export default function CalendarPage() {
                       onClick={(e) => { e.stopPropagation(); if (justResized.current) { justResized.current = false; return; } openEdit(b); }}
                       onPointerDown={(e) => { if ((e.target as HTMLElement).closest('.rzone')) return; setMove({ id: b.id, startY: e.clientY, orig: toMin(b.time), min: toMin(b.time), started: false }); }}
                       sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: move?.id === b.id ? 5 : 2, cursor: move?.id === b.id && move.started ? 'grabbing' : 'pointer', overflow: 'hidden', touchAction: 'none',
-                        bgcolor: blocked ? c.surface3 : `${col}1F`, opacity: blocked ? 0.8 : 1,
+                        bgcolor: blocked ? c.surface3 : `${col}14`, opacity: blocked ? 0.8 : 1, boxShadow: blocked ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
                         border: blocked ? `1.5px dashed ${c.border}` : b.status === 'pending' ? '1.5px solid #F59E0B' : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
                         transition: 'box-shadow 0.15s', '&:hover': { boxShadow: c.shadowMd, zIndex: 4 } }}>
                       <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{liveTime} · {liveDur} דק'{resize?.id === b.id ? ' ↕' : ''}{move?.id === b.id && move.started ? ' ✥' : ''}</Typography>

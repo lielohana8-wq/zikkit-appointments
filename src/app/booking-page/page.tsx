@@ -80,6 +80,28 @@ export default function BookingPageSettings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [b?.logo, b?.appIcon]);
 
+  const makeIcon = (style: 'cover' | 'tile') => {
+    if (!b?.logo) return;
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 512;
+      const ctx = cv.getContext('2d'); if (!ctx) return;
+      if (style === 'cover') {
+        const side = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 512, 512);
+      } else {
+        // The whole logo, centered on a brand-color tile — looks like a designed app icon
+        ctx.fillStyle = b.brandColor || '#7C3AED';
+        ctx.fillRect(0, 0, 512, 512);
+        const scale = Math.min((512 * 0.72) / img.width, (512 * 0.72) / img.height);
+        const w = img.width * scale; const h = img.height * scale;
+        ctx.drawImage(img, (512 - w) / 2, (512 - h) / 2, w, h);
+      }
+      set('appIcon', cv.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = b.logo;
+  };
+
   const handleImage = (field: 'logo' | 'banner', maxW: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -218,7 +240,27 @@ export default function BookingPageSettings() {
             <Button component="label" variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 600 }}>באנר<input type="file" accept="image/*" hidden onChange={handleImage('banner', 1000)} /></Button>
             {b.banner && <Button onClick={() => set('banner', '')} size="small" sx={{ color: c.hot }}>הסר</Button>}
           </Box>
-          <TextField fullWidth size="small" label="📱 שם האפליקציה במסך הבית" value={b.appName || ''} onChange={(e) => set('appName', e.target.value)} sx={{ mt: 2 }} placeholder="למשל: מספרת דניאל" helperText="השם שיופיע מתחת לאייקון כשלקוח שומר את האפליקציה" />
+          <TextField fullWidth size="small" label="📱 שם האפליקציה במסך הבית" value={b.appName || ''} onChange={(e) => set('appName', e.target.value)} sx={{ mt: 2 }} placeholder="למשל: מספרת דניאל" helperText="שים לב: הטלפון מציג ~13 תווים מתחת לאייקון — שם ארוך ייחתך (מגבלת iOS/אנדרואיד). ראה תצוגה מקדימה למטה" />
+          {b.logo && (
+            <Box sx={{ mt: 2.5, bgcolor: c.surface2, borderRadius: 2.5, p: 2 }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1.5 }}>📲 האייקון במסך הבית — תצוגה מקדימה</Typography>
+              <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                <Box sx={{ textAlign: 'center', flexShrink: 0 }}>
+                  <Box sx={{ width: 76, height: 76, borderRadius: '17px', overflow: 'hidden', boxShadow: '0 8px 22px rgba(0,0,0,0.2)', mx: 'auto', bgcolor: c.surface3 }}>
+                    {b.appIcon && <Box component="img" src={b.appIcon} sx={{ width: '100%', height: '100%', display: 'block' }} />}
+                  </Box>
+                  <Typography sx={{ fontSize: 10.5, color: c.text, fontWeight: 600, mt: 0.75, maxWidth: 82, mx: 'auto', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.appName || 'שם האפליקציה'}</Typography>
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                    <Button onClick={() => makeIcon('cover')} size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12, justifyContent: 'flex-start' }}>◼️ מילוי מלא — חיתוך מרכזי</Button>
+                    <Button onClick={() => makeIcon('tile')} size="small" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12, justifyContent: 'flex-start' }}>🎨 הלוגו שלם על רקע צבע המותג</Button>
+                  </Box>
+                  <Typography sx={{ fontSize: 10.5, color: c.text3, mt: 1, lineHeight: 1.5 }}>בחר סגנון → שמור הכל → בטלפון: מחק את האפליקציה מהמסך והוסף מחדש (הטלפון שומר אייקון ישן)</Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
           <Box sx={{ display: 'none' }}>
           </Box>
         </Section>

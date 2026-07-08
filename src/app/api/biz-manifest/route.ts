@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!biz) return NextResponse.json({ error: 'not found' }, { status: 404 });
   const booking = (biz.booking as Record<string, unknown>) || {};
   const cfg = (biz.cfg as Record<string, unknown>) || {};
-  const name = (cfg.biz_name as string) || 'הזמנת תור';
+  const name = (booking.appName as string) || (cfg.biz_name as string) || 'הזמנת תור';
   const accent = (booking.accentColor as string) || '#7C3AED';
   const hasLogo = !!booking.logo;
   const iconUrl = hasLogo ? `/api/biz-icon?bizId=${bizId}` : '/icon-512.png';

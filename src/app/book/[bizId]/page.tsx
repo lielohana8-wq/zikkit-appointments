@@ -43,7 +43,11 @@ export default function PublicBookingPage() {
   const [info, setInfo] = useState<BizInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done' | 'waitlist' | 'waitlisted'>('service');
-  const [tab, setTab] = useState<'home' | 'book' | 'gallery' | 'info'>('home');
+  const [tab, setTab] = useState<'home' | 'book' | 'gallery' | 'info' | 'profile'>('home');
+  const [regName, setRegName] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regBusy, setRegBusy] = useState(false);
+  const [regErr, setRegErr] = useState('');
   const [me, setMe] = useState<{ name: string; phone: string } | null>(null);
 
   // ── The business becomes the app: dynamic manifest, icon, title, theme ──
@@ -675,8 +679,8 @@ export default function PublicBookingPage() {
         {tab === 'home' && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             {/* Hero */}
-            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2.5, minHeight: 190, background: info.branding.gallery?.[0] ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
-              {info.branding.gallery?.[0] && <Box component="img" src={info.branding.gallery[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2.5, minHeight: 190, background: (info.branding.banner || info.branding.gallery?.[0]) ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+              {(info.branding.banner || info.branding.gallery?.[0]) && <Box component="img" src={info.branding.banner || info.branding.gallery?.[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
               <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.62) 100%)' }} />
               <Box sx={{ position: 'relative', p: 2.5, pt: 9, color: '#fff' }}>
                 <Typography sx={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.4)' }}>
@@ -686,6 +690,18 @@ export default function PublicBookingPage() {
                 <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 1.75, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 3.5, py: 1.1, borderRadius: 99, fontSize: 14.5, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', '&:hover': { bgcolor: '#fff' } }}>📅 הזמנת תור</Button>
               </Box>
             </Box>
+
+            {/* Join the club */}
+            {!me && (
+              <Box onClick={() => setTab('profile')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', border: `1.5px solid ${accent}33`, borderRadius: 3, p: 2, mb: 2.5, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                <Box sx={{ width: 42, height: 42, borderRadius: '50%', bgcolor: `${accent}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>👤</Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: 14.5, fontWeight: 800, color: '#1C1917' }}>הצטרפו לאפליקציה של {info.businessName}</Typography>
+                  <Typography sx={{ fontSize: 12.5, color: '#78716C' }}>מעקב תורים, קביעה מהירה והטבות</Typography>
+                </Box>
+                <Typography sx={{ fontSize: 14, color: accent, fontWeight: 900 }}>←</Typography>
+              </Box>
+            )}
 
             {/* My upcoming appointments */}
             {myUpcoming.length > 0 && (
@@ -793,6 +809,63 @@ export default function PublicBookingPage() {
           </Box>
         )}
 
+        {/* ════════ PROFILE ════════ */}
+        {tab === 'profile' && (
+          <Box sx={{ animation: 'fadeIn 0.4s' }}>
+            {me ? (
+              <>
+                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, textAlign: 'center', boxShadow: '0 1px 6px rgba(0,0,0,0.05)', mb: 2 }}>
+                  <Box sx={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 30, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>{(me.name || '?').charAt(0)}</Box>
+                  <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917' }}>{me.name}</Typography>
+                  <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 0.25 }}>{me.phone}</Typography>
+                  <Typography sx={{ fontSize: 12.5, color: accent, fontWeight: 800, mt: 1 }}>חבר/ה באפליקציה של {info.businessName} 💜</Typography>
+                </Box>
+                {myUpcoming.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>התורים הקרובים שלך</Typography>
+                    {myUpcoming.map((b, i) => (
+                      <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, mb: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                        <Box sx={{ textAlign: 'center', bgcolor: `${accent}12`, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 62 }}>
+                          <Typography sx={{ fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1.1 }}>{b.time}</Typography>
+                          <Typography sx={{ fontSize: 10.5, color: accent, opacity: 0.8 }}>{b.date?.slice(5).split('-').reverse().join('/')}</Typography>
+                        </Box>
+                        <Typography sx={{ flex: 1, fontSize: 14.5, fontWeight: 700, color: '#1C1917' }}>{b.service}</Typography>
+                        <Typography sx={{ fontSize: 12.5, color: accent, fontWeight: 800 }}>נהל ←</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+                <Button onClick={() => { setTab('book'); }} fullWidth variant="contained" sx={{ bgcolor: accent, borderRadius: 3, fontWeight: 800, py: 1.4, mb: 1.5, '&:hover': { bgcolor: accentDark } }}>📅 קביעת תור חדש</Button>
+                <Button onClick={() => { try { localStorage.removeItem(`zk_cust_${bizId}`); } catch { /* ignore */ } setMe(null); setMyUpcoming([]); }} fullWidth sx={{ color: '#A8A29E', fontWeight: 700 }}>התנתקות מהמכשיר הזה</Button>
+              </>
+            ) : (
+              <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
+                <Box sx={{ textAlign: 'center', mb: 2.5 }}>
+                  <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: `${accent}12`, fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>👤</Box>
+                  <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917' }}>הצטרפות לאפליקציה</Typography>
+                  <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 0.5 }}>של {info.businessName} — מעקב תורים, קביעה בשניות והטבות</Typography>
+                </Box>
+                <TextField fullWidth size="small" label="שם מלא" value={regName} onChange={(e) => setRegName(e.target.value)} sx={{ mb: 1.5 }} />
+                <TextField fullWidth size="small" type="tel" label="טלפון" placeholder="050-1234567" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} sx={{ mb: 2 }} />
+                {regErr && <Typography sx={{ fontSize: 12.5, color: '#DC2626', mb: 1.5, textAlign: 'center' }}>{regErr}</Typography>}
+                <Button disabled={regBusy || !regName.trim() || regPhone.replace(/\D/g, '').length < 9} onClick={async () => {
+                  setRegBusy(true); setRegErr('');
+                  try {
+                    const res = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'register', name: regName.trim(), phone: regPhone }) });
+                    const d = await res.json();
+                    if (!d.success) { setRegErr(d.error || 'שגיאה'); return; }
+                    const meObj = { name: regName.trim(), phone: regPhone };
+                    try { localStorage.setItem(`zk_cust_${bizId}`, JSON.stringify(meObj)); } catch { /* ignore */ }
+                    setMe(meObj);
+                    fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'find', phone: regPhone }) }).then((r) => r.json()).then((dd) => { if (dd.success) setMyUpcoming(dd.bookings || []); }).catch(() => {});
+                  } catch { setRegErr('שגיאה — נסו שוב'); } finally { setRegBusy(false); }
+                }} fullWidth variant="contained" sx={{ bgcolor: accent, borderRadius: 3, fontWeight: 900, py: 1.4, '&:hover': { bgcolor: accentDark } }}>
+                  {regBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : '🎉 הצטרפות'}
+                </Button>
+              </Box>
+            )}
+          </Box>
+        )}
       </Box>
 
       <Box sx={{ textAlign: 'center', mt: 4 }}>
@@ -804,11 +877,17 @@ export default function PublicBookingPage() {
 
       {/* ════════ Bottom app navigation ════════ */}
       <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, bgcolor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid #EEECF3', display: 'flex', justifyContent: 'space-around', pt: 0.75, pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
-        {([['home', '🏠', 'בית'], ['book', '📅', 'תור חדש'], ['gallery', '🖼️', 'גלריה'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
-          <Box key={t} onClick={() => { setTab(t); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 2, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>
+        {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
+          t === '__book__' ? (
+            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: info.branding.logo ? '#fff' : `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : '#fff'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
+              {info.branding.logo ? <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Box sx={{ fontSize: 24, color: '#fff' }}>📅</Box>}
+            </Box>
+          ) : (
+          <Box key={t} onClick={() => { setTab(t as 'home' | 'gallery' | 'profile' | 'info'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 1.5, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>
             <Box sx={{ fontSize: 21, filter: tab === t ? 'none' : 'grayscale(60%)', opacity: tab === t ? 1 : 0.55, transform: tab === t ? 'translateY(-1px)' : 'none', transition: 'all 0.2s' }}>{icon}</Box>
             <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? accent : '#A8A29E', mt: 0.1 }}>{label}</Typography>
           </Box>
+          )
         ))}
       </Box>
 

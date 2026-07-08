@@ -189,6 +189,24 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // ---- Customer registration: joins the business's app (club) ----
+    if (action === 'register') {
+      const strict = enforceRateLimit(req, 'public-booking-register', 5, 60_000);
+      if (strict) return strict;
+      const name = String(body.name || '').trim();
+      const rawPhone = String(body.phone || '').replace(/\D/g, '');
+      if (!name || rawPhone.length < 9) return NextResponse.json({ success: false, error: 'שם וטלפון תקין נדרשים' }, { status: 400 });
+      const key = rawPhone.slice(-9);
+      const custWrap = (biz.customers as Record<string, unknown>) || {};
+      const custs = (custWrap.items as Array<Record<string, unknown>>) || [];
+      const exists = custs.find((cu) => String(cu.phone || '').replace(/\D/g, '').slice(-9) === key);
+      if (!exists) {
+        custs.unshift({ id: 'cust_' + Date.now(), name, phone: body.phone, visits: 0, totalSpent: 0, createdAt: new Date().toISOString(), source: 'app' });
+        await setBizField(bizId, ['customers', 'items'], custs);
+      }
+      return NextResponse.json({ success: true });
+    }
+
     if (!booking) return NextResponse.json({ error: 'missing data' }, { status: 400 });
     const bookingCfg = (biz.booking as Record<string, unknown>) || {};
     if (bookingCfg.enabled === false) {

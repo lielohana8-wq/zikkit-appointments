@@ -187,6 +187,9 @@ export default function BookingPageSettings() {
             <Button component="label" variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 600 }}>באנר<input type="file" accept="image/*" hidden onChange={handleImage('banner', 1000)} /></Button>
             {b.banner && <Button onClick={() => set('banner', '')} size="small" sx={{ color: c.hot }}>הסר</Button>}
           </Box>
+          <TextField fullWidth size="small" label="📱 שם האפליקציה במסך הבית" value={b.appName || ''} onChange={(e) => set('appName', e.target.value)} sx={{ mt: 2 }} placeholder="למשל: מספרת דניאל" helperText="השם שיופיע מתחת לאייקון כשלקוח שומר את האפליקציה" />
+          <Box sx={{ display: 'none' }}>
+          </Box>
         </Section>
 
         {/* Color */}

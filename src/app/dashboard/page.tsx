@@ -44,6 +44,7 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
     { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
     { icon: '🔔', label: 'רשימת המתנה', path: '/waitlist', staff: true },
     { icon: '📋', label: 'מחירון ושירותים', path: '/services', staff: false },
+    { icon: '🛍️', label: 'מוצרים', path: '/products', staff: false },
   ]},
   { title: 'כספים', items: [
     { icon: '⚡', label: 'מנוע הכנסות', path: '/revenue', staff: false },

@@ -34,6 +34,7 @@ const CATEGORIES: Array<{ title: string; icon: string; items: Array<{ icon: stri
     items: [
       { icon: '📞', label: 'דנה — מענה טלפוני', desc: 'הגדרת המזכירה החכמה שעונה 24/7', path: '/setup' },
       { icon: '⚡', label: 'אוטומציות', desc: 'תזכורות והודעות אוטומטיות', path: '/automations' },
+      { icon: '🛍️', label: 'מוצרים', desc: 'מדף מוצרים באפליקציית ההזמנות שלך', path: '/products' },
       { icon: '📲', label: 'התקן אפליקציה', desc: 'Zikkit על מסך הבית — שלך ושל הצוות', path: '/app' },
       { icon: '📈', label: 'מרכז צמיחה', desc: 'תובנות AI, קמפיינים ופילוחי לקוחות', path: '/growth' },
       { icon: '🎨', label: 'סטודיו תוכן', desc: 'תמונה → פוסט · דף נחיתה אוטומטי', path: '/ai-studio' },

@@ -102,6 +102,7 @@ export async function GET(req: NextRequest) {
         policyOn: booking.policyOn === true,
         policyText: booking.policyText || '',
         gallery: booking.gallery || [],
+        products: (((biz.products as Record<string, unknown>)?.items as Array<Record<string, unknown>>) || []).filter((pr) => pr.active !== false).slice(0, 12),
         galleryTitle: booking.galleryTitle || 'העבודות שלנו',
         announcement: booking.announcement || '',
         announcementOn: booking.announcementOn === true,

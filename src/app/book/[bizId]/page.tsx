@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -43,6 +43,44 @@ export default function PublicBookingPage() {
   const [info, setInfo] = useState<BizInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState<'service' | 'staff' | 'slot' | 'details' | 'done' | 'waitlist' | 'waitlisted'>('service');
+  const [tab, setTab] = useState<'home' | 'book' | 'gallery' | 'info'>('home');
+  const [me, setMe] = useState<{ name: string; phone: string } | null>(null);
+
+  // ── The business becomes the app: dynamic manifest, icon, title, theme ──
+  useEffect(() => {
+    if (!info || !bizId) return;
+    document.title = info.businessName || 'הזמנת תור';
+    const setLink = (rel: string, href: string) => {
+      let el = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+      if (!el) { el = document.createElement('link'); el.rel = rel; document.head.appendChild(el); }
+      el.href = href;
+    };
+    setLink('manifest', `/api/biz-manifest?bizId=${bizId}`);
+    setLink('apple-touch-icon', `/api/biz-icon?bizId=${bizId}`);
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement('meta'); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    setMeta('theme-color', accent);
+    setMeta('apple-mobile-web-app-capable', 'yes');
+    setMeta('apple-mobile-web-app-title', info.businessName || 'תורים');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info, bizId]);
+
+  // ── Recognize a returning customer (saved on this device) ──
+  useEffect(() => {
+    if (!bizId) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`zk_cust_${bizId}`) || 'null');
+      if (saved?.phone) {
+        setMe(saved);
+        fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'find', phone: saved.phone }) })
+          .then((r) => r.json()).then((d) => { if (d.success) setMyUpcoming(d.bookings || []); }).catch(() => {});
+      }
+    } catch { /* ignore */ }
+  }, [bizId]);
+  const [myUpcoming, setMyUpcoming] = useState<Array<{ service: string; date: string; time: string; token: string }>>([]);
   const [policyOk, setPolicyOk] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [findPhone, setFindPhone] = useState('');
@@ -197,7 +235,7 @@ export default function PublicBookingPage() {
             } catch { /* fall through to confirmation */ }
           }
         }
-        setStage('done');
+        setStage('done'); try { localStorage.setItem(`zk_cust_${bizId}`, JSON.stringify({ name: form.name, phone: form.phone })); } catch { /* ignore */ }
       }
       else alert(data.error || 'שגיאה');
     } finally { setBooking(false); }
@@ -226,7 +264,7 @@ export default function PublicBookingPage() {
   const fontStack = "'Heebo', 'Assistant', -apple-system, sans-serif";
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FBFAFF 0%, #F6F4FB 100%)', direction: 'rtl', fontFamily: fontStack, pb: 8 }}>
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FBFAFF 0%, #F6F4FB 100%)', direction: 'rtl', fontFamily: fontStack, pb: 14 }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
 
       {/* Announcement banner */}
@@ -314,6 +352,7 @@ export default function PublicBookingPage() {
         )}
 
         {/* STAGE 1: Service */}
+        {tab === 'book' && (<>
         {stage === 'service' && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Typography sx={{ fontSize: 19, fontWeight: 800, color: '#1C1917', mb: 2 }}>איזה שירות תרצו?</Typography>
@@ -629,6 +668,131 @@ export default function PublicBookingPage() {
             {info.branding.instagram && <Button href={`https://instagram.com/${info.branding.instagram.replace('@', '')}`} target="_blank" sx={{ color: '#E1306C', fontWeight: 700, fontSize: 13 }}>📷 אינסטגרם</Button>}
           </Box>
         )}
+
+        </>)}
+
+        {/* ════════ HOME — the business's app ════════ */}
+        {tab === 'home' && (
+          <Box sx={{ animation: 'fadeIn 0.4s' }}>
+            {/* Hero */}
+            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2.5, minHeight: 190, background: info.branding.gallery?.[0] ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+              {info.branding.gallery?.[0] && <Box component="img" src={info.branding.gallery[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+              <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.62) 100%)' }} />
+              <Box sx={{ position: 'relative', p: 2.5, pt: 9, color: '#fff' }}>
+                <Typography sx={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.4)' }}>
+                  {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
+                </Typography>
+                <Typography sx={{ fontSize: 13.5, opacity: 0.92, mt: 0.25 }}>{me ? 'טוב לראות אותך שוב' : 'קובעים תור בשניות, בלי טלפונים'}</Typography>
+                <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 1.75, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 3.5, py: 1.1, borderRadius: 99, fontSize: 14.5, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', '&:hover': { bgcolor: '#fff' } }}>📅 הזמנת תור</Button>
+              </Box>
+            </Box>
+
+            {/* My upcoming appointments */}
+            {myUpcoming.length > 0 && (
+              <Box sx={{ mb: 2.5 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>התורים הקרובים שלך</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {myUpcoming.map((b, i) => (
+                    <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                      <Box sx={{ textAlign: 'center', bgcolor: `${accent}12`, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 62 }}>
+                        <Typography sx={{ fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1.1 }}>{b.time}</Typography>
+                        <Typography sx={{ fontSize: 10.5, color: accent, opacity: 0.8 }}>{b.date?.slice(5).split('-').reverse().join('/')}</Typography>
+                      </Box>
+                      <Typography sx={{ flex: 1, fontSize: 14.5, fontWeight: 700, color: '#1C1917' }}>{b.service}</Typography>
+                      <Typography sx={{ fontSize: 12.5, color: accent, fontWeight: 800 }}>נהל ←</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Gallery as stories */}
+            {(info.branding.gallery || []).length > 0 && (
+              <Box sx={{ mb: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C' }}>{info.branding.galleryTitle || 'העבודות שלנו'}</Typography>
+                  <Typography onClick={() => setTab('gallery')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הצג הכל ←</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+                  {(info.branding.gallery || []).slice(0, 10).map((img: string, i: number) => (
+                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', flexShrink: 0, width: 74, height: 74, borderRadius: '50%', p: '3px', background: `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+                      <Box component="img" src={img} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #fff' }} />
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Products shelf */}
+            {(info.branding.products || []).length > 0 && (
+              <Box sx={{ mb: 2.5 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>🛍️ המוצרים שלנו</Typography>
+                <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+                  {(info.branding.products || []).map((pr, i) => (
+                    <Box key={i} sx={{ flexShrink: 0, width: 150, bgcolor: '#fff', borderRadius: 3, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                      {pr.photo ? <Box component="img" src={pr.photo} sx={{ width: '100%', height: 108, objectFit: 'cover' }} /> : <Box sx={{ height: 108, bgcolor: `${accent}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}>🛍️</Box>}
+                      <Box sx={{ p: 1.25 }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#1C1917', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pr.name}</Typography>
+                        {pr.price ? <Typography sx={{ fontSize: 13.5, fontWeight: 900, color: accent, mt: 0.25 }}>₪{pr.price}</Typography> : null}
+                        {info.branding.phone && (
+                          <Button href={`https://wa.me/${info.branding.phone.replace(/\D/g, '').replace(/^0/, '972')}?text=${encodeURIComponent('היי! אשמח להזמין את ' + pr.name + ' 🙂')}`} target="_blank" fullWidth size="small" sx={{ mt: 0.75, bgcolor: '#25D36618', color: '#1EA952', fontWeight: 800, fontSize: 11.5, borderRadius: 2, py: 0.4 }}>💬 הזמנה</Button>
+                        )}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* ════════ GALLERY ════════ */}
+        {tab === 'gallery' && (
+          <Box sx={{ animation: 'fadeIn 0.4s' }}>
+            <Typography sx={{ fontSize: 18, fontWeight: 900, color: '#1C1917', mb: 1.5 }}>{info.branding.galleryTitle || 'העבודות שלנו'}</Typography>
+            {(info.branding.gallery || []).length === 0 ? (
+              <Typography sx={{ fontSize: 14, color: '#78716C', textAlign: 'center', py: 6 }}>עוד אין תמונות בגלריה</Typography>
+            ) : (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0.75 }}>
+                {(info.branding.gallery || []).map((img: string, i: number) => (
+                  <Box key={i} component="img" src={img} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1.5 }} />
+                ))}
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* ════════ INFO ════════ */}
+        {tab === 'info' && (
+          <Box sx={{ animation: 'fadeIn 0.4s' }}>
+            <Typography sx={{ fontSize: 18, fontWeight: 900, color: '#1C1917', mb: 2 }}>ℹ️ מידע ושעות</Typography>
+            {info.branding.phone && (
+              <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
+                <Button href={`tel:${info.branding.phone}`} fullWidth sx={{ bgcolor: '#fff', color: '#1C1917', fontWeight: 800, borderRadius: 3, py: 1.4, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>📞 התקשרו</Button>
+                <Button href={`https://wa.me/${info.branding.phone.replace(/\D/g, '').replace(/^0/, '972')}`} target="_blank" fullWidth sx={{ bgcolor: '#fff', color: '#1EA952', fontWeight: 800, borderRadius: 3, py: 1.4, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>💬 וואטסאפ</Button>
+              </Box>
+            )}
+            <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, mb: 2, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#78716C', mb: 1.25 }}>🕐 שעות פעילות</Typography>
+              {[0, 1, 2, 3, 4, 5, 6].map((d) => {
+                const dh = info.hours?.[d];
+                return (
+                  <Box key={d} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5, borderBottom: d < 6 ? '1px solid #F5F5F4' : 'none' }}>
+                    <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: '#44403C' }}>{['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'][d]}</Typography>
+                    <Typography sx={{ fontSize: 13.5, color: dh?.open ? '#1C1917' : '#A8A29E', fontWeight: dh?.open ? 700 : 500 }}>{dh?.open ? `${dh.start} - ${dh.end}` : 'סגור'}</Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+            {info.branding.policyOn && info.branding.policyText && (
+              <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#78716C', mb: 1 }}>📋 תקנון</Typography>
+                <Typography sx={{ fontSize: 13, color: '#57534E', whiteSpace: 'pre-line', lineHeight: 1.7 }}>{info.branding.policyText}</Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+
       </Box>
 
       <Box sx={{ textAlign: 'center', mt: 4 }}>
@@ -637,6 +801,16 @@ export default function PublicBookingPage() {
         </Box>
       </Box>
       <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
+
+      {/* ════════ Bottom app navigation ════════ */}
+      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, bgcolor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid #EEECF3', display: 'flex', justifyContent: 'space-around', pt: 0.75, pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
+        {([['home', '🏠', 'בית'], ['book', '📅', 'תור חדש'], ['gallery', '🖼️', 'גלריה'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
+          <Box key={t} onClick={() => { setTab(t); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 2, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>
+            <Box sx={{ fontSize: 21, filter: tab === t ? 'none' : 'grayscale(60%)', opacity: tab === t ? 1 : 0.55, transform: tab === t ? 'translateY(-1px)' : 'none', transition: 'all 0.2s' }}>{icon}</Box>
+            <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? accent : '#A8A29E', mt: 0.1 }}>{label}</Typography>
+          </Box>
+        ))}
+      </Box>
 
       {/* Find my bookings dialog */}
       <Dialog open={findOpen} onClose={() => setFindOpen(false)} fullWidth PaperProps={{ sx: { borderRadius: 3, maxWidth: 400, m: 2, p: 3 } }}>

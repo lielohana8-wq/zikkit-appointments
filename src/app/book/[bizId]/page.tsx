@@ -754,6 +754,12 @@ export default function PublicBookingPage() {
                   {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
                 </Typography>
                 <Typography sx={{ fontSize: 13.5, opacity: 0.92, mt: 0.25 }}>{me ? 'טוב לראות אותך שוב' : 'קובעים תור בשניות, בלי טלפונים'}</Typography>
+                {(() => { const dh = info.hours?.[new Date().getDay()]; if (!dh) return null; return (
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)', borderRadius: 99, px: 1.5, py: 0.5, mt: 1.25 }}>
+                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dh.open ? '#4ADE80' : '#F87171' }} />
+                    <Typography sx={{ fontSize: 12, fontWeight: 700 }}>{dh.open ? `פתוח היום עד ${dh.end}` : 'סגור היום'}</Typography>
+                  </Box>
+                ); })()}
                 <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 1.75, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 3.5, py: 1.1, borderRadius: 99, fontSize: 14.5, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', '&:hover': { bgcolor: '#fff' } }}>📅 הזמנת תור</Button>
               </Box>
             </Box>
@@ -800,6 +806,49 @@ export default function PublicBookingPage() {
                   {(info.branding.gallery || []).slice(0, 10).map((img: string, i: number) => (
                     <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', flexShrink: 0, width: 74, height: 74, borderRadius: '50%', p: '3px', background: `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
                       <Box component="img" src={img} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #fff' }} />
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Our team */}
+            {(info.team || []).length > 0 && (
+              <Box sx={{ mb: 2.5 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>✂️ הצוות שלנו</Typography>
+                <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+                  {(info.team || []).map((m) => (
+                    <Box key={m.id} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', flexShrink: 0, width: 118, bgcolor: '#fff', borderRadius: 3.5, p: 1.5, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', transition: 'transform 0.15s', '&:active': { transform: 'scale(0.97)' } }}>
+                      {m.photo ? (
+                        <Box component="img" src={m.photo} sx={{ width: 76, height: 76, borderRadius: '50%', objectFit: 'cover', mb: 1, border: `2.5px solid ${accent}30` }} />
+                      ) : (
+                        <Box sx={{ width: 76, height: 76, borderRadius: '50%', mx: 'auto', mb: 1, background: `linear-gradient(135deg, ${accent}25, ${accent}45)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 900, color: accentDark }}>{(m.name || '?').charAt(0)}</Box>
+                      )}
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#1C1917', lineHeight: 1.2 }}>{m.name}</Typography>
+                      {m.role && <Typography sx={{ fontSize: 11, color: '#A8A29E', mt: 0.25 }}>{m.role}</Typography>}
+                      <Typography sx={{ fontSize: 11, color: accent, fontWeight: 800, mt: 0.75 }}>קביעת תור ←</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Services & prices */}
+            {(info.services || []).length > 0 && (
+              <Box sx={{ mb: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C' }}>💅 השירותים והמחירים</Typography>
+                  {(info.services || []).length > 5 && <Typography onClick={() => setTab('book')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הכל ←</Typography>}
+                </Box>
+                <Box sx={{ bgcolor: '#fff', borderRadius: 3.5, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                  {(info.services || []).slice(0, 5).map((sv, i) => (
+                    <Box key={sv.id || i} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.6, borderBottom: i < Math.min((info.services || []).length, 5) - 1 ? '1px solid #F5F5F4' : 'none', '&:active': { bgcolor: '#FAFAF9' } }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: '#1C1917' }}>{sv.name}</Typography>
+                        <Typography sx={{ fontSize: 11.5, color: '#A8A29E' }}>{sv.duration} דק'</Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: 15, fontWeight: 900, color: accent, whiteSpace: 'nowrap' }}>{sv.priceFrom ? 'החל מ־' : ''}₪{sv.price}</Typography>
+                      <Typography sx={{ color: '#D6D3D1', fontSize: 16 }}>‹</Typography>
                     </Box>
                   ))}
                 </Box>

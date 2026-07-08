@@ -43,7 +43,7 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
     { icon: '👥', label: 'לקוחות', path: '/customers', staff: true },
     { icon: '🔗', label: 'דף הזמנות', path: '/booking-page', staff: false },
     { icon: '🔔', label: 'רשימת המתנה', path: '/waitlist', staff: true },
-    { icon: '📋', label: 'מחירון ושירותים', path: '/services', staff: false },
+    { icon: '📋', label: 'המחירון והשירותים שלי', path: '/services', staff: true },
     { icon: '🛍️', label: 'מוצרים', path: '/products', staff: false },
   ]},
   { title: 'כספים', items: [
@@ -64,7 +64,7 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
   { title: 'העסק והגדרות', items: [
     { icon: '🚀', label: 'מוכנות להפעלה', path: '/activate', staff: false },
     { icon: '📞', label: 'דנה — מענה טלפוני', path: '/setup', staff: false },
-    { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: false },
+    { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: true },
     { icon: '🤝', label: 'צוות', path: '/team', staff: false },
     { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
     { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },

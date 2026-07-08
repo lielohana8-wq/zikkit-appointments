@@ -13,7 +13,8 @@ const HEBREW_MONTHS = ['ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יונ
 
 export default function CustomersPage() {
   const router = useRouter();
-  const { firebaseUser, bizId, loading } = useAuth();
+  const { firebaseUser, bizId, loading, user, staffName } = useAuth();
+  const isStaff = user?.role === 'staff' && !!staffName;
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -31,6 +32,15 @@ export default function CustomersPage() {
       const bks = await getBookings(bizId);
       setBookings(bks);
       let custs = await getCustomers(bizId);
+      if (isStaff) {
+        // A team member sees only customers who booked with THEM
+        const allBks = await getBookings(bizId);
+        const myPhones = new Set(
+          allBks.filter((b) => b.staff === staffName && b.customerPhone)
+            .map((b) => String(b.customerPhone).replace(/\D/g, '').slice(-9)),
+        );
+        custs = custs.filter((cu) => myPhones.has(String(cu.phone || '').replace(/\D/g, '').slice(-9)));
+      }
       if (custs.length === 0) {
         const byPhone = new Map<string, Customer>();
         bks.forEach((b) => {
@@ -43,7 +53,7 @@ export default function CustomersPage() {
       }
       setCustomers(custs.sort((a, b) => (b.visits || 0) - (a.visits || 0)));
     } finally { setDataLoading(false); }
-  }, [bizId]);
+  }, [bizId, isStaff, staffName]);
 
   useEffect(() => { load(); }, [load]);
 

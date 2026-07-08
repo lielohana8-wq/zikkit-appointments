@@ -335,7 +335,9 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #FBFAFF 0%, #F6F4FB 100%)', direction: 'rtl', fontFamily: fontStack, pb: 14 }}>
+    <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), linear-gradient(180deg, #FAF9F7 0%, #F3F1EE 100%)`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
+      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }`}</style>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
 
       {/* Announcement banner */}
@@ -426,13 +428,13 @@ export default function PublicBookingPage() {
         {tab === 'book' && (<>
         {stage === 'service' && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
-            <Typography sx={{ fontSize: 19, fontWeight: 800, color: '#1C1917', mb: 2 }}>איזה שירות תרצו?</Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#171412', letterSpacing: '-0.025em', mb: 2.25 }}>איזה שירות תרצו?</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {info.services.length === 0 && <Typography sx={{ textAlign: 'center', color: '#A8A29E', py: 4 }}>אין שירותים זמינים כרגע</Typography>}
               {info.services.map((s) => (
                 <Box key={s.id} onClick={() => { setSelectedService(s); setStage(info.team && info.team.length > 0 ? 'staff' : 'slot'); }}
-                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 3.5, p: 2.5, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', border: '1.5px solid #F0EDFA', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: accent, transform: 'translateY(-3px)', boxShadow: `0 14px 32px ${accent}26` }, '&:active': { transform: 'translateY(-1px)' } }}>
-                  <Box sx={{ width: 52, height: 52, borderRadius: 2.5, background: `linear-gradient(135deg, ${accent}1A, ${accent}0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>✂️</Box>
+                  sx={{ cursor: 'pointer', bgcolor: '#fff', borderRadius: 4, p: 2.5, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', border: '1px solid rgba(16,24,40,0.05)', transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: `${accent}55`, transform: 'translateY(-4px)', boxShadow: `0 20px 44px ${accent}2A` }, '&:active': { transform: 'translateY(-1px) scale(0.99)' } }}>
+                  <Box sx={{ width: 56, height: 56, borderRadius: 3, background: `linear-gradient(135deg, ${accent}22, ${accent}0A)`, border: `1px solid ${accent}1F`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>✂️</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{ fontSize: 16.5, fontWeight: 800, color: '#1C1917', letterSpacing: '-0.01em' }}>{s.name}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, mt: 0.4 }}>
@@ -476,7 +478,7 @@ export default function PublicBookingPage() {
                 <Typography sx={{ fontSize: 17, fontWeight: 800, color: '#1C1917', mb: 1.5, letterSpacing: '-0.01em' }}>{info.branding.galleryTitle || 'הגלריה שלנו'}</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
                   {info.branding.gallery.map((img, i) => (
-                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', borderRadius: 2.5, overflow: 'hidden', aspectRatio: '1', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
+                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', borderRadius: 2.5, overflow: 'hidden', aspectRatio: '1', boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
                       <Box component="img" src={img} sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </Box>
                   ))}
@@ -487,7 +489,7 @@ export default function PublicBookingPage() {
             {/* Opening hours */}
             {info.hours && (
               <Box sx={{ mt: 4, bgcolor: '#fff', borderRadius: 3.5, p: 2.75, border: '1.5px solid #F0EDFA', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#1C1917', mb: 1.5 }}>🕐 שעות פתיחה</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 900, color: '#171412', letterSpacing: '-0.01em', mb: 1.5 }}>🕐 שעות פתיחה</Typography>
                 {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((dayName, i) => {
                   const d = info.hours?.[i];
                   const todayDow = new Date().getDay();
@@ -523,7 +525,7 @@ export default function PublicBookingPage() {
         {stage === 'staff' && selectedService && info.team && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Button onClick={() => setStage('service')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה לשירותים</Button>
-            <Typography sx={{ fontSize: 19, fontWeight: 800, color: '#1C1917', mb: 2 }}>עם מי תרצו?</Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#171412', letterSpacing: '-0.025em', mb: 2.25 }}>עם מי תרצו?</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {/* Any available */}
               <Box onClick={() => { setSelectedStaff(null); setStage('slot'); }}
@@ -555,12 +557,12 @@ export default function PublicBookingPage() {
         {stage === 'slot' && selectedService && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Button onClick={() => setStage(info.team && info.team.length > 0 ? 'staff' : 'service')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה</Button>
-            <Box sx={{ bgcolor: `${accent}10`, borderRadius: 1.5, px: 2, py: 1.25, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ bgcolor: '#fff', border: `1px solid ${accent}30`, borderRadius: 99, px: 2.25, py: 1.15, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
               <Typography sx={{ fontSize: 13, fontWeight: 700, color: accentDark }}>✂️ {selectedService.name}</Typography>
               <Typography sx={{ fontSize: 12, color: '#78716C' }}>· {selectedService.duration} דק'</Typography>
               {selectedStaff && <Typography sx={{ fontSize: 12, fontWeight: 700, color: accentDark }}>· 👤 {selectedStaff.name}</Typography>}
             </Box>
-            <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#1C1917', mb: 1.5 }}>בחרו יום</Typography>
+            <Typography sx={{ fontSize: 17, fontWeight: 900, color: '#171412', letterSpacing: '-0.01em', mb: 1.5 }}>בחרו יום</Typography>
             <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1.5, mb: 1, '&::-webkit-scrollbar': { height: 0 } }}>
               {days.map((d, i) => {
                 const dateObj = new Date(d);
@@ -568,7 +570,7 @@ export default function PublicBookingPage() {
                 const active = d === selectedDate;
                 return (
                   <Box key={d} onClick={() => has && (setSelectedDate(d), setSelectedTime(''))}
-                    sx={{ cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.35, minWidth: 58, textAlign: 'center', py: 1.5, borderRadius: 1.5, bgcolor: active ? accent : '#fff', color: active ? '#fff' : '#1C1917', boxShadow: active ? `0 4px 14px ${accent}44` : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', flexShrink: 0 }}>
+                    sx={{ cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.32, minWidth: 62, textAlign: 'center', py: 1.6, borderRadius: 2.75, background: active ? `linear-gradient(155deg, ${accent}, ${accentDark})` : '#fff', color: active ? '#fff' : '#1C1917', border: active ? 'none' : '1px solid rgba(16,24,40,0.06)', boxShadow: active ? `0 10px 26px ${accent}55` : '0 1px 2px rgba(16,24,40,0.04)', transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)', transform: active ? 'translateY(-2px)' : 'none', flexShrink: 0 }}>
                     <Typography sx={{ fontSize: 10.5, fontWeight: 600, opacity: 0.7 }}>{i === 0 ? 'היום' : i === 1 ? 'מחר' : HEBREW_DAYS_SHORT[dateObj.getDay()]}</Typography>
                     <Typography sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1.2 }}>{dateObj.getDate()}</Typography>
                     <Typography sx={{ fontSize: 9.5, opacity: 0.6 }}>{HEBREW_MONTHS[dateObj.getMonth()].slice(0, 3)}</Typography>
@@ -578,11 +580,11 @@ export default function PublicBookingPage() {
             </Box>
             {selectedDate && (
               <Box sx={{ mt: 2 }}>
-                <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#1C1917', mb: 1.5 }}>שעות פנויות</Typography>
+                <Typography sx={{ fontSize: 17, fontWeight: 900, color: '#171412', letterSpacing: '-0.01em', mb: 1.5 }}>שעות פנויות</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
                   {freeSlots(selectedDate).map((t) => (
                     <Box key={t} onClick={() => { setSelectedTime(t); setStage('details'); }}
-                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.5, borderRadius: 2.5, bgcolor: '#fff', border: `1.5px solid #F0EDFA`, fontWeight: 800, fontSize: 15, color: '#1C1917', transition: 'all 0.15s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 1px 4px rgba(0,0,0,0.03)', '&:hover': { borderColor: accent, bgcolor: accent, color: '#fff', transform: 'scale(1.06)', boxShadow: `0 8px 20px ${accent}33` } }}>{t}</Box>
+                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.65, borderRadius: 3, bgcolor: '#fff', border: '1px solid rgba(16,24,40,0.07)', fontWeight: 900, fontSize: 15.5, letterSpacing: '0.01em', color: '#171412', transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 1px 2px rgba(16,24,40,0.04)', '&:hover': { border: '1px solid transparent', background: `linear-gradient(155deg, ${accent}, ${accentDark})`, color: '#fff', transform: 'translateY(-3px) scale(1.05)', boxShadow: `0 14px 30px ${accent}4D` } }}>{t}</Box>
                   ))}
                   {freeSlots(selectedDate).length === 0 && (
                     <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 3 }}>
@@ -604,7 +606,7 @@ export default function PublicBookingPage() {
         {stage === 'details' && selectedService && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             <Button onClick={() => setStage('slot')} sx={{ color: '#A8A29E', mb: 1, fontWeight: 600, minWidth: 'auto', p: 0 }}>‹ חזרה למועד</Button>
-            <Typography sx={{ fontSize: 19, fontWeight: 800, color: '#1C1917', mb: 2 }}>כמעט סיימנו!</Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#171412', letterSpacing: '-0.025em', mb: 2.25 }}>כמעט סיימנו!</Typography>
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, mb: 1.5, borderBottom: '1px solid #F5F3F0' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917' }}>{selectedService.name}</Typography>
@@ -682,7 +684,7 @@ export default function PublicBookingPage() {
         {stage === 'done' && (
           <Box sx={{ textAlign: 'center', py: 5, animation: 'fadeIn 0.5s' }}>
             <Box sx={{ width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 8px 30px ${accent}55`, animation: 'pop 0.5s' }}>✓</Box>
-            <Typography sx={{ fontSize: 28, fontWeight: 900, color: '#1C1917', mb: 1 }}>{info.branding.approvalMode === 'manual' ? 'הבקשה נשלחה! ⏳' : 'התור נקבע! 🎉'}</Typography>
+            <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#171412', letterSpacing: '-0.03em', mb: 1 }}>{info.branding.approvalMode === 'manual' ? 'הבקשה נשלחה! ⏳' : 'התור נקבע! 🎉'}</Typography>
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mt: 3, mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', textAlign: 'right' }}>
               <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917', mb: 1 }}>{selectedService?.name}</Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
@@ -746,11 +748,12 @@ export default function PublicBookingPage() {
         {tab === 'home' && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             {/* Hero */}
-            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', mb: 2.5, minHeight: 190, background: (info.branding.banner || info.branding.gallery?.[0]) ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+            <Box sx={{ position: 'relative', borderRadius: 4.5, overflow: 'hidden', mb: 2.5, minHeight: 254, background: (info.branding.banner || info.branding.gallery?.[0]) ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
               {(info.branding.banner || info.branding.gallery?.[0]) && <Box component="img" src={info.branding.banner || info.branding.gallery?.[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
-              <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.62) 100%)' }} />
-              <Box sx={{ position: 'relative', p: 2.5, pt: 9, color: '#fff' }}>
-                <Typography sx={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.4)' }}>
+              <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,6,18,0.02) 16%, rgba(10,6,18,0.5) 58%, rgba(10,6,18,0.84) 100%)' }} />
+              <Box sx={{ position: 'relative', p: 2.75, pt: 12, color: '#fff' }}>
+                <Typography sx={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.28em', opacity: 0.75, mb: 0.75 }}>{(info.businessName || '').toUpperCase()}</Typography>
+                <Typography sx={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.08, textShadow: '0 3px 16px rgba(0,0,0,0.45)' }}>
                   {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
                 </Typography>
                 <Typography sx={{ fontSize: 13.5, opacity: 0.92, mt: 0.25 }}>{me ? 'טוב לראות אותך שוב' : 'קובעים תור בשניות, בלי טלפונים'}</Typography>
@@ -760,13 +763,13 @@ export default function PublicBookingPage() {
                     <Typography sx={{ fontSize: 12, fontWeight: 700 }}>{dh.open ? `פתוח היום עד ${dh.end}` : 'סגור היום'}</Typography>
                   </Box>
                 ); })()}
-                <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 1.75, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 3.5, py: 1.1, borderRadius: 99, fontSize: 14.5, boxShadow: '0 8px 24px rgba(0,0,0,0.3)', '&:hover': { bgcolor: '#fff' } }}>📅 הזמנת תור</Button>
+                <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 2, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 4, py: 1.35, borderRadius: 99, fontSize: 15, letterSpacing: '-0.01em', boxShadow: '0 14px 36px rgba(0,0,0,0.35)', transition: 'all 0.2s', '&:hover': { bgcolor: '#fff', transform: 'translateY(-2px)', boxShadow: '0 20px 44px rgba(0,0,0,0.4)' }, '&:active': { transform: 'scale(0.97)' } }}>📅 הזמנת תור</Button>
               </Box>
             </Box>
 
             {/* Join the club */}
             {!me && (
-              <Box onClick={() => setTab('profile')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', border: `1.5px solid ${accent}33`, borderRadius: 3, p: 2, mb: 2.5, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <Box onClick={() => setTab('profile')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', border: `1.5px solid ${accent}33`, borderRadius: 3, p: 2, mb: 2.5, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                 <Box sx={{ width: 42, height: 42, borderRadius: '50%', bgcolor: `${accent}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>👤</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 14.5, fontWeight: 800, color: '#1C1917' }}>הצטרפו לאפליקציה של {info.businessName}</Typography>
@@ -779,10 +782,10 @@ export default function PublicBookingPage() {
             {/* My upcoming appointments */}
             {myUpcoming.length > 0 && (
               <Box sx={{ mb: 2.5 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>התורים הקרובים שלך</Typography>
+                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>התורים הקרובים שלך</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {myUpcoming.map((b, i) => (
-                    <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                    <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                       <Box sx={{ textAlign: 'center', bgcolor: `${accent}12`, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 62 }}>
                         <Typography sx={{ fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1.1 }}>{b.time}</Typography>
                         <Typography sx={{ fontSize: 10.5, color: accent, opacity: 0.8 }}>{b.date?.slice(5).split('-').reverse().join('/')}</Typography>
@@ -799,12 +802,12 @@ export default function PublicBookingPage() {
             {(info.branding.gallery || []).length > 0 && (
               <Box sx={{ mb: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C' }}>{info.branding.galleryTitle || 'העבודות שלנו'}</Typography>
+                  <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>{info.branding.galleryTitle || 'העבודות שלנו'}</Typography>
                   <Typography onClick={() => setTab('gallery')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הצג הכל ←</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
                   {(info.branding.gallery || []).slice(0, 10).map((img: string, i: number) => (
-                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', flexShrink: 0, width: 74, height: 74, borderRadius: '50%', p: '3px', background: `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+                    <Box key={i} onClick={() => setLightbox(img)} sx={{ cursor: 'pointer', flexShrink: 0, width: 82, height: 82, borderRadius: '50%', p: '3px', background: `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
                       <Box component="img" src={img} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #fff' }} />
                     </Box>
                   ))}
@@ -815,12 +818,12 @@ export default function PublicBookingPage() {
             {/* Our team */}
             {(info.team || []).length > 0 && (
               <Box sx={{ mb: 2.5 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>✂️ הצוות שלנו</Typography>
+                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>✂️ הצוות שלנו</Typography>
                 <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
                   {(info.team || []).map((m) => (
-                    <Box key={m.id} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', flexShrink: 0, width: 118, bgcolor: '#fff', borderRadius: 3.5, p: 1.5, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', transition: 'transform 0.15s', '&:active': { transform: 'scale(0.97)' } }}>
+                    <Box key={m.id} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', flexShrink: 0, width: 128, bgcolor: '#fff', borderRadius: 4.5, p: 1.75, textAlign: 'center', boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', transition: 'transform 0.15s', '&:active': { transform: 'scale(0.97)' } }}>
                       {m.photo ? (
-                        <Box component="img" src={m.photo} sx={{ width: 76, height: 76, borderRadius: '50%', objectFit: 'cover', mb: 1, border: `2.5px solid ${accent}30` }} />
+                        <Box component="img" src={m.photo} sx={{ width: 86, height: 86, borderRadius: '50%', objectFit: 'cover', mb: 1, border: '3px solid #fff', boxShadow: `0 0 0 2.5px ${accent}66, 0 8px 18px rgba(16,24,40,0.14)` }} />
                       ) : (
                         <Box sx={{ width: 76, height: 76, borderRadius: '50%', mx: 'auto', mb: 1, background: `linear-gradient(135deg, ${accent}25, ${accent}45)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 900, color: accentDark }}>{(m.name || '?').charAt(0)}</Box>
                       )}
@@ -837,10 +840,10 @@ export default function PublicBookingPage() {
             {(info.services || []).length > 0 && (
               <Box sx={{ mb: 2.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C' }}>💅 השירותים והמחירים</Typography>
+                  <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>💅 השירותים והמחירים</Typography>
                   {(info.services || []).length > 5 && <Typography onClick={() => setTab('book')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הכל ←</Typography>}
                 </Box>
-                <Box sx={{ bgcolor: '#fff', borderRadius: 3.5, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                <Box sx={{ bgcolor: '#fff', borderRadius: 3.5, overflow: 'hidden', boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                   {(info.services || []).slice(0, 5).map((sv, i) => (
                     <Box key={sv.id || i} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.6, borderBottom: i < Math.min((info.services || []).length, 5) - 1 ? '1px solid #F5F5F4' : 'none', '&:active': { bgcolor: '#FAFAF9' } }}>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -858,7 +861,7 @@ export default function PublicBookingPage() {
             {/* Products shelf */}
             {(info.branding.products || []).length > 0 && (
               <Box sx={{ mb: 2.5 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>🛍️ המוצרים שלנו</Typography>
+                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>🛍️ המוצרים שלנו</Typography>
                 <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
                   {(info.branding.products || []).map((pr, i) => (
                     <Box key={i} sx={{ flexShrink: 0, width: 150, bgcolor: '#fff', borderRadius: 3, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
@@ -904,7 +907,7 @@ export default function PublicBookingPage() {
                 <Button href={`https://wa.me/${info.branding.phone.replace(/\D/g, '').replace(/^0/, '972')}`} target="_blank" fullWidth sx={{ bgcolor: '#fff', color: '#1EA952', fontWeight: 800, borderRadius: 3, py: 1.4, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>💬 וואטסאפ</Button>
               </Box>
             )}
-            <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, mb: 2, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+            <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, mb: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
               <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#78716C', mb: 1.25 }}>🕐 שעות פעילות</Typography>
               {[0, 1, 2, 3, 4, 5, 6].map((d) => {
                 const dh = info.hours?.[d];
@@ -917,7 +920,7 @@ export default function PublicBookingPage() {
               })}
             </Box>
             {info.branding.policyOn && info.branding.policyText && (
-              <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2.25, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                 <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: '#78716C', mb: 1 }}>📋 תקנון</Typography>
                 <Typography sx={{ fontSize: 13, color: '#57534E', whiteSpace: 'pre-line', lineHeight: 1.7 }}>{info.branding.policyText}</Typography>
               </Box>
@@ -930,7 +933,7 @@ export default function PublicBookingPage() {
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             {me ? (
               <>
-                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, textAlign: 'center', boxShadow: '0 1px 6px rgba(0,0,0,0.05)', mb: 2 }}>
+                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, textAlign: 'center', boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', mb: 2 }}>
                   <Box sx={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 30, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>{(me.name || '?').charAt(0)}</Box>
                   <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917' }}>{me.name}</Typography>
                   <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 0.25 }}>{me.phone}</Typography>
@@ -938,9 +941,9 @@ export default function PublicBookingPage() {
                 </Box>
                 {myUpcoming.length > 0 && (
                   <Box sx={{ mb: 2 }}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#78716C', mb: 1 }}>התורים הקרובים שלך</Typography>
+                    <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>התורים הקרובים שלך</Typography>
                     {myUpcoming.map((b, i) => (
-                      <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, mb: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                      <Box key={i} onClick={() => { window.location.href = `/manage/${bizId}/${b.token}`; }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: '#fff', borderRadius: 3, p: 1.75, mb: 1, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                         <Box sx={{ textAlign: 'center', bgcolor: `${accent}12`, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 62 }}>
                           <Typography sx={{ fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1.1 }}>{b.time}</Typography>
                           <Typography sx={{ fontSize: 10.5, color: accent, opacity: 0.8 }}>{b.date?.slice(5).split('-').reverse().join('/')}</Typography>
@@ -955,7 +958,7 @@ export default function PublicBookingPage() {
                 <Button onClick={() => { try { localStorage.removeItem(`zk_cust_${bizId}`); } catch { /* ignore */ } setMe(null); setMyUpcoming([]); }} fullWidth sx={{ color: '#A8A29E', fontWeight: 700 }}>התנתקות מהמכשיר הזה</Button>
               </>
             ) : (
-              <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
+              <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
                 <Box sx={{ textAlign: 'center', mb: 2.5 }}>
                   <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: `${accent}12`, fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>👤</Box>
                   <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917' }}>הצטרפות לאפליקציה</Typography>
@@ -981,7 +984,7 @@ export default function PublicBookingPage() {
       <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
 
       {/* ════════ Bottom app navigation ════════ */}
-      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, bgcolor: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid #EEECF3', display: 'flex', justifyContent: 'space-around', pt: 0.75, pb: 'calc(8px + env(safe-area-inset-bottom))' }}>
+      <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(24px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.9)', borderRadius: 99, boxShadow: '0 18px 48px rgba(16,24,40,0.18), 0 2px 10px rgba(16,24,40,0.07)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
         {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
           t === '__book__' ? (
             <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : '#fff'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>

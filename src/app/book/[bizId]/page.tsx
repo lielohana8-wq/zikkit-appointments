@@ -315,7 +315,7 @@ export default function PublicBookingPage() {
           ) : (
             <Box sx={{ width: 112, height: 112, borderRadius: '50%', mx: 'auto', mb: 2.25, bgcolor: 'rgba(255,255,255,0.12)', fontSize: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'gatePop 0.5s' }}>✂️</Box>
           )}
-          <Typography sx={{ fontSize: 34, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, textShadow: '0 3px 18px rgba(0,0,0,0.5)', animation: 'gateUp 0.55s 0.08s both' }}>{info.businessName}</Typography>
+          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 30, fontWeight: 600, color: '#fff', letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1.2, textShadow: '0 3px 18px rgba(0,0,0,0.55)', animation: 'gateUp 0.55s 0.08s both' }}>{info.businessName}</Typography>
           <Typography sx={{ fontSize: 13.5, color: 'rgba(255,255,255,0.72)', mt: 1, mb: 3, letterSpacing: '0.04em', animation: 'gateUp 0.55s 0.16s both' }}>· האפליקציה הרשמית ·</Typography>
 
           <Box sx={{ bgcolor: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(20px)', borderRadius: 5, p: 3, boxShadow: '0 30px 80px rgba(0,0,0,0.5)', textAlign: 'right', animation: 'gateUp 0.55s 0.24s both' }}>
@@ -336,7 +336,8 @@ export default function PublicBookingPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), linear-gradient(180deg, #FAF9F7 0%, #F3F1EE 100%)`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
-      <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }`}</style>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
 
@@ -367,46 +368,27 @@ export default function PublicBookingPage() {
         </Box>
       )}
 
-      {/* Hero header */}
-      <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-        {info.branding.banner ? (
-          <Box sx={{ height: 240, background: `url(${info.branding.banner}) center/cover`, position: 'relative' }}>
-            <Box sx={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.1))` }} />
-          </Box>
-        ) : (
-          <Box sx={{ height: 210, background: `linear-gradient(135deg, ${accent} 0%, ${accentDark} 100%)`, position: 'relative' }}>
-            <Box sx={{ position: 'absolute', top: -50, right: -40, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.1)' }} />
-            <Box sx={{ position: 'absolute', bottom: -70, left: -30, width: 180, height: 180, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.07)' }} />
-            <Box sx={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)', backgroundSize: '22px 22px', opacity: 0.5 }} />
-          </Box>
-        )}
-
-        {/* Logo + name card overlapping hero */}
-        <Box sx={{ maxWidth: 520, mx: 'auto', px: 2, mt: -9, position: 'relative', zIndex: 2 }}>
-          <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3.5, boxShadow: '0 16px 48px rgba(124,58,237,0.13)', textAlign: 'center', border: '1px solid #F0EDFA' }}>
-            {info.branding.logo ? (
-              <Box component="img" src={info.branding.logo} sx={{ width: 92, height: 92, borderRadius: '50%', objectFit: 'cover', mt: -9, mb: 1.5, border: '4px solid #fff', boxShadow: '0 8px 24px rgba(124,58,237,0.2)', mx: 'auto', display: 'block' }} />
-            ) : (
-              <Box sx={{ width: 92, height: 92, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 900, mt: -9, mb: 1.5, border: '4px solid #fff', boxShadow: '0 8px 24px rgba(124,58,237,0.25)', mx: 'auto' }}>{info.businessName[0]}</Box>
-            )}
-            <Typography sx={{ fontSize: 27, fontWeight: 900, color: '#1C1917', fontFamily: fontStack, letterSpacing: '-0.03em' }}>{info.businessName}</Typography>
-            {info.branding.welcomeText && <Typography sx={{ fontSize: 14.5, color: '#78716C', mt: 0.75, lineHeight: 1.5 }}>{info.branding.welcomeText}</Typography>}
-            {info.branding.promoOn && info.branding.promoText && (
-              <Box sx={{ mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 2.5, px: 2, py: 1.25, fontSize: 13.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, boxShadow: `0 6px 18px ${accent}33` }}>🔥 {info.branding.promoText}</Box>
-            )}
-            {/* Quick contact chips */}
-            {info.branding.phone && (
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 2, flexWrap: 'wrap' }}>
-                {info.branding.phone && <Box component="a" href={`tel:${info.branding.phone}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: `${accent}0D`, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 12.5, color: accentDark, fontWeight: 600, textDecoration: 'none' }}>📞 {info.branding.phone}</Box>}
-              </Box>
-            )}
-          </Box>
+      {/* ══ Luxury identity band ══ */}
+      <Box sx={{ background: 'linear-gradient(180deg, #0A0710 0%, #140E20 100%)', position: 'relative', overflow: 'hidden', textAlign: 'center', pt: 4, pb: 4.5, px: 2 }}>
+        <Box sx={{ position: 'absolute', inset: 0, background: `radial-gradient(640px 240px at 50% -30%, ${accent}55, transparent 70%)` }} />
+        <Box sx={{ position: 'relative' }}>
+          {info.branding.logo && (
+            <Box sx={{ width: 62, height: 62, borderRadius: '50%', mx: 'auto', mb: 1.75, p: '2.5px', background: 'linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,255,255,0.18))', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            </Box>
+          )}
+          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 23, fontWeight: 600, color: '#fff', letterSpacing: '0.22em', textTransform: 'uppercase', lineHeight: 1.25, px: 1 }}>{info.businessName}</Typography>
+          <Box sx={{ width: 44, height: 2, mx: 'auto', mt: 1.5, borderRadius: 99, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
+          {info.branding.welcomeText && <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.62)', mt: 1.5, maxWidth: 340, mx: 'auto', lineHeight: 1.6 }}>{info.branding.welcomeText}</Typography>}
+          {info.branding.promoOn && info.branding.promoText && (
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 99, px: 2.25, py: 0.9, fontSize: 13, fontWeight: 800, boxShadow: `0 10px 26px ${accent}55` }}>🔥 {info.branding.promoText}</Box>
+          )}
         </Box>
       </Box>
 
       <Box sx={{ maxWidth: 520, mx: 'auto', px: 2, mt: 3 }}>
         {/* Progress steps */}
-        {stage !== 'done' && (
+        {tab === 'book' && stage !== 'done' && (
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, mb: 3 }}>
             {[['service', 'שירות'], ['slot', 'מועד'], ['details', 'פרטים']].map(([s, label], i) => {
               const idx = ['service', 'slot', 'details'].indexOf(stage);
@@ -748,11 +730,11 @@ export default function PublicBookingPage() {
         {tab === 'home' && (
           <Box sx={{ animation: 'fadeIn 0.4s' }}>
             {/* Hero */}
-            <Box sx={{ position: 'relative', borderRadius: 4.5, overflow: 'hidden', mb: 2.5, minHeight: 254, background: (info.branding.banner || info.branding.gallery?.[0]) ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
+            <Box sx={{ position: 'relative', borderRadius: 4.5, overflow: 'hidden', mb: 2.5, minHeight: 292, background: (info.branding.banner || info.branding.gallery?.[0]) ? undefined : `linear-gradient(135deg, ${accent}, ${accentDark})` }}>
               {(info.branding.banner || info.branding.gallery?.[0]) && <Box component="img" src={info.branding.banner || info.branding.gallery?.[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
               <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,6,18,0.02) 16%, rgba(10,6,18,0.5) 58%, rgba(10,6,18,0.84) 100%)' }} />
               <Box sx={{ position: 'relative', p: 2.75, pt: 12, color: '#fff' }}>
-                <Typography sx={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.28em', opacity: 0.75, mb: 0.75 }}>{(info.businessName || '').toUpperCase()}</Typography>
+                <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.3em', opacity: 0.8, mb: 0.75 }}>{(info.businessName || '').toUpperCase()}</Typography>
                 <Typography sx={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.08, textShadow: '0 3px 16px rgba(0,0,0,0.45)' }}>
                   {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
                 </Typography>
@@ -984,16 +966,16 @@ export default function PublicBookingPage() {
       <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
 
       {/* ════════ Bottom app navigation ════════ */}
-      <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(24px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.9)', borderRadius: 99, boxShadow: '0 18px 48px rgba(16,24,40,0.18), 0 2px 10px rgba(16,24,40,0.07)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
+      <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: 'rgba(12,9,18,0.88)', backdropFilter: 'blur(24px) saturate(1.6)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
         {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
           t === '__book__' ? (
-            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : '#fff'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
+            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : 'rgba(255,255,255,0.9)'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
               {info.branding.logo ? <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.18)' }} /> : <Box sx={{ fontSize: 24, color: '#fff' }}>📅</Box>}
             </Box>
           ) : (
           <Box key={t} onClick={() => { setTab(t as 'home' | 'gallery' | 'profile' | 'info'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 1.5, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>
             <Box sx={{ fontSize: 21, filter: tab === t ? 'none' : 'grayscale(60%)', opacity: tab === t ? 1 : 0.55, transform: tab === t ? 'translateY(-1px)' : 'none', transition: 'all 0.2s' }}>{icon}</Box>
-            <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? accent : '#A8A29E', mt: 0.1 }}>{label}</Typography>
+            <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? '#fff' : 'rgba(255,255,255,0.48)', mt: 0.1 }}>{label}</Typography>
           </Box>
           )
         ))}

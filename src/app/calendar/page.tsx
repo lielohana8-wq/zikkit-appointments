@@ -371,7 +371,6 @@ export default function CalendarPage() {
                   return (
                     <Box key={b.id}
                       onClick={(e) => { e.stopPropagation(); if (justResized.current) { justResized.current = false; return; } openEdit(b); }}
-                      onPointerDown={(e) => { if ((e.target as HTMLElement).closest('.rzone')) return; setMove({ id: b.id, startY: e.clientY, orig: toMin(b.time), min: toMin(b.time), started: false }); }}
                       sx={{ position: 'absolute', top: ((st - START) / 60) * HOUR_PX + 1, right: `calc(${(lane * 100) / laneCount}% + 3px)`, width: `calc(${100 / laneCount}% - 6px)`, height: h, zIndex: move?.id === b.id ? 5 : 2, cursor: move?.id === b.id && move.started ? 'grabbing' : 'pointer', overflow: 'hidden', touchAction: 'none',
                         bgcolor: blocked ? c.surface3 : `${col}14`, opacity: blocked ? 0.8 : 1, boxShadow: blocked ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
                         border: blocked ? `1.5px dashed ${c.border}` : b.status === 'pending' ? '1.5px solid #F59E0B' : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
@@ -379,14 +378,6 @@ export default function CalendarPage() {
                       <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{liveTime} · {liveDur} דק'{resize?.id === b.id ? ' ↕' : ''}{move?.id === b.id && move.started ? ' ✥' : ''}</Typography>
                       <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                       {h > 48 && <Typography sx={{ fontSize: 10.5, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || (blocked ? '' : 'טיפול')}{!blocked && b.source === 'dana' ? ' · 🎙️ דנה' : ''}{!blocked && b.source === 'online' ? ' · 🔗' : ''}</Typography>}
-                      {/* drag-to-resize handle */}
-                      <Box
-                        onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); setResize({ id: b.id, startY: e.clientY, orig: b.duration || 30, dur: b.duration || 30 }); }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="rzone"
-                        sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 14, cursor: 'ns-resize', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', pb: '2px', touchAction: 'none', '&:hover .rz': { opacity: 1 } }}>
-                        <Box className="rz" sx={{ width: 34, height: 4, borderRadius: 99, bgcolor: blocked ? c.text3 : col, opacity: resize?.id === b.id ? 1 : 0.45, transition: 'opacity 0.15s' }} />
-                      </Box>
                     </Box>
                   );
                 })}

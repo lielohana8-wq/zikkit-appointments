@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   const bizId = req.nextUrl.searchParams.get('bizId') || '';
   if (!bizId) return new NextResponse('missing bizId', { status: 400 });
   const biz = await getBiz(bizId);
-  const logo = ((biz?.booking as Record<string, unknown>)?.logo as string) || '';
+  const bookingCfg = (biz?.booking as Record<string, unknown>) || {};
+  const logo = (bookingCfg.appIcon as string) || (bookingCfg.logo as string) || '';
   const m = logo.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
   if (!m) {
     // Fallback: redirect to the Zikkit icon

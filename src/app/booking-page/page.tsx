@@ -63,6 +63,23 @@ export default function BookingPageSettings() {
     } finally { setAiLoading(false); }
   };
 
+  // Self-heal: generate the square app icon for logos uploaded before this feature
+  useEffect(() => {
+    if (!b?.logo || b.appIcon) return;
+    const img = new Image();
+    img.onload = () => {
+      const icon = document.createElement('canvas');
+      icon.width = 512; icon.height = 512;
+      const ictx = icon.getContext('2d');
+      if (!ictx) return;
+      const side = Math.min(img.width, img.height);
+      ictx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 512, 512);
+      set('appIcon', icon.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = b.logo;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [b?.logo, b?.appIcon]);
+
   const handleImage = (field: 'logo' | 'banner', maxW: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -75,6 +92,20 @@ export default function BookingPageSettings() {
         canvas.width = img.width * scale; canvas.height = img.height * scale;
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
         set(field, canvas.toDataURL('image/jpeg', 0.7));
+        // The app icon must be a perfect square that FILLS the home-screen tile:
+        // center cover-crop of the logo at 512x512 — no white bars, ever.
+        if (field === 'logo') {
+          const icon = document.createElement('canvas');
+          icon.width = 512; icon.height = 512;
+          const ictx = icon.getContext('2d');
+          if (ictx) {
+            const side = Math.min(img.width, img.height);
+            const sx = (img.width - side) / 2;
+            const sy = (img.height - side) / 2;
+            ictx.drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+            set('appIcon', icon.toDataURL('image/jpeg', 0.82));
+          }
+        }
       };
       img.src = reader.result as string;
     };

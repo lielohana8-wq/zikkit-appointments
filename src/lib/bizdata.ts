@@ -312,6 +312,7 @@ export async function deleteService(bizId: string, id: string): Promise<void> {
 // ---------- Booking page branding ----------
 export interface BookingBranding {
   appName?: string;             // the name shown under the home-screen icon
+  appIcon?: string;             // square 512 icon generated from the logo (fills the tile, no bars)
   requireRegistration?: boolean; // customers must join before using the app (default: on)
   bookingWindowDays?: number;   // how many days ahead customers can book (default 14)
   slotMode?: 'interval' | 'packed'; // packed = slots chain to booking edges (zero dead time)

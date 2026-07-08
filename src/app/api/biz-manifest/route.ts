@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const name = (booking.appName as string) || (cfg.biz_name as string) || 'הזמנת תור';
   const accent = (booking.accentColor as string) || '#7C3AED';
   const hasLogo = !!booking.logo;
-  const iconUrl = hasLogo ? `/api/biz-icon?bizId=${bizId}` : '/icon-512.png';
+  const iconUrl = hasLogo ? `/api/biz-icon?bizId=${bizId}&v=${(booking.appIconV as number) || 1}` : '/icon-512.png';
   return NextResponse.json({
     name,
     short_name: name,

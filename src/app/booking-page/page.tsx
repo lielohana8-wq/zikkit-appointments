@@ -74,7 +74,7 @@ export default function BookingPageSettings() {
       if (!ictx) return;
       const side = Math.min(img.width, img.height);
       ictx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 512, 512);
-      set('appIcon', icon.toDataURL('image/jpeg', 0.82));
+      set('appIcon', icon.toDataURL('image/jpeg', 0.82)); set('appIconV', Date.now());
     };
     img.src = b.logo;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +97,7 @@ export default function BookingPageSettings() {
         const w = img.width * scale; const h = img.height * scale;
         ctx.drawImage(img, (512 - w) / 2, (512 - h) / 2, w, h);
       }
-      set('appIcon', cv.toDataURL('image/jpeg', 0.85));
+      set('appIcon', cv.toDataURL('image/jpeg', 0.85)); set('appIconV', Date.now());
     };
     img.src = b.logo;
   };
@@ -125,7 +125,7 @@ export default function BookingPageSettings() {
             const sx = (img.width - side) / 2;
             const sy = (img.height - side) / 2;
             ictx.drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
-            set('appIcon', icon.toDataURL('image/jpeg', 0.82));
+            set('appIcon', icon.toDataURL('image/jpeg', 0.82)); set('appIconV', Date.now());
           }
         }
       };

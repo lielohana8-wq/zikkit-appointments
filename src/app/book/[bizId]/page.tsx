@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -60,8 +60,8 @@ export default function PublicBookingPage() {
       if (!el) { el = document.createElement('link'); el.rel = rel; document.head.appendChild(el); }
       el.href = href;
     };
-    setLink('manifest', `/api/biz-manifest?bizId=${bizId}`);
-    setLink('apple-touch-icon', `/api/biz-icon?bizId=${bizId}`);
+    setLink('manifest', `/api/biz-manifest?bizId=${bizId}&v=${info.branding.iconV || 1}`);
+    setLink('apple-touch-icon', `/api/biz-icon?bizId=${bizId}&v=${info.branding.iconV || 1}`);
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement('meta'); el.name = name; document.head.appendChild(el); }
@@ -739,12 +739,21 @@ export default function PublicBookingPage() {
                   {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
                 </Typography>
                 <Typography sx={{ fontSize: 13.5, opacity: 0.92, mt: 0.25 }}>{me ? 'טוב לראות אותך שוב' : 'קובעים תור בשניות, בלי טלפונים'}</Typography>
-                {(() => { const dh = info.hours?.[new Date().getDay()]; if (!dh) return null; return (
-                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)', borderRadius: 99, px: 1.5, py: 0.5, mt: 1.25 }}>
-                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dh.open ? '#4ADE80' : '#F87171' }} />
-                    <Typography sx={{ fontSize: 12, fontWeight: 700 }}>{dh.open ? `פתוח היום עד ${dh.end}` : 'סגור היום'}</Typography>
-                  </Box>
-                ); })()}
+                {(() => {
+                  const dh = info.hours?.[new Date().getDay()]; if (!dh) return null;
+                  const now = new Date(); const nowM = now.getHours() * 60 + now.getMinutes();
+                  const tm = (t: string) => { const [h, mm] = t.split(':').map(Number); return h * 60 + (mm || 0); };
+                  const state = !dh.open ? { c: '#F87171', t: 'סגור היום' }
+                    : nowM < tm(dh.start) ? { c: '#FBBF24', t: `נפתח היום ב-${dh.start}` }
+                    : nowM < tm(dh.end) ? { c: '#4ADE80', t: `פתוח עכשיו · עד ${dh.end}` }
+                    : { c: '#F87171', t: 'סגור עכשיו' };
+                  return (
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(8px)', borderRadius: 99, px: 1.5, py: 0.5, mt: 1.25 }}>
+                      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: state.c }} />
+                      <Typography sx={{ fontSize: 12, fontWeight: 700 }}>{state.t}</Typography>
+                    </Box>
+                  );
+                })()}
                 <Button onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ mt: 2, bgcolor: '#fff', color: accentDark, fontWeight: 900, px: 4, py: 1.35, borderRadius: 99, fontSize: 15, letterSpacing: '-0.01em', boxShadow: '0 14px 36px rgba(0,0,0,0.35)', transition: 'all 0.2s', '&:hover': { bgcolor: '#fff', transform: 'translateY(-2px)', boxShadow: '0 20px 44px rgba(0,0,0,0.4)' }, '&:active': { transform: 'scale(0.97)' } }}>📅 הזמנת תור</Button>
               </Box>
             </Box>

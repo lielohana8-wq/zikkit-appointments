@@ -13,12 +13,13 @@ export async function generateMetadata({ params }: { params: { bizId: string } }
     const booking = (biz?.booking as Record<string, unknown>) || {};
     const cfg = (biz?.cfg as Record<string, unknown>) || {};
     const name = (booking.appName as string) || (cfg.biz_name as string) || 'הזמנת תור';
+    const v = (booking.appIconV as number) || 1;
     return {
       title: name,
       applicationName: name,
-      manifest: `/api/biz-manifest?bizId=${params.bizId}`,
+      manifest: `/api/biz-manifest?bizId=${params.bizId}&v=${v}`,
       appleWebApp: { capable: true, title: name, statusBarStyle: 'default' },
-      icons: { apple: `/api/biz-icon?bizId=${params.bizId}` },
+      icons: { apple: `/api/biz-icon?bizId=${params.bizId}&v=${v}` },
     };
   } catch {
     return { title: 'הזמנת תור' };

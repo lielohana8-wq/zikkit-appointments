@@ -99,6 +99,7 @@ export async function GET(req: NextRequest) {
         bookingWindowDays: (booking.bookingWindowDays as number) || 14,
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         requireRegistration: booking.requireRegistration !== false,
+        iconV: (booking.appIconV as number) || 1,
         approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
         policyOn: booking.policyOn === true,
         policyText: booking.policyText || '',

@@ -350,7 +350,7 @@ export default function PublicBookingPage() {
     <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), ${th.pageBase}`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
         @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }`}</style>
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }\n        @keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
 
       {/* Announcement banner */}
@@ -413,7 +413,7 @@ export default function PublicBookingPage() {
               return (
                 <Box key={s} sx={{ display: 'flex', alignItems: 'center' }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, bgcolor: done || active ? accent : '#E7E5E4', color: done || active ? '#fff' : '#A8A29E', transition: 'all 0.3s' }}>{done ? '✓' : i + 1}</Box>
+                    <Box sx={{ width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13.5, fontWeight: 900, background: done || active ? `linear-gradient(140deg, ${accent}, ${accentDark})` : '#EBE9E6', color: done || active ? '#fff' : '#A8A29E', boxShadow: active ? `0 0 0 5px ${accent}22, 0 8px 20px ${accent}44` : 'none', transform: active ? 'scale(1.08)' : 'none', transition: 'all 0.35s cubic-bezier(0.16,1,0.3,1)' }}>{done ? '✓' : i + 1}</Box>
                     <Typography sx={{ fontSize: 11, fontWeight: 600, color: active ? accent : '#A8A29E' }}>{label}</Typography>
                   </Box>
                   {i < 2 && <Box sx={{ width: 32, height: 2, bgcolor: done ? accent : '#E7E5E4', mx: 0.5, mb: 2.5, transition: 'all 0.3s' }} />}
@@ -528,8 +528,8 @@ export default function PublicBookingPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {/* Any available */}
               <Box onClick={() => { setSelectedStaff(null); setStage('slot'); }}
-                sx={{ cursor: 'pointer', border: `1.5px solid ${accent}33`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': { borderColor: accent, bgcolor: `${accent}08` } }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>👥</Box>
+                sx={{ cursor: 'pointer', bgcolor: '#fff', border: `1px solid ${accent}30`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: accent, transform: 'translateY(-3px)', boxShadow: `0 18px 40px ${accent}26` } }}>
+                <Box sx={{ width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}22, ${accent}0D)`, border: `1px solid ${accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>⚡</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: '#1C1917' }}>הראשון שפנוי</Typography>
                   <Typography sx={{ fontSize: 12.5, color: '#78716C' }}>ללא העדפה — התור המוקדם ביותר</Typography>
@@ -538,14 +538,15 @@ export default function PublicBookingPage() {
               {/* Staff who provide this service (or all if none specified) */}
               {info.team.filter((m) => !m.services?.length || m.services.includes(selectedService.name)).map((m) => (
                 <Box key={m.id} onClick={() => { setSelectedStaff(m); setStage('slot'); }}
-                  sx={{ cursor: 'pointer', border: '1.5px solid #E7E5E4', borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': { borderColor: accent, bgcolor: `${accent}08` } }}>
+                  sx={{ cursor: 'pointer', bgcolor: '#fff', border: '1px solid rgba(16,24,40,0.06)', borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: `${accent}55`, transform: 'translateY(-3px)', boxShadow: `0 18px 40px ${accent}26` } }}>
                   {m.photo
-                    ? <Box component="img" src={m.photo} sx={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
-                    : <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{m.name?.[0] || '?'}</Box>}
+                    ? <Box component="img" src={m.photo} sx={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #fff', boxShadow: `0 0 0 2px ${accent}55, 0 6px 14px rgba(16,24,40,0.14)` }} />
+                    : <Box sx={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 22 }}>{m.name?.[0] || '?'}</Box>}
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: '#1C1917' }}>{m.name}</Typography>
                     {m.role && <Typography sx={{ fontSize: 12.5, color: '#78716C' }}>{m.role}</Typography>}
                   </Box>
+                  <Typography sx={{ color: accent, fontSize: 18, fontWeight: 900 }}>‹</Typography>
                 </Box>
               ))}
             </Box>
@@ -682,9 +683,13 @@ export default function PublicBookingPage() {
 
         {stage === 'done' && (
           <Box sx={{ textAlign: 'center', py: 5, animation: 'fadeIn 0.5s' }}>
-            <Box sx={{ width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 8px 30px ${accent}55`, animation: 'pop 0.5s' }}>✓</Box>
+            <Box sx={{ position: 'relative', width: 130, height: 130, mx: 'auto', mb: 3 }}>
+              <Box sx={{ position: 'absolute', inset: -26, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30, transparent 68%)` }} />
+              <Box sx={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px dashed ${accent}55`, animation: 'spin 14s linear infinite' }} />
+              <Box sx={{ position: 'absolute', inset: 11, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', fontSize: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 18px 44px ${accent}66`, animation: 'pop 0.55s cubic-bezier(0.16,1,0.3,1)' }}>✓</Box>
+            </Box>
             <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#171412', letterSpacing: '-0.03em', mb: 1 }}>{info.branding.approvalMode === 'manual' ? 'הבקשה נשלחה! ⏳' : 'התור נקבע! 🎉'}</Typography>
-            <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mt: 3, mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', textAlign: 'right' }}>
+            <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, mt: 3, mb: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 16px 40px rgba(16,24,40,0.1)', border: '1px solid rgba(16,24,40,0.05)', textAlign: 'right' }}>
               <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917', mb: 1 }}>{selectedService?.name}</Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Typography sx={{ fontSize: 14, color: accent, fontWeight: 700 }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>
@@ -789,7 +794,7 @@ export default function PublicBookingPage() {
 
             {/* My upcoming appointments */}
             {myUpcoming.length > 0 && (
-              <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.05s both' }}>
                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>התורים הקרובים שלך</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {myUpcoming.map((b, i) => (
@@ -808,7 +813,7 @@ export default function PublicBookingPage() {
 
             {/* Gallery as stories */}
             {(info.branding.gallery || []).length > 0 && (
-              <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.12s both' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>{info.branding.galleryTitle || 'העבודות שלנו'}</Typography>
                   <Typography onClick={() => setTab('gallery')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הצג הכל ←</Typography>
@@ -825,7 +830,7 @@ export default function PublicBookingPage() {
 
             {/* Our team */}
             {(info.team || []).length > 0 && (
-              <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.19s both' }}>
                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>✂️ הצוות שלנו</Typography>
                 <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
                   {(info.team || []).map((m) => (
@@ -846,7 +851,7 @@ export default function PublicBookingPage() {
 
             {/* Services & prices */}
             {(info.services || []).length > 0 && (
-              <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.26s both' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>💅 השירותים והמחירים</Typography>
                   {(info.services || []).length > 5 && <Typography onClick={() => setTab('book')} sx={{ fontSize: 12, fontWeight: 800, color: accent, cursor: 'pointer' }}>הכל ←</Typography>}
@@ -868,7 +873,7 @@ export default function PublicBookingPage() {
 
             {/* Products shelf */}
             {(info.branding.products || []).length > 0 && (
-              <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.33s both' }}>
                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>🛍️ המוצרים שלנו</Typography>
                 <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
                   {(info.branding.products || []).map((pr, i) => (
@@ -995,7 +1000,7 @@ export default function PublicBookingPage() {
       <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: th.navBg, backdropFilter: 'blur(24px) saturate(1.6)', border: `1px solid ${th.navBorder}`, borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
         {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
           t === '__book__' ? (
-            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : 'rgba(255,255,255,0.9)'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
+            <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.5, width: 63, height: 63, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : 'rgba(255,255,255,0.9)'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
               {info.branding.logo ? <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.18)' }} /> : <Box sx={{ fontSize: 24, color: '#fff' }}>📅</Box>}
             </Box>
           ) : (

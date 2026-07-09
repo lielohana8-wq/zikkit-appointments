@@ -369,16 +369,17 @@ export default function PublicBookingPage() {
       )}
 
       {/* ══ Luxury identity band ══ */}
-      <Box sx={{ background: 'linear-gradient(180deg, #0A0710 0%, #140E20 100%)', position: 'relative', overflow: 'hidden', textAlign: 'center', pt: 4, pb: 4.5, px: 2 }}>
-        <Box sx={{ position: 'absolute', inset: 0, background: `radial-gradient(640px 240px at 50% -30%, ${accent}55, transparent 70%)` }} />
+      <Box sx={{ background: 'linear-gradient(180deg, #0A0710 0%, #150F22 100%)', position: 'relative', overflow: 'hidden', textAlign: 'center', pt: 3, pb: 3.25, px: 2 }}>
+        <Box sx={{ position: 'absolute', inset: 0, background: `radial-gradient(720px 300px at 50% -20%, ${accent}66, transparent 68%)` }} />
+        <Box sx={{ position: 'absolute', bottom: -70, left: -50, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30, transparent 70%)` }} />
         <Box sx={{ position: 'relative' }}>
           {info.branding.logo && (
-            <Box sx={{ width: 62, height: 62, borderRadius: '50%', mx: 'auto', mb: 1.75, p: '2.5px', background: 'linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,255,255,0.18))', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            <Box sx={{ width: 104, height: 104, borderRadius: '50%', mx: 'auto', mb: 1.5, p: '3.5px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
+              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #0A0710' }} />
             </Box>
           )}
-          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 23, fontWeight: 600, color: '#fff', letterSpacing: '0.22em', textTransform: 'uppercase', lineHeight: 1.25, px: 1 }}>{info.businessName}</Typography>
-          <Box sx={{ width: 44, height: 2, mx: 'auto', mt: 1.5, borderRadius: 99, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
+          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 26, fontWeight: 600, color: '#fff', letterSpacing: '0.2em', textTransform: 'uppercase', lineHeight: 1.22, px: 1, textShadow: '0 2px 14px rgba(0,0,0,0.45)' }}>{info.businessName}</Typography>
+          <Box sx={{ width: 58, height: 2, mx: 'auto', mt: 1.25, borderRadius: 99, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
           {info.branding.welcomeText && <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.62)', mt: 1.5, maxWidth: 340, mx: 'auto', lineHeight: 1.6 }}>{info.branding.welcomeText}</Typography>}
           {info.branding.promoOn && info.branding.promoText && (
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 99, px: 2.25, py: 0.9, fontSize: 13, fontWeight: 800, boxShadow: `0 10px 26px ${accent}55` }}>🔥 {info.branding.promoText}</Box>

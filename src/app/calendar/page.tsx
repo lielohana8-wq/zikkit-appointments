@@ -64,6 +64,25 @@ export default function CalendarPage() {
     if (!bizId || (!form.customerName && !form.isBlock)) return;
     setSaving(true);
     const staffAssign = user?.role === 'staff' && staffName ? staffName : form.staff;
+
+    // Guard: a barber holds ONE appointment at a time — also for manual bookings
+    if (!form.isBlock) {
+      const t2m = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
+      const ns = t2m(form.time); const ne = ns + Number(form.duration || 30);
+      const clashes = bookings.filter((b) => {
+        if (b.date !== selectedDate || b.status === 'cancelled') return false;
+        if (staffAssign && b.staff !== staffAssign) return false;
+        const bs = t2m(b.time); const be = bs + (b.duration || 30);
+        return ns < be && ne > bs;
+      }).length;
+      const cap = staffAssign ? 1 : Math.max(team.length, 1);
+      if (clashes >= cap) {
+        setSaving(false);
+        showToast(staffAssign ? `השעה תפוסה אצל ${staffAssign} — בחר/י שעה אחרת` : 'הצוות מלא בשעה הזו — בחר/י שעה אחרת', 'error');
+        return;
+      }
+    }
+
     // Optimistic: show the booking immediately
     const optimistic: Booking = {
       id: 'temp_' + Date.now(), source: 'manual',

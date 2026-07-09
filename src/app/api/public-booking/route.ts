@@ -309,22 +309,35 @@ export async function POST(req: NextRequest) {
     };
     await setBizField(bizId, ['notifications', 'items'], [newNotif, ...notifications].slice(0, 50));
 
-    // SMS confirmations
+    // SMS confirmations — skipped sends are logged too, so the SMS log
+    // always answers "why didn't X get a message".
+    const logSkip = async (reason: string) => {
+      try {
+        const fresh = await (await import('@/lib/firestore-admin')).getBiz(bizId);
+        const log = (((fresh?.smsLog as Record<string, unknown>)?.items as unknown[]) || []);
+        await setBizField(bizId, ['smsLog', 'items'], [{ at: new Date().toISOString(), to: '—', ok: false, err: reason, preview: '' }, ...log].slice(0, 30));
+      } catch { /* never break booking */ }
+    };
     const bizName = (biz.cfg as Record<string, unknown>)?.biz_name || 'העסק';
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
     const manageUrl = `${baseUrl}/manage/${bizId}/${manageToken}`;
+    if (!booking.customerPhone) await logSkip('אישור ללקוח דולג: הלקוח לא הזין טלפון');
     if (booking.customerPhone) {
-      await sendSms(booking.customerPhone, needsApproval ? `הבקשה שלך ל${bizName} התקבלה! ⏳\n${booking.date} בשעה ${booking.time}\nנעדכן אותך ברגע שהעסק יאשר.\nלביטול: ${manageUrl}` : `התור שלך ב${bizName} נקבע!\n${booking.date} בשעה ${booking.time}\n${booking.service}\n\nלביטול או שינוי:\n${manageUrl}\n\nנתראה!`, bizId).catch(() => {});
+      // No URL in the SMS on purpose: Israeli carriers filter link-bearing
+      // messages from international senders. Managing is via the app.
+      await sendSms(booking.customerPhone, needsApproval ? `הבקשה שלך ל${bizName} התקבלה ⏳ ${booking.date} בשעה ${booking.time}. נעדכן ברגע שיאושר.` : `התור שלך ב${bizName} אושר! ${booking.date} בשעה ${booking.time} · ${booking.service}. לשינוי/ביטול: דף ההזמנות של העסק. נתראה!`, bizId).catch(() => {});
     }
     // Notify owner
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
       || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
+    if (!ownerPhone) await logSkip('התראה לבעל העסק דולגה: לא הוגדר "הטלפון שלך להתראות" בהגדרות דף ההזמנות');
     if (ownerPhone) {
       await sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`, bizId).catch(() => {});
     }
     if (assignedStaff) {
       const member = teamMembers.find((m) => String(m.name) === assignedStaff);
       const staffPhone = member && (member.phone as string);
+      if (!staffPhone) await logSkip(`התראה לאיש הצוות ${assignedStaff} דולגה: לא הוגדר לו טלפון בכרטיס הצוות`);
       if (staffPhone) await sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
     }
 

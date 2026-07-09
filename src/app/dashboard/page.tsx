@@ -65,6 +65,7 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
     { icon: '🚀', label: 'מוכנות להפעלה', path: '/activate', staff: false },
     { icon: '📞', label: 'דנה — מענה טלפוני', path: '/setup', staff: false },
     { icon: '🕐', label: 'שעות פעילות', path: '/hours', staff: true },
+    { icon: '📨', label: 'יומן הודעות SMS', path: '/sms-log', staff: false },
     { icon: '🤝', label: 'צוות', path: '/team', staff: false },
     { icon: '🖼️', label: 'גלריה', path: '/gallery', staff: false },
     { icon: '🎓', label: 'קורסים', path: '/courses', staff: false },

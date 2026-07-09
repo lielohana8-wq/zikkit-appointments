@@ -128,18 +128,23 @@ export async function sendSms(to: string, body: string, logBizId?: string): Prom
   if (toNum.startsWith('0')) toNum = '972' + toNum.slice(1);
   if (!toNum.startsWith('+')) toNum = '+' + toNum;
 
-  let ok = false; let err = '';
+  let ok = false; let err = ''; let msgSid = '';
   if (!sid || !token || !from) {
     err = 'TWILIO env חסר';
   } else {
     try {
+      const cbBase = process.env.NEXT_PUBLIC_BASE_URL || 'https://zikkit-appointments.vercel.app';
+      const params: Record<string, string> = { From: from, To: toNum, Body: body };
+      if (logBizId) params.StatusCallback = `${cbBase}/api/sms/status?bizId=${logBizId}`;
       const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
         method: 'POST',
         headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ From: from, To: toNum, Body: body }),
+        body: new URLSearchParams(params),
       });
       ok = res.ok;
-      if (!ok) {
+      if (ok) {
+        try { const j = await res.json() as { sid?: string }; msgSid = j.sid || ''; } catch { /* ignore */ }
+      } else {
         try { const j = await res.json() as { code?: number; message?: string }; err = `${j.code || res.status}: ${j.message || ''}`.slice(0, 140); }
         catch { err = 'HTTP ' + res.status; }
       }
@@ -154,7 +159,7 @@ export async function sendSms(to: string, body: string, logBizId?: string): Prom
       const biz = await getBiz(logBizId);
       if (biz) {
         const log = (((biz.smsLog as Record<string, unknown>)?.items as unknown[]) || []);
-        const entry = { at: new Date().toISOString(), to: toNum, ok, err, preview: body.slice(0, 60) };
+        const entry = { at: new Date().toISOString(), to: toNum, ok, err, preview: body.slice(0, 60), sid: msgSid, delivery: ok ? 'נשלח, ממתין לאישור מסירה…' : '' };
         await setBizField(logBizId, ['smsLog', 'items'], [entry, ...log].slice(0, 30));
       }
     } catch { /* logging must never break the flow */ }

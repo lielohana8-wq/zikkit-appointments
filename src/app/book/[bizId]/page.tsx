@@ -390,7 +390,7 @@ export default function PublicBookingPage() {
         <Box sx={{ position: 'absolute', bottom: -70, left: -50, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30, transparent 70%)` }} />
         <Box sx={{ position: 'relative' }}>
           {info.branding.logo && (
-            <Box sx={{ width: 104, height: 104, borderRadius: '50%', mx: 'auto', mb: 1.5, p: '3.5px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
+            <Box sx={{ width: 132, height: 132, borderRadius: '50%', mx: 'auto', mb: 1.75, p: '4px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
               <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid rgba(255,255,255,0.85)' }} />
             </Box>
           )}
@@ -989,7 +989,7 @@ export default function PublicBookingPage() {
           📅 כבר קבעתם תור? ניהול / ביטול תור
         </Box>
       </Box>
-      <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
+      <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments · <Box component="span" sx={{ fontSize: 10, opacity: 0.75 }}>גרסה 9.7-studio</Box></Typography>
 
       {/* ════════ Bottom app navigation ════════ */}
       <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: th.navBg, backdropFilter: 'blur(24px) saturate(1.6)', border: `1px solid ${th.navBorder}`, borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>

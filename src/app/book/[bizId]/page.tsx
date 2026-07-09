@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -167,6 +167,18 @@ export default function PublicBookingPage() {
   const accent = info?.branding?.brandColor || '#9333EA';
   const mustRegister = !!info && info.branding.requireRegistration !== false && !me;
   const accentLight = shade(accent, 60);
+  const c2 = info?.branding?.brandColor2 || accent;
+  const nameFont = info?.branding?.nameFont === 'modern' ? "'Heebo', sans-serif" : "'Playfair Display', 'Heebo', serif";
+  const bandImg = (info?.branding?.bandImageOn && info?.branding?.banner) ? info.branding.banner : '';
+  const THEMES: Record<string, { bandBg: string; bandText: string; bandSub: string; pageBase: string; navBg: string; navBorder: string; navActive: string; navIdle: string }> = {
+    dark: { bandBg: 'linear-gradient(180deg,#0A0710 0%,#150F22 100%)', bandText: '#fff', bandSub: 'rgba(255,255,255,0.62)', pageBase: 'linear-gradient(180deg,#FAF9F7 0%,#F3F1EE 100%)', navBg: 'rgba(12,9,18,0.88)', navBorder: 'rgba(255,255,255,0.12)', navActive: '#fff', navIdle: 'rgba(255,255,255,0.48)' },
+    light: { bandBg: 'linear-gradient(180deg,#FFFFFF 0%,#F6F4FA 100%)', bandText: '#16120E', bandSub: '#8A837B', pageBase: '#FFFFFF', navBg: 'rgba(255,255,255,0.9)', navBorder: 'rgba(16,24,40,0.08)', navActive: accent, navIdle: '#A8A29E' },
+    soft: { bandBg: `linear-gradient(160deg, ${accent}26 0%, ${c2}33 100%), #FDFAF6`, bandText: '#241E18', bandSub: '#8A837B', pageBase: '#FBF7F2', navBg: 'rgba(255,255,255,0.92)', navBorder: 'rgba(16,24,40,0.07)', navActive: accent, navIdle: '#A8A29E' },
+    bold: { bandBg: `linear-gradient(140deg, ${accent} 0%, ${c2} 100%)`, bandText: '#fff', bandSub: 'rgba(255,255,255,0.78)', pageBase: 'linear-gradient(180deg,#FAF9FE 0%,#F2EFF8 100%)', navBg: 'rgba(20,14,30,0.9)', navBorder: 'rgba(255,255,255,0.14)', navActive: '#fff', navIdle: 'rgba(255,255,255,0.5)' },
+  };
+  const th = THEMES[(info?.branding?.theme as string) || 'dark'] || THEMES.dark;
+  const bandText = bandImg ? '#fff' : th.bandText;
+  const bandSub = bandImg ? 'rgba(255,255,255,0.75)' : th.bandSub;
   const accentDark = shade(accent, -30);
   const socialBtn = (col: string) => ({ width: 46, height: 46, borderRadius: '50%', bgcolor: `${col}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, textDecoration: 'none', transition: 'all 0.18s', cursor: 'pointer', '&:hover': { bgcolor: col, transform: 'translateY(-2px)' } });
 
@@ -315,7 +327,7 @@ export default function PublicBookingPage() {
           ) : (
             <Box sx={{ width: 112, height: 112, borderRadius: '50%', mx: 'auto', mb: 2.25, bgcolor: 'rgba(255,255,255,0.12)', fontSize: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'gatePop 0.5s' }}>✂️</Box>
           )}
-          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 30, fontWeight: 600, color: '#fff', letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1.2, textShadow: '0 3px 18px rgba(0,0,0,0.55)', animation: 'gateUp 0.55s 0.08s both' }}>{info.businessName}</Typography>
+          <Typography sx={{ fontFamily: nameFont, fontSize: 30, fontWeight: 600, color: '#fff', letterSpacing: '0.14em', textTransform: 'uppercase', lineHeight: 1.2, textShadow: '0 3px 18px rgba(0,0,0,0.55)', animation: 'gateUp 0.55s 0.08s both' }}>{info.businessName}</Typography>
           <Typography sx={{ fontSize: 13.5, color: 'rgba(255,255,255,0.72)', mt: 1, mb: 3, letterSpacing: '0.04em', animation: 'gateUp 0.55s 0.16s both' }}>· האפליקציה הרשמית ·</Typography>
 
           <Box sx={{ bgcolor: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(20px)', borderRadius: 5, p: 3, boxShadow: '0 30px 80px rgba(0,0,0,0.5)', textAlign: 'right', animation: 'gateUp 0.55s 0.24s both' }}>
@@ -335,7 +347,7 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), linear-gradient(180deg, #FAF9F7 0%, #F3F1EE 100%)`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
+    <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), ${th.pageBase}`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
         @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }`}</style>
@@ -369,18 +381,22 @@ export default function PublicBookingPage() {
       )}
 
       {/* ══ Luxury identity band ══ */}
-      <Box sx={{ background: 'linear-gradient(180deg, #0A0710 0%, #150F22 100%)', position: 'relative', overflow: 'hidden', textAlign: 'center', pt: 3, pb: 3.25, px: 2 }}>
+      <Box sx={{ background: bandImg ? '#0A0710' : th.bandBg, position: 'relative', overflow: 'hidden', textAlign: 'center', pt: 3, pb: 3.25, px: 2 }}>
+        {bandImg && (<>
+          <Box component="img" src={bandImg} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,5,14,0.45) 0%, rgba(8,5,14,0.75) 100%)' }} />
+        </>)}
         <Box sx={{ position: 'absolute', inset: 0, background: `radial-gradient(720px 300px at 50% -20%, ${accent}66, transparent 68%)` }} />
         <Box sx={{ position: 'absolute', bottom: -70, left: -50, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30, transparent 70%)` }} />
         <Box sx={{ position: 'relative' }}>
           {info.branding.logo && (
             <Box sx={{ width: 104, height: 104, borderRadius: '50%', mx: 'auto', mb: 1.5, p: '3.5px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
-              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid #0A0710' }} />
+              <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid rgba(255,255,255,0.85)' }} />
             </Box>
           )}
-          <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 26, fontWeight: 600, color: '#fff', letterSpacing: '0.2em', textTransform: 'uppercase', lineHeight: 1.22, px: 1, textShadow: '0 2px 14px rgba(0,0,0,0.45)' }}>{info.businessName}</Typography>
+          <Typography sx={{ fontFamily: nameFont, fontSize: 26, fontWeight: info.branding.nameFont === 'modern' ? 900 : 600, color: bandText, letterSpacing: info.branding.nameFont === 'modern' ? '0.06em' : '0.2em', textTransform: 'uppercase', lineHeight: 1.22, px: 1, textShadow: bandText === '#fff' ? '0 2px 14px rgba(0,0,0,0.45)' : 'none' }}>{info.businessName}</Typography>
           <Box sx={{ width: 58, height: 2, mx: 'auto', mt: 1.25, borderRadius: 99, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
-          {info.branding.welcomeText && <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.62)', mt: 1.5, maxWidth: 340, mx: 'auto', lineHeight: 1.6 }}>{info.branding.welcomeText}</Typography>}
+          {info.branding.welcomeText && <Typography sx={{ fontSize: 13, color: bandSub, mt: 1.5, maxWidth: 340, mx: 'auto', lineHeight: 1.6 }}>{info.branding.welcomeText}</Typography>}
           {info.branding.promoOn && info.branding.promoText && (
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2, background: `linear-gradient(135deg, ${accent}, ${accentDark})`, color: '#fff', borderRadius: 99, px: 2.25, py: 0.9, fontSize: 13, fontWeight: 800, boxShadow: `0 10px 26px ${accent}55` }}>🔥 {info.branding.promoText}</Box>
           )}
@@ -735,7 +751,7 @@ export default function PublicBookingPage() {
               {(info.branding.banner || info.branding.gallery?.[0]) && <Box component="img" src={info.branding.banner || info.branding.gallery?.[0]} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
               <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,6,18,0.02) 16%, rgba(10,6,18,0.5) 58%, rgba(10,6,18,0.84) 100%)' }} />
               <Box sx={{ position: 'relative', p: 2.75, pt: 12, color: '#fff' }}>
-                <Typography sx={{ fontFamily: "'Playfair Display', 'Heebo', serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.3em', opacity: 0.8, mb: 0.75 }}>{(info.businessName || '').toUpperCase()}</Typography>
+                <Typography sx={{ fontFamily: nameFont, fontSize: 11, fontWeight: 600, letterSpacing: '0.3em', opacity: 0.8, mb: 0.75 }}>{(info.businessName || '').toUpperCase()}</Typography>
                 <Typography sx={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.08, textShadow: '0 3px 16px rgba(0,0,0,0.45)' }}>
                   {me?.name ? `שלום, ${me.name.split(' ')[0]} 👋` : `ברוכים הבאים ל${info.businessName}`}
                 </Typography>
@@ -976,7 +992,7 @@ export default function PublicBookingPage() {
       <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments</Typography>
 
       {/* ════════ Bottom app navigation ════════ */}
-      <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: 'rgba(12,9,18,0.88)', backdropFilter: 'blur(24px) saturate(1.6)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
+      <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: th.navBg, backdropFilter: 'blur(24px) saturate(1.6)', border: `1px solid ${th.navBorder}`, borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>
         {([['home', '🏠', 'בית'], ['gallery', '🖼️', 'גלריה'], ['__book__', '', ''], ['profile', '👤', 'פרופיל'], ['info', 'ℹ️', 'מידע']] as const).map(([t, icon, label]) => (
           t === '__book__' ? (
             <Box key={t} onClick={() => { setTab('book'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', mt: -3.25, width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accentDark})`, border: `3px solid ${tab === 'book' ? accent : 'rgba(255,255,255,0.9)'}`, boxShadow: `0 8px 22px ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.2s', '&:active': { transform: 'scale(0.94)' } }}>
@@ -985,7 +1001,7 @@ export default function PublicBookingPage() {
           ) : (
           <Box key={t} onClick={() => { setTab(t as 'home' | 'gallery' | 'profile' | 'info'); window.scrollTo({ top: 0 }); }} sx={{ cursor: 'pointer', textAlign: 'center', px: 1.5, py: 0.5, borderRadius: 2, transition: 'all 0.15s' }}>
             <Box sx={{ fontSize: 21, filter: tab === t ? 'none' : 'grayscale(60%)', opacity: tab === t ? 1 : 0.55, transform: tab === t ? 'translateY(-1px)' : 'none', transition: 'all 0.2s' }}>{icon}</Box>
-            <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? '#fff' : 'rgba(255,255,255,0.48)', mt: 0.1 }}>{label}</Typography>
+            <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: tab === t ? th.navActive : th.navIdle, mt: 0.1 }}>{label}</Typography>
           </Box>
           )
         ))}

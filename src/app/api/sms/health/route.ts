@@ -25,7 +25,25 @@ export async function GET() {
       fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Balance.json`, { headers: { Authorization: auth } }),
     ]);
     if (!accRes.ok) {
-      return NextResponse.json({ ok: false, fix: accRes.status === 401 ? 'SID/Auth Token לא תקינים — בדוק העתקה מ-console.twilio.com' : 'שגיאת Twilio ' + accRes.status });
+      // Show exactly what the server received - so "but they ARE correct"
+      // becomes a 10-second comparison against the console.
+      const peek = (v: string, keep: number) => v.slice(0, keep) + '…' + v.slice(-keep) + ' (' + v.length + ' תווים)';
+      const sidIssue = sid !== sid.trim() ? '⚠️ יש רווח/שורה-חדשה בתוך ה-SID — מחק והדבק נקי'
+        : sid.startsWith('SK') ? '⚠️ הדבקת API Key (SK...) במקום Account SID — צריך את ה-SID שמתחיל ב-AC מדף הבית של קונסולת Twilio'
+        : !sid.startsWith('AC') ? '⚠️ ה-SID לא מתחיל ב-AC — זה לא Account SID'
+        : sid.length !== 34 ? '⚠️ אורך SID חריג (' + sid.length + ' במקום 34)' : null;
+      const tokIssue = token !== token.trim() ? '⚠️ יש רווח/שורה-חדשה בתוך ה-Auth Token — מחק והדבק נקי'
+        : token.length !== 32 ? '⚠️ אורך Auth Token חריג (' + token.length + ' במקום 32)' : null;
+      return NextResponse.json({
+        ok: false,
+        status: accRes.status,
+        serverSees: { TWILIO_ACCOUNT_SID: peek(sid, 4), TWILIO_AUTH_TOKEN: token.slice(0, 2) + '…' + token.slice(-2) + ' (' + token.length + ' תווים)' },
+        issues: [sidIssue, tokIssue].filter(Boolean),
+        fix: accRes.status === 401
+          ? ((sidIssue || tokIssue) ? 'תקן את מה שמסומן ב-issues, שמור ב-Vercel ועשה Redeploy'
+            : 'הפורמט תקין אבל Twilio דוחה — כנראה ה-Auth Token סובב (Rotate) בקונסולה והישן מת. העתק את הטוקן הנוכחי מחדש מהקונסולה → הדבק ב-Vercel תחת Production → Redeploy.')
+          : 'שגיאת Twilio ' + accRes.status,
+      });
     }
     const acc = await accRes.json() as { type?: string; status?: string };
     const bal = balRes.ok ? await balRes.json() as { balance?: string; currency?: string } : {};

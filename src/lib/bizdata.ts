@@ -311,6 +311,10 @@ export async function deleteService(bizId: string, id: string): Promise<void> {
 
 // ---------- Booking page branding ----------
 export interface BookingBranding {
+  theme?: 'dark' | 'light' | 'soft' | 'bold'; // full app theme preset
+  brandColor2?: string;         // secondary brand color (gradients)
+  nameFont?: 'serif' | 'modern'; // display font for the business name
+  bandImageOn?: boolean;        // use the banner photo as the header backdrop
   appName?: string;             // the name shown under the home-screen icon
   appIcon?: string;             // square 512 icon generated from the logo (fills the tile, no bars)
   appIconV?: number;            // bumped on every icon change — busts device/browser caches

@@ -373,6 +373,39 @@ export default function BookingPageSettings() {
         </Section>
 
         {/* Booking rules */}
+        <Section title="🎨 עיצוב האפליקציה">
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>ערכת נושא</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2.5 }}>
+            {([['dark', '🖤 יוקרה כהה', 'linear-gradient(140deg,#0A0710,#241838)'], ['light', '🤍 בהיר ונקי', 'linear-gradient(140deg,#FFFFFF,#EDEAF5)'], ['soft', '🌸 רך ופסטלי', `linear-gradient(140deg, ${b.brandColor || '#7C3AED'}33, #FDF6EE)`], ['bold', '⚡ נועז', `linear-gradient(140deg, ${b.brandColor || '#7C3AED'}, ${b.brandColor2 || '#EC4899'})`]] as const).map(([key, label, bg]) => (
+              <Box key={key} onClick={() => set('theme', key)} sx={{ cursor: 'pointer', borderRadius: 2.5, overflow: 'hidden', border: `2px solid ${(b.theme || 'dark') === key ? c.accent : c.border2}`, transition: 'all 0.15s' }}>
+                <Box sx={{ height: 44, background: bg }} />
+                <Typography sx={{ fontSize: 12, fontWeight: 800, color: c.text, textAlign: 'center', py: 0.75, bgcolor: c.surface1 }}>{label}</Typography>
+              </Box>
+            ))}
+          </Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>צבע משני (לגרדיאנטים ולערכת "נועז")</Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
+            {['#EC4899', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6', '#111827'].map((col) => (
+              <Box key={col} onClick={() => set('brandColor2', col)} sx={{ width: 34, height: 34, borderRadius: '50%', bgcolor: col, cursor: 'pointer', border: b.brandColor2 === col ? `3px solid ${c.text}` : '3px solid transparent' }} />
+            ))}
+          </Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>פונט שם העסק</Typography>
+          <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
+            {([['serif', 'סריף יוקרתי'], ['modern', 'מודרני נועז']] as const).map(([key, label]) => (
+              <Box key={key} onClick={() => set('nameFont', key)} sx={{ cursor: 'pointer', px: 2, py: 1, borderRadius: 2, fontSize: 13, fontWeight: 800, border: `1.5px solid ${(b.nameFont || 'serif') === key ? c.accent : c.border2}`, color: (b.nameFont || 'serif') === key ? c.accent : c.text3, bgcolor: (b.nameFont || 'serif') === key ? c.accentDim : 'transparent' }}>{label}</Box>
+            ))}
+          </Box>
+          {b.banner && (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+              <Box>
+                <Typography sx={{ fontSize: 14, color: c.text }}>תמונת הבאנר כרקע הכותרת</Typography>
+                <Typography sx={{ fontSize: 12, color: c.text3 }}>הבאנר שהעלית יופיע מאחורי שם העסק והלוגו</Typography>
+              </Box>
+              <Switch checked={!!b.bandImageOn} onChange={(e) => set('bandImageOn', e.target.checked)} />
+            </Box>
+          )}
+        </Section>
+
         <Section title="כללי קביעת תורים">
           <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>איך להציע שעות ללקוחות?</Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -81,11 +81,12 @@ export default function PublicBookingPage() {
       if (saved?.phone) {
         setMe(saved);
         fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'find', phone: saved.phone }) })
-          .then((r) => r.json()).then((d) => { if (d.success) setMyUpcoming(d.bookings || []); }).catch(() => {});
+          .then((r) => r.json()).then((d) => { if (d.success) { setMyUpcoming(d.bookings || []); setMyVisits(d.visits || 0); } }).catch(() => {});
       }
     } catch { /* ignore */ }
   }, [bizId]);
   const [myUpcoming, setMyUpcoming] = useState<Array<{ service: string; date: string; time: string; token: string }>>([]);
+  const [myVisits, setMyVisits] = useState(0);
   useEffect(() => {
     if (me && !form.name && !form.phone) setForm((p) => ({ ...p, name: me.name, phone: me.phone }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,7 +102,7 @@ export default function PublicBookingPage() {
       try { localStorage.setItem(`zk_cust_${bizId}`, JSON.stringify(meObj)); } catch { /* ignore */ }
       setMe(meObj);
       setTab('home');
-      fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'find', phone: regPhone }) }).then((r) => r.json()).then((dd) => { if (dd.success) setMyUpcoming(dd.bookings || []); }).catch(() => {});
+      fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'find', phone: regPhone }) }).then((r) => r.json()).then((dd) => { if (dd.success) { setMyUpcoming(dd.bookings || []); setMyVisits(dd.visits || 0); } }).catch(() => {});
     } catch { setRegErr('שגיאה — נסו שוב'); } finally { setRegBusy(false); }
   };
 
@@ -192,6 +193,10 @@ export default function PublicBookingPage() {
       if (member?.hours?.[dow]) dh = member.hours[dow]; // personal hours override
     }
     if (!dh.open) return [];
+    // Never offer times that already passed today (+30 min prep buffer)
+    const nowD = new Date();
+    const localToday = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}-${String(nowD.getDate()).padStart(2, '0')}`;
+    const minStart = date === localToday ? nowD.getHours() * 60 + nowD.getMinutes() + 30 : 0;
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
     const toStr = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
     const dur = selectedService.duration || 30;
@@ -219,13 +224,13 @@ export default function PublicBookingPage() {
         if (bs - dur >= open) candidates.add(bs - dur); // finish exactly when one starts
       });
       Array.from(candidates).sort((a, b) => a - b).forEach((t) => {
-        if (t >= open && t + dur <= close && overlapAt(t) < capacity) slots.push(toStr(t));
+        if (t >= Math.max(open, minStart) && t + dur <= close && overlapAt(t) < capacity) slots.push(toStr(t));
       });
       return slots;
     }
 
     for (let t = open; t + dur <= close; t += (info.branding.slotInterval || 15)) {
-      if (overlapAt(t) < capacity) slots.push(toStr(t));
+      if (t >= minStart && overlapAt(t) < capacity) slots.push(toStr(t));
     }
     return slots;
   }, [info, selectedService, selectedStaff]);

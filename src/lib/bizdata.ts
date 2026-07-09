@@ -319,6 +319,9 @@ export interface BookingBranding {
   appIcon?: string;             // square 512 icon generated from the logo (fills the tile, no bars)
   appIconV?: number;            // bumped on every icon change — busts device/browser caches
   requireRegistration?: boolean; // customers must join before using the app (default: on)
+  benefitOn?: boolean;          // loyalty punch-card enabled
+  benefitText?: string;         // e.g. "תספורת חינם" / "50% הנחה"
+  benefitEvery?: number;        // reward every N visits
   bookingWindowDays?: number;   // how many days ahead customers can book (default 14)
   slotMode?: 'interval' | 'packed'; // packed = slots chain to booking edges (zero dead time)
   slotInterval?: number;        // minutes between offered slots (interval mode)

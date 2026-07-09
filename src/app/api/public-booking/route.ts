@@ -99,6 +99,9 @@ export async function GET(req: NextRequest) {
         bookingWindowDays: (booking.bookingWindowDays as number) || 14,
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         requireRegistration: booking.requireRegistration !== false,
+        benefitOn: booking.benefitOn === true,
+        benefitText: (booking.benefitText as string) || '',
+        benefitEvery: (booking.benefitEvery as number) || 10,
         iconV: (booking.appIconV as number) || 1,
         theme: (booking.theme as string) || 'dark',
         brandColor2: (booking.brandColor2 as string) || '',
@@ -186,8 +189,10 @@ export async function POST(req: NextRequest) {
         if (!m.manageToken) { m.manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); changed = true; }
       }
       if (changed) await setBizField(bizId, ['appointments', 'bookings'], all);
+      const custRec = ((((biz.customers as Record<string, unknown>)?.items as Array<Record<string, unknown>>) || [])).find((cu) => String(cu.phone || '').replace(/\D/g, '').slice(-9) === key);
       return NextResponse.json({
         success: true,
+        visits: (custRec?.visits as number) || 0,
         bookings: matches
           .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.time).localeCompare(String(b.time)))
           .slice(0, 5)
@@ -228,6 +233,13 @@ export async function POST(req: NextRequest) {
     const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
     const newStart = toMin(booking.time);
     const newEnd = newStart + (booking.duration || 30);
+    // Reject bookings in the past — the server clock is UTC, customers are in Israel
+    const nowIL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+    const todayIL = `${nowIL.getFullYear()}-${String(nowIL.getMonth() + 1).padStart(2, '0')}-${String(nowIL.getDate()).padStart(2, '0')}`;
+    if (String(booking.date) < todayIL || (String(booking.date) === todayIL && newStart <= nowIL.getHours() * 60 + nowIL.getMinutes())) {
+      return NextResponse.json({ success: false, error: 'השעה שבחרת כבר עברה — רעננו את הדף ובחרו שעה חדשה 🙂' }, { status: 400 });
+    }
+
     const teamMembers = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).filter((m) => m.active !== false);
     const overlapsWith = (staffName: string | null) => existing.filter((b) => {
       if (b.date !== booking.date || b.status === 'cancelled') return false;

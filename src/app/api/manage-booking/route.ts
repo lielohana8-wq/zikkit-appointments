@@ -50,6 +50,9 @@ export async function GET(req: NextRequest) {
       // Only this staff's bookings block when the booking has a staff; else station capacity.
       const relevant = booking.staff ? bookings.filter((b) => b.staff === booking.staff) : bookings;
       const capacity = booking.staff ? 1 : stations;
+      const nowIL2 = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+      const todayIL2 = `${nowIL2.getFullYear()}-${String(nowIL2.getMonth() + 1).padStart(2, '0')}-${String(nowIL2.getDate()).padStart(2, '0')}`;
+      const minNow = slotsDate === todayIL2 ? nowIL2.getHours() * 60 + nowIL2.getMinutes() + 30 : 0;
       const pageCfg2 = (biz.booking as Record<string, unknown>) || {};
       const slotStep = (pageCfg2.slotInterval as number) || 15;
       if (pageCfg2.slotMode === 'packed') {
@@ -58,7 +61,7 @@ export async function GET(req: NextRequest) {
         const overlapAt = (t: number) => dayBk.filter((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); return t < be && t + dur > bs; }).length;
         const cand = new Set<number>([open, close - dur]);
         dayBk.forEach((b) => { const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30); cand.add(be); if (bs - dur >= open) cand.add(bs - dur); });
-        const packed = Array.from(cand).sort((a, b) => a - b).filter((t) => t >= open && t + dur <= close && overlapAt(t) < capacity).map(toStr);
+        const packed = Array.from(cand).sort((a, b) => a - b).filter((t) => t >= Math.max(open, minNow) && t + dur <= close && overlapAt(t) < capacity).map(toStr);
         return NextResponse.json({ slots: packed });
       }
       for (let t = toMin(dh.start); t + dur <= toMin(dh.end); t += slotStep) {
@@ -68,7 +71,7 @@ export async function GET(req: NextRequest) {
           const bs = toMin(b.time); const be = bs + (b.duration || 30);
           return t < be && t + dur > bs;
         }).length;
-        if (overlap < capacity) slots.push(toStr(t));
+        if (t >= minNow && overlap < capacity) slots.push(toStr(t));
       }
     }
     return NextResponse.json({ slots });

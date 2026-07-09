@@ -704,6 +704,18 @@ export default function PublicBookingPage() {
             </Box>
             <Typography sx={{ fontSize: 13.5, color: '#78716C' }}>{info.branding.approvalMode === 'manual' ? 'העסק יאשר את התור בהקדם ותקבלו עדכון 💜' : (info.branding.thankYouMessage || 'שלחנו לך SMS עם האישור. נתראה! 💜')}</Typography>
 
+            {/* Share the business — customers become the marketing */}
+            <Button
+              onClick={() => {
+                const url = `${window.location.origin}/book/${bizId}`;
+                const text = `קבעתי תור ב${info.businessName} בשניות 💜 גם לכם מגיע:`;
+                if (navigator.share) { navigator.share({ title: info.businessName, text, url }).catch(() => {}); }
+                else { window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank'); }
+              }}
+              fullWidth sx={{ mt: 2, mb: 1, border: `1.5px solid ${accent}44`, color: accent, borderRadius: 3, fontWeight: 800, py: 1.2 }}>
+              💬 שתפו את {info.businessName} עם חברים
+            </Button>
+
             {/* Add to calendar — reduces no-shows */}
             <Button
               onClick={() => {
@@ -886,6 +898,24 @@ export default function PublicBookingPage() {
                           <Button href={`https://wa.me/${info.branding.phone.replace(/\D/g, '').replace(/^0/, '972')}?text=${encodeURIComponent('היי! אשמח להזמין את ' + pr.name + ' 🙂')}`} target="_blank" fullWidth size="small" sx={{ mt: 0.75, bgcolor: '#25D36618', color: '#1EA952', fontWeight: 800, fontSize: 11.5, borderRadius: 2, py: 0.4 }}>💬 הזמנה</Button>
                         )}
                       </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+            {/* Reviews — social proof */}
+            {info.branding.showReviews !== false && (info.reviews || []).length > 0 && (
+              <Box sx={{ mb: 2.5, animation: 'fadeUp 0.5s 0.4s both' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>לקוחות מספרים</Typography>
+                  <Typography sx={{ fontSize: 13, fontWeight: 900, color: '#B8860B' }}>{'★'.repeat(Math.round((info.reviews || []).reduce((sum, r) => sum + r.rating, 0) / (info.reviews || []).length))} {(Math.round(((info.reviews || []).reduce((sum, r) => sum + r.rating, 0) / (info.reviews || []).length) * 10) / 10)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1.25, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+                  {(info.reviews || []).slice(0, 6).map((r, i) => (
+                    <Box key={i} sx={{ flexShrink: 0, width: 230, bgcolor: '#fff', borderRadius: 3.5, p: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
+                      <Typography sx={{ fontSize: 12.5, color: '#B8860B', mb: 0.5, letterSpacing: '0.08em' }}>{'★'.repeat(r.rating)}</Typography>
+                      <Typography sx={{ fontSize: 13, color: '#44403C', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.text}</Typography>
+                      <Typography sx={{ fontSize: 11.5, color: '#A8A29E', fontWeight: 700, mt: 1 }}>— {r.customerName}</Typography>
                     </Box>
                   ))}
                 </Box>

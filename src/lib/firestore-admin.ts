@@ -159,19 +159,29 @@ export async function listAllBiz(): Promise<Array<{ id: string; data: Record<str
 // Web push to a customer who saved the app — free, instant, no carrier filtering.
 // Gracefully does nothing when VAPID env vars are missing.
 export async function sendPush(bizId: string, phoneRaw: string, title: string, message: string): Promise<void> {
+  const logPush = async (ok: boolean, note: string) => {
+    try {
+      const fresh = await getBiz(bizId);
+      const items = (((fresh?.smsLog as Record<string, unknown>)?.items as unknown[]) || []);
+      await setBizField(bizId, ['smsLog', 'items'], [{ at: new Date().toISOString(), to: '🔔 push ' + String(phoneRaw || ''), ok, err: ok ? '' : note, preview: message.slice(0, 60), delivery: ok ? '✓ פוש נשלח' : '' }, ...items].slice(0, 30));
+    } catch { /* never break */ }
+  };
   try {
     const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     const priv = process.env.VAPID_PRIVATE_KEY;
-    if (!pub || !priv) return;
+    if (!pub || !priv) { await logPush(false, 'מפתחות VAPID חסרים ב-Vercel (או שלא בוצע Redeploy אחרי הוספתם)'); return; }
     const key = String(phoneRaw || '').replace(/\D/g, '').slice(-9);
     if (key.length < 9) return;
     const biz = await getBiz(bizId);
     const sub = ((biz?.pushSubs as Record<string, unknown>) || {})[key];
-    if (!sub) return;
+    if (!sub) { await logPush(false, 'המכשיר של המספר הזה לא נרשם להתראות — יש לפתוח את המערכת במכשיר ולאשר התראות'); return; }
     const webpush = (await import('web-push')).default;
     webpush.setVapidDetails('mailto:support@zikkit.app', pub, priv);
     await webpush.sendNotification(sub as never, JSON.stringify({ title, body: message }));
-  } catch { /* push is best-effort */ }
+    await logPush(true, '');
+  } catch (e) {
+    await logPush(false, 'שליחת פוש נכשלה: ' + String((e as Error)?.message || e).slice(0, 80));
+  }
 }
 
 export async function sendSms(to: string, body: string, logBizId?: string): Promise<boolean> {

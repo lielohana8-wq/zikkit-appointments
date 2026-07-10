@@ -29,7 +29,28 @@ export async function GET(req: NextRequest) {
 
       const daysSinceActive = lastActivity ? Math.floor((now - lastActivity) / day) : null;
 
+      // Pilot picture: activity, funnel, money, setup completeness
+      const live = bookings.filter((b) => b.status !== 'cancelled');
+      const todayStr = new Date(now).toISOString().split('T')[0];
+      const monthStr = todayStr.slice(0, 7);
+      const bookings7 = bookings.filter((b) => now - new Date(String(b.createdAt || 0)).getTime() < 7 * day).length;
+      const upcoming = live.filter((b) => String(b.date || '') >= todayStr).length;
+      const cancelledCount = bookings.filter((b) => b.status === 'cancelled').length;
+      const revenueMonth = live.filter((b) => String(b.date || '').startsWith(monthStr)).reduce((acc, b) => acc + (Number(b.price) || 0), 0);
+      const customersCount = (((data.customers as Record<string, unknown>)?.items as unknown[]) || []).length;
+      const teamCount = (((data.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).filter((m) => m.active !== false).length;
+      const servicesCount = (((data.services as Record<string, unknown>)?.items as unknown[]) || []).length;
+      const smsItems = (((data.smsLog as Record<string, unknown>)?.items as Array<Record<string, unknown>>) || []);
+      const smsOk = smsItems.filter((e) => e.ok === true).length;
+      const smsFail = smsItems.filter((e) => e.ok !== true).length;
+      const galleryCount = ((booking.gallery as unknown[]) || []).length;
+
       return {
+        bookings7, upcoming, cancelledCount, revenueMonth,
+        customersCount, teamCount, servicesCount, smsOk, smsFail, galleryCount,
+        hasLogo: !!booking.logo, hasBanner: !!booking.banner,
+        otpOn: booking.otpOn === true, peakOn: booking.peakOn === true,
+        theme: String(booking.theme || 'dark'),
         id,
         name: String(cfg.biz_name || 'ללא שם'),
         ownerEmail: String(cfg.owner_email || cfg.email || ''),

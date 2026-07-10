@@ -18,6 +18,9 @@ interface Stats {
   growthByMonth: Record<string, number>; recentPayments: Array<{ biz: string; type: string; paidAt: string }>;
 }
 interface Biz {
+  bookings7?: number; upcoming?: number; cancelledCount?: number; revenueMonth?: number;
+  customersCount?: number; teamCount?: number; servicesCount?: number; smsOk?: number; smsFail?: number;
+  galleryCount?: number; hasLogo?: boolean; hasBanner?: boolean; otpOn?: boolean; peakOn?: boolean; theme?: string;
   id: string; name: string; ownerEmail: string; createdAt: string; plan: string;
   subStatus: string; bookingsCount: number; bookingEnabled: boolean; suspended: boolean;
   lastActivity: string; daysSinceActive: number | null; danaOn: boolean;
@@ -199,6 +202,32 @@ export default function HQPage() {
                       </Box>
                       <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{b.ownerEmail || 'ללא אימייל'} · {b.bookingsCount} תורים · {b.daysSinceActive !== null ? `פעיל לפני ${b.daysSinceActive} ימים` : 'ללא פעילות'}</Typography>
                     </Box>
+                  </Box>
+                  {/* Pilot picture */}
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0.75, mb: 1.25 }}>
+                    {([
+                      ['📅 שבוע', b.bookings7 ?? 0],
+                      ['⏳ קרובים', b.upcoming ?? 0],
+                      ['❌ ביטולים', b.cancelledCount ?? 0],
+                      ['₪ החודש', b.revenueMonth ?? 0],
+                      ['👥 לקוחות', b.customersCount ?? 0],
+                      ['✂️ צוות', b.teamCount ?? 0],
+                      ['📋 שירותים', b.servicesCount ?? 0],
+                      ['🖼 גלריה', b.galleryCount ?? 0],
+                    ] as Array<[string, number]>).map(([lb, v]) => (
+                      <Box key={lb} sx={{ bgcolor: c.surface2, borderRadius: 1.5, px: 1, py: 0.6, textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: 14, fontWeight: 900, color: c.text, lineHeight: 1.1 }}>{v}</Typography>
+                        <Typography sx={{ fontSize: 10, color: c.text3 }}>{lb}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.25 }}>
+                    <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: (b.smsFail ?? 0) > 0 ? c.hotDim : c.surface2, color: (b.smsFail ?? 0) > 0 ? c.hot : c.text3 }}>📨 SMS: {b.smsOk ?? 0}✓ {b.smsFail ?? 0}✗</Box>
+                    <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>{b.hasLogo ? '🎨 לוגו ✓' : '🎨 חסר לוגו'}</Box>
+                    <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>{b.hasBanner ? '🖼 באנר ✓' : '🖼 חסר באנר'}</Box>
+                    {b.otpOn && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🔐 OTP</Box>}
+                    {b.peakOn && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>💰 שעות שיא</Box>}
+                    <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🎭 {b.theme || 'dark'}</Box>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
                     <Button href={`/book/${b.id}`} target="_blank" size="small" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12 }}>👁 דף הזמנות</Button>

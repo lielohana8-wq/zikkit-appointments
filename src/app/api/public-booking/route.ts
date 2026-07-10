@@ -415,6 +415,7 @@ export async function POST(req: NextRequest) {
     const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string)
       || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
     if (!ownerPhone) await logSkip('התראה לבעל העסק דולגה: לא הוגדר "הטלפון שלך להתראות" בהגדרות דף ההזמנות');
+    if (ownerPhone) await sendPush(bizId, String(ownerPhone), '📅 תור חדש — ' + bizName, `${booking.customerName} · ${booking.date} ב-${booking.time} · ${booking.service}`).catch(() => {});
     if (ownerPhone) {
       await sendSms(ownerPhone, `תור חדש אונליין! ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${assignedStaff ? ' · אצל ' + assignedStaff : ''}`, bizId).catch(() => {});
     }
@@ -422,6 +423,7 @@ export async function POST(req: NextRequest) {
       const member = teamMembers.find((m) => String(m.name) === assignedStaff);
       const staffPhone = member && (member.phone as string);
       if (!staffPhone) await logSkip(`התראה לאיש הצוות ${assignedStaff} דולגה: לא הוגדר לו טלפון בכרטיס הצוות`);
+      if (staffPhone) await sendPush(bizId, String(staffPhone), '✂️ תור חדש אצלך', `${booking.customerName} · ${booking.date} ב-${booking.time} · ${booking.service}`).catch(() => {});
       if (staffPhone) await sendSms(staffPhone, `תור חדש אצלך! ${booking.customerName} · ${booking.service} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
     }
 

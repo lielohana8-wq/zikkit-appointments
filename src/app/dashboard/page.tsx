@@ -79,6 +79,36 @@ const ALL_TOOLS: Array<{ title: string; items: Array<{ icon: string; label: stri
 export default function DashboardPage() {
   const router = useRouter();
   const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
+
+  // Owners & staff get push notifications for new bookings — subscribe quietly
+  useEffect(() => {
+    const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!bizId || !user || !vapid || typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    (async () => {
+      try {
+        const { loadBiz } = await import('@/lib/bizdata');
+        const biz = (await loadBiz(bizId)) as Record<string, unknown>;
+        const bk = (biz.booking as Record<string, unknown>) || {};
+        const cfg = (biz.cfg as Record<string, unknown>) || {};
+        let myPhone = String(bk.notifyPhone || cfg.owner_phone || '');
+        if (user.role === 'staff' && staffName) {
+          const members = (((biz.team as Record<string, unknown>) || {}).members as Array<Record<string, unknown>>) || [];
+          myPhone = String((members.find((mm) => mm.name === staffName) || {}).phone || '');
+        }
+        if (myPhone.replace(/\D/g, '').length < 9) return;
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        if (Notification.permission === 'denied') return;
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') return;
+        const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+        const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+        await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: myPhone, sub }) });
+      } catch { /* best effort */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bizId, user, staffName]);
   const { showToast } = useToast();
   const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);

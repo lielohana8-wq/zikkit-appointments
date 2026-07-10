@@ -372,42 +372,16 @@ export interface BookingBranding {
 export async function getBranding(bizId: string): Promise<BookingBranding> {
   const biz = await loadBiz(bizId);
   const b = ((biz as Record<string, unknown>).booking as Partial<BookingBranding>) || {};
-  return {
-    logo: b.logo || '',
-    banner: b.banner || '',
-    brandColor: b.brandColor || '#9333EA',
-    accentStyle: b.accentStyle || 'gradient',
-    welcomeText: b.welcomeText || '',
-    headerStyle: b.headerStyle || 'centered',
-    showPrices: b.showPrices !== false,
-    showDuration: b.showDuration !== false,
-    requireEmail: b.requireEmail === true,
-    requirePhone: b.requirePhone !== false,
-    address: b.address || '',
-    phone: b.phone || '',
-    instagram: b.instagram || '',
-    whatsapp: b.whatsapp || '',
-    notifyPhone: b.notifyPhone || '',
-    cancellationNote: b.cancellationNote || '',
-    thankYouMessage: b.thankYouMessage || '',
-    enabled: b.enabled !== false,
-    gallery: b.gallery || [],
-    galleryTitle: b.galleryTitle || 'העבודות שלנו',
-    announcement: b.announcement || '',
-    announcementOn: b.announcementOn === true,
-    popupTitle: b.popupTitle || '',
-    popupText: b.popupText || '',
-    popupOn: b.popupOn === true,
-    promoText: b.promoText || '',
-    promoOn: b.promoOn === true,
-    aboutText: b.aboutText || '',
-    tiktok: b.tiktok || '',
-    facebook: b.facebook || '',
-    showReviews: b.showReviews !== false,
-    depositOn: b.depositOn === true,
-    depositAmount: b.depositAmount || 0,
-    depositPercent: b.depositPercent || 0,
+  // Spread-merge: whatever the owner SAVED wins — including 0 and false.
+  // (The old field-by-field '||' mapping silently reset falsy values and
+  //  dropped fields it didn't know, which made settings "change on entry".)
+  const defaults: Partial<BookingBranding> = {
+    logo: '', banner: '', brandColor: '#9333EA', accentStyle: 'gradient', welcomeText: '',
+    headerStyle: 'centered', showPrices: true, showDuration: true, requireEmail: false,
+    requirePhone: true, requireRegistration: true, address: '', slotInterval: 15,
+    theme: 'dark', nameFont: 'serif', gallery: [],
   };
+  return { ...defaults, ...b } as BookingBranding;
 }
 
 export async function saveBranding(bizId: string, branding: BookingBranding): Promise<void> {

@@ -80,6 +80,33 @@ export default function DashboardPage() {
   const router = useRouter();
   const { firebaseUser, user, bizId, loading, logout, staffName } = useAuth();
 
+  const enablePushBiz = async () => {
+    try {
+      const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapid) { alert('❌ מפתחות ההתראות לא מוגדרים ב-Vercel'); return; }
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) { alert('❌ הדפדפן לא תומך — באייפון: שמרו את המערכת למסך הבית ופתחו מהאייקון'); return; }
+      const { loadBiz } = await import('@/lib/bizdata');
+      const biz = (await loadBiz(bizId!)) as Record<string, unknown>;
+      const bk = (biz.booking as Record<string, unknown>) || {};
+      const cfg = (biz.cfg as Record<string, unknown>) || {};
+      let myPhone = String(bk.notifyPhone || cfg.owner_phone || '');
+      if (user?.role === 'staff' && staffName) {
+        const members = (((biz.team as Record<string, unknown>) || {}).members as Array<Record<string, unknown>>) || [];
+        myPhone = String((members.find((mm) => mm.name === staffName) || {}).phone || '');
+      }
+      if (myPhone.replace(/\D/g, '').length < 9) { alert(user?.role === 'staff' ? '❌ אין לך טלפון בכרטיס הצוות — בקש מבעל העסק להוסיף' : '❌ מלא "הטלפון שלך להתראות" בהגדרות דף ההזמנות ושמור'); return; }
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { alert('❌ ההרשאה נדחתה — הגדרות > התראות'); return; }
+      const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+      await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: myPhone, sub }) });
+      alert('✅ ההתראות פעילות! תקבלו 🔔 על כל תור חדש');
+    } catch (e) { alert('❌ ' + String((e as Error)?.message || 'שגיאה').slice(0, 90)); }
+  };
+
   // Owners & staff get push notifications for new bookings — subscribe quietly
   useEffect(() => {
     const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -181,6 +208,7 @@ export default function DashboardPage() {
     if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
     const pendingCount = bookings.filter((b) => b.status === 'pending' && b.date >= today).length;
     if (pendingCount > 0) out.push({ icon: '⏳', text: `${pendingCount} תורים ממתינים לאישור שלך`, onClick: () => router.push('/calendar'), hot: true });
+    out.push({ icon: '🔔', text: 'הפעלת התראות על תורים חדשים במכשיר הזה (לחצו)', onClick: () => { enablePushBiz(); } });
     const steps = [setupState.hasServices, setupState.hasHours, setupState.bookingEnabled, setupState.hasBooking];
     const done = steps.filter(Boolean).length;
     if (done < steps.length) out.push({ icon: '🚀', text: `העסק מוכן ב-${Math.round((done / steps.length) * 100)}% — השלם את ההקמה`, onClick: () => router.push('/activate') });

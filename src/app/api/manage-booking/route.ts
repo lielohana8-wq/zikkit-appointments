@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBiz, setBizField, mutateBizField, sendSms } from '@/lib/firestore-admin';
+import { getBiz, setBizField, mutateBizField, sendSms, sendPush } from '@/lib/firestore-admin';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -118,9 +118,12 @@ export async function POST(req: NextRequest) {
       }
       const cancelOwner = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
       if (cancelOwner) await sendSms(cancelOwner, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}${booking.staff ? ' · אצל ' + booking.staff : ''}`, bizId).catch(() => {});
+      if (cancelOwner) await sendPush(bizId, String(cancelOwner), '❌ ביטול תור', `${booking.customerName} · ${booking.date} ב-${booking.time}${booking.staff ? ' · אצל ' + booking.staff : ''}`).catch(() => {});
+      if (booking.customerPhone) await sendPush(bizId, String(booking.customerPhone), 'התור בוטל', `${booking.service} · ${booking.date} ב-${booking.time} — נשמח לראותך שוב 💜`).catch(() => {});
       if (booking.staff) {
         const mem = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).find((m) => String(m.name) === booking.staff);
         if (mem && mem.phone) await sendSms(String(mem.phone), `בוטל תור אצלך: ${booking.customerName} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
+        if (mem && mem.phone) await sendPush(bizId, String(mem.phone), '❌ בוטל תור אצלך', `${booking.customerName} · ${booking.date} ב-${booking.time}`).catch(() => {});
       }
       await mutateBizField(bizId, ['appointments', 'bookings'], (cur) =>
         ((cur as Array<Record<string, unknown>>) || []).map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b)));

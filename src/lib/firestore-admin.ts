@@ -156,6 +156,24 @@ export async function listAllBiz(): Promise<Array<{ id: string; data: Record<str
   }));
 }
 
+// Web push to a customer who saved the app — free, instant, no carrier filtering.
+// Gracefully does nothing when VAPID env vars are missing.
+export async function sendPush(bizId: string, phoneRaw: string, title: string, message: string): Promise<void> {
+  try {
+    const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const priv = process.env.VAPID_PRIVATE_KEY;
+    if (!pub || !priv) return;
+    const key = String(phoneRaw || '').replace(/\D/g, '').slice(-9);
+    if (key.length < 9) return;
+    const biz = await getBiz(bizId);
+    const sub = ((biz?.pushSubs as Record<string, unknown>) || {})[key];
+    if (!sub) return;
+    const webpush = (await import('web-push')).default;
+    webpush.setVapidDetails('mailto:support@zikkit.app', pub, priv);
+    await webpush.sendNotification(sub as never, JSON.stringify({ title, body: message }));
+  } catch { /* push is best-effort */ }
+}
+
 export async function sendSms(to: string, body: string, logBizId?: string): Promise<boolean> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;

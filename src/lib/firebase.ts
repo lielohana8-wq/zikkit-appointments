@@ -53,6 +53,16 @@ export { doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs };
 
 // Product tag — this is how ZikkitAppointments data is separated
 // from the field-service Zikkit while sharing the same Firebase project.
+// Upload an image to Firebase Storage and get a lightweight URL —
+// the Firestore doc stores the URL instead of megabytes of base64.
+export async function uploadImageToStorage(bizId: string, name: string, dataUrl: string): Promise<string> {
+  getFirestoreDb(); // ensure the app is initialized
+  const { getStorage, ref, uploadString, getDownloadURL } = await import('firebase/storage');
+  const r = ref(getStorage(), `biz/${bizId}/${name}-${Date.now()}.jpg`);
+  await uploadString(r, dataUrl, 'data_url');
+  return getDownloadURL(r);
+}
+
 export const PRODUCT = 'appointments' as const;
 
 // Dedicated collection — fully separate from Zikkit field's `businesses`.

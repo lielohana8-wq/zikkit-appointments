@@ -1,16 +1,17 @@
-// Minimal service worker for PWA installability + basic caching.
-const CACHE = 'zikkit-v2';
-self.addEventListener('install', (e) => { self.skipWaiting(); });
-self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));
-  self.clients.claim();
+/* Zikkit push service worker */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'עדכון', {
+    body: d.body || '',
+    icon: d.icon || '/icon-192.png',
+    badge: d.icon || '/icon-192.png',
+    dir: 'rtl',
+    lang: 'he',
+    data: { url: d.url || '/' },
+  }));
 });
-self.addEventListener('fetch', (e) => {
-  // Network-first for everything (always fresh); cache only as offline fallback for navigations.
-  if (e.request.method !== 'GET') return;
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match('/dashboard') || caches.match('/'))
-    );
-  }
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow((e.notification.data && e.notification.data.url) || '/'));
 });

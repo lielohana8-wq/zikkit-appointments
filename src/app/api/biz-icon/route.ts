@@ -10,6 +10,9 @@ export async function GET(req: NextRequest) {
   const biz = await getBiz(bizId);
   const bookingCfg = (biz?.booking as Record<string, unknown>) || {};
   const logo = (bookingCfg.appIcon as string) || (bookingCfg.logo as string) || '';
+  if (logo.startsWith('http')) {
+    return NextResponse.redirect(logo, { status: 302 });
+  }
   const m = logo.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
   if (!m) {
     // Fallback: redirect to the Zikkit icon

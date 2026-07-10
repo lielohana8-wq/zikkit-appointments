@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBiz, setBizField, mutateBizField, sendSms } from '@/lib/firestore-admin';
+import { getBiz, setBizField, mutateBizField, sendSms, sendPush } from '@/lib/firestore-admin';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     // Only active staff, only public-safe fields
     const team = (teamData.members || [])
       .filter((m) => m.active !== false)
-      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [], hours: m.hours || null, blockedDates: (m.blockedDates as string[]) || [] }));
+      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [], hours: m.hours || null, blockedDates: (m.blockedDates as string[]) || [], prices: (m.prices as Record<string, number>) || {} }));
 
     // Only published reviews, public-safe fields
     const reviews = (reviewsData.items || [])
@@ -99,6 +99,7 @@ export async function GET(req: NextRequest) {
         bookingWindowDays: (booking.bookingWindowDays as number) || 14,
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         requireRegistration: booking.requireRegistration !== false,
+        otpOn: booking.otpOn === true,
         benefitOn: booking.benefitOn === true,
         benefitText: (booking.benefitText as string) || '',
         benefitEvery: (booking.benefitEvery as number) || 10,
@@ -172,12 +173,31 @@ export async function POST(req: NextRequest) {
 
     // ---- Find my bookings: phone lookup so customers who lost the manage
     // link can still cancel/reschedule. Strictly rate-limited (enumeration guard). ----
+    if (action === 'otp-send') {
+      const rawO = String(body.phone || '').replace(/\D/g, '');
+      if (rawO.length < 9) return NextResponse.json({ success: false, error: 'מספר לא תקין' }, { status: 400 });
+      const keyO = rawO.slice(-9);
+      const codeO = String(Math.floor(1000 + Math.random() * 9000));
+      await setBizField(bizId, ['otpCodes', keyO], { code: codeO, exp: Date.now() + 5 * 60 * 1000 });
+      const bizNameO = ((biz.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
+      await sendSms(rawO, `קוד האימות שלך ל${bizNameO}: ${codeO}`, bizId);
+      return NextResponse.json({ success: true });
+    }
+
     if (action === 'find') {
       const strict = enforceRateLimit(req, 'public-booking-find', 5, 60_000);
       if (strict) return strict;
       const raw = String(body.phone || '').replace(/\D/g, '');
       if (raw.length < 7) return NextResponse.json({ success: false, error: 'מספר טלפון לא תקין' }, { status: 400 });
       const key = raw.slice(-9); // Israeli numbers: compare the last 9 digits (05X / +9725X agnostic)
+      if ((biz.booking as Record<string, unknown>)?.otpOn === true) {
+        const rec = ((biz.otpCodes as Record<string, { code?: string; exp?: number }>) || {})[key];
+        const codeIn = String(((body as Record<string, unknown>).code as string) || '');
+        if (!rec || rec.code !== codeIn || (rec.exp || 0) < Date.now()) {
+          return NextResponse.json({ success: false, needCode: true, error: 'קוד אימות שגוי או שפג תוקפו' }, { status: 401 });
+        }
+      }
+
       const apt2 = (biz.appointments as Record<string, unknown>) || {};
       const all = (apt2.bookings as Array<Record<string, unknown>>) || [];
       const today = new Date().toISOString().split('T')[0];
@@ -210,6 +230,14 @@ export async function POST(req: NextRequest) {
       const rawPhone = String(body.phone || '').replace(/\D/g, '');
       if (!name || rawPhone.length < 9) return NextResponse.json({ success: false, error: 'שם וטלפון תקין נדרשים' }, { status: 400 });
       const key = rawPhone.slice(-9);
+      if ((biz.booking as Record<string, unknown>)?.otpOn === true) {
+        const rec = ((biz.otpCodes as Record<string, { code?: string; exp?: number }>) || {})[key];
+        const codeIn = String(((body as Record<string, unknown>).code as string) || '');
+        if (!rec || rec.code !== codeIn || (rec.exp || 0) < Date.now()) {
+          return NextResponse.json({ success: false, needCode: true, error: 'קוד אימות שגוי או שפג תוקפו' }, { status: 401 });
+        }
+      }
+
       const custWrap = (biz.customers as Record<string, unknown>) || {};
       const custs = (custWrap.items as Array<Record<string, unknown>>) || [];
       const exists = custs.find((cu) => String(cu.phone || '').replace(/\D/g, '').slice(-9) === key);
@@ -322,7 +350,7 @@ export async function POST(req: NextRequest) {
       date: booking.date,
       time: booking.time,
       staff: assignedStaff,
-      price: (Number(booking.price) || 0) + peakExtra,
+      price: ((): number => { const ovm = assignedStaff ? ((teamMembers.find((m) => String(m.name) === assignedStaff) || {}) as { prices?: Record<string, number> }).prices?.[String(booking.service)] : undefined; return (ovm !== undefined ? Number(ovm) : (Number(booking.price) || 0)) + peakExtra; })(),
       status: needsApproval ? 'pending' : 'confirmed',
       reminded: false,
       isNew: true,
@@ -377,6 +405,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
     const manageUrl = `${baseUrl}/manage/${bizId}/${manageToken}`;
     if (!booking.customerPhone) await logSkip('אישור ללקוח דולג: הלקוח לא הזין טלפון');
+    if (booking.customerPhone) await sendPush(bizId, String(booking.customerPhone), bizName + ' 💜', needsApproval ? `הבקשה שלך התקבלה — ${booking.date} ב-${booking.time}` : `התור שלך אושר! ${booking.date} ב-${booking.time} · ${booking.service}`).catch(() => {});
     if (booking.customerPhone) {
       // No URL in the SMS on purpose: Israeli carriers filter link-bearing
       // messages from international senders. Managing is via the app.

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; otpOn?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -92,10 +92,38 @@ export default function PublicBookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
+  // Web-push: once the customer joined, quietly register for notifications
+  useEffect(() => {
+    const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!me || !vapid || typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        if (Notification.permission === 'denied') return;
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') return;
+        const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+        const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+        await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: me.phone, sub }) });
+      } catch { /* best effort */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, bizId]);
+
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const registerNow = async () => {
     setRegBusy(true); setRegErr('');
     try {
-      const res = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'register', name: regName.trim(), phone: regPhone }) });
+      if (info?.branding?.otpOn && !otpSent) {
+        const rs = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'otp-send', phone: regPhone }) });
+        const ds = await rs.json();
+        if (!ds.success) { setRegErr(ds.error || 'שליחת הקוד נכשלה'); return; }
+        setOtpSent(true); return;
+      }
+      const res = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'register', name: regName.trim(), phone: regPhone, code: otpCode }) });
       const d = await res.json();
       if (!d.success) { setRegErr(d.error || 'שגיאה'); return; }
       const meObj = { name: (d.knownName as string) || regName.trim(), phone: regPhone };
@@ -113,12 +141,20 @@ export default function PublicBookingPage() {
   const [findErr, setFindErr] = useState('');
   const [findResults, setFindResults] = useState<Array<{ service: string; date: string; time: string; token: string }> | null>(null);
 
+  const [findOtpSent, setFindOtpSent] = useState(false);
+  const [findCode, setFindCode] = useState('');
   const findMyBookings = async () => {
     setFindBusy(true); setFindErr(''); setFindResults(null);
     try {
+      if (info?.branding?.otpOn && !findOtpSent) {
+        const rs = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'otp-send', phone: findPhone }) });
+        const ds = await rs.json();
+        if (!ds.success) { setFindErr(ds.error || 'שליחת הקוד נכשלה'); setFindBusy(false); return; }
+        setFindOtpSent(true); setFindBusy(false); return;
+      }
       const res = await fetch('/api/public-booking', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bizId, action: 'find', phone: findPhone }),
+        body: JSON.stringify({ bizId, action: 'find', phone: findPhone, code: findCode }),
       });
       const data = await res.json();
       if (data.success) setFindResults(data.bookings || []);
@@ -184,6 +220,11 @@ export default function PublicBookingPage() {
     const tm = (x: string) => { const [h, m] = x.split(':').map(Number); return h * 60 + (m || 0); };
     const t = tm(time);
     return (info.branding.peakRules || []).reduce((acc, r) => ((r.days || []).includes(dow) && t >= tm(r.from || '00:00') && t < tm(r.to || '23:59') ? acc + (Number(r.extra) || 0) : acc), 0);
+  };
+  const staffPriceFor = (svcName: string, svcPrice: unknown): number => {
+    const sel = selectedStaff as unknown as { name?: string } | null;
+    const m = sel ? ((info?.team || []).find((t) => t.name === sel.name) as unknown as { prices?: Record<string, number> } | undefined) : undefined;
+    return Number(m?.prices?.[svcName] ?? (svcPrice as number)) || 0;
   };
   const bandText = bandImg ? '#fff' : th.bandText;
   const bandSub = bandImg ? 'rgba(255,255,255,0.75)' : th.bandSub;
@@ -347,9 +388,12 @@ export default function PublicBookingPage() {
             <Typography sx={{ fontSize: 17, fontWeight: 900, color: '#1C1917', textAlign: 'center', mb: 2 }}>הצטרפו כדי להיכנס 💜</Typography>
             <TextField fullWidth size="small" label="שם מלא" value={regName} onChange={(e) => setRegName(e.target.value)} sx={{ mb: 1.5 }} />
             <TextField fullWidth size="small" type="tel" label="טלפון" placeholder="050-1234567" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') registerNow(); }} sx={{ mb: 1.5 }} />
+            {info.branding.otpOn && otpSent && (
+              <TextField fullWidth size="small" label="קוד אימות מה-SMS" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 4))} onKeyDown={(e) => { if (e.key === 'Enter') registerNow(); }} sx={{ mb: 1.5 }} inputProps={{ inputMode: 'numeric', style: { textAlign: 'center', letterSpacing: '0.5em', fontWeight: 900 } }} />
+            )}
             {regErr && <Typography sx={{ fontSize: 12.5, color: '#DC2626', mb: 1.5, textAlign: 'center' }}>{regErr}</Typography>}
             <Button disabled={regBusy || !regName.trim() || regPhone.replace(/\D/g, '').length < 9} onClick={registerNow} fullWidth variant="contained" sx={{ bgcolor: accent, borderRadius: 3, fontWeight: 900, py: 1.5, fontSize: 15.5, boxShadow: `0 10px 28px ${accent}66`, '&:hover': { bgcolor: accentDark } }}>
-              {regBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'כניסה לאפליקציה ←'}
+              {regBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : (info.branding.otpOn && !otpSent ? '📲 שלחו לי קוד אימות' : 'כניסה לאפליקציה ←')}
             </Button>
             <Typography sx={{ fontSize: 11.5, color: '#A8A29E', mt: 1.5, textAlign: 'center', lineHeight: 1.5 }}>כבר קבעתם אצלנו? הזינו את אותו טלפון — הכל יופיע מיד</Typography>
           </Box>
@@ -628,7 +672,7 @@ export default function PublicBookingPage() {
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, mb: 1.5, borderBottom: '1px solid #F5F3F0' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917' }}>{selectedService.name}</Typography>
-                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>{selectedService.priceFrom ? 'החל מ־' : ''}₪{(Number(selectedService.price) || 0) + peakExtraFor(selectedDate, selectedTime || '')}{selectedTime && peakExtraFor(selectedDate, selectedTime) > 0 ? ' ⭐' : ''}</Typography> : null}
+                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>{selectedService.priceFrom ? 'החל מ־' : ''}₪{staffPriceFor(selectedService.name, selectedService.price) + peakExtraFor(selectedDate, selectedTime || '')}{selectedTime && peakExtraFor(selectedDate, selectedTime) > 0 ? ' ⭐' : ''}</Typography> : null}
               </Box>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Typography sx={{ fontSize: 13.5, color: '#57534E' }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>
@@ -1066,6 +1110,9 @@ export default function PublicBookingPage() {
         <Typography sx={{ fontSize: 13, color: '#78716C', mb: 2 }}>הזינו את מספר הטלפון שאיתו קבעתם — ונמצא את התור.</Typography>
         <TextField fullWidth size="small" type="tel" label="מספר טלפון" placeholder="050-1234567" value={findPhone}
           onChange={(e) => setFindPhone(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') findMyBookings(); }} sx={{ mb: 1.5 }} />
+            {info?.branding?.otpOn && findOtpSent && (
+              <TextField fullWidth size="small" label="קוד אימות מה-SMS" value={findCode} onChange={(e) => setFindCode(e.target.value.replace(/\D/g, '').slice(0, 4))} sx={{ mt: 1.5 }} inputProps={{ inputMode: 'numeric', style: { textAlign: 'center', letterSpacing: '0.5em', fontWeight: 900 } }} />
+            )}
         <Button onClick={findMyBookings} disabled={findBusy || findPhone.replace(/\D/g, '').length < 9} fullWidth variant="contained" sx={{ borderRadius: 2, fontWeight: 800, py: 1.25, bgcolor: accent, '&:hover': { bgcolor: accentDark } }}>
           {findBusy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'מצאו את התור שלי'}
         </Button>

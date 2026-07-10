@@ -38,15 +38,17 @@ export default function ServicesPage() {
         const team = await getTeam(bizId);
         const me = team.find((m) => m.name === staffName);
         setAllowedServices(new Set(me?.services || []));
+        setMyPrices((me as unknown as { prices?: Record<string, number> })?.prices || {});
       }
     } finally { setDataLoading(false); }
   }, [bizId, isStaff, staffName]);
 
   useEffect(() => { load(); }, [load]);
+  const [myPrices, setMyPrices] = useState<Record<string, number>>({});
 
   const openNew = () => { setDraft(emptyDraft); setEditId(null); setOpen(true); };
   const openEdit = (s: Service) => {
-    setDraft({ name: s.name, category: s.category, price: s.price, priceFrom: s.priceFrom || false, duration: s.duration, description: s.description, whatToAsk: s.whatToAsk || '' });
+    setDraft({ name: s.name, category: s.category, price: isStaff && myPrices[s.name] !== undefined ? myPrices[s.name] : s.price, priceFrom: s.priceFrom || false, duration: s.duration, description: s.description, whatToAsk: s.whatToAsk || '' });
     setEditId(s.id); setOpen(true);
   };
 
@@ -54,7 +56,14 @@ export default function ServicesPage() {
     if (!bizId || !draft.name) return;
     setSaving(true);
     try {
-      if (editId) await updateService(bizId, editId, draft);
+      if (isStaff && staffName && editId) {
+        // A team member's price is PERSONAL — it never touches the business price list
+        const { loadBiz, patchBiz } = await import('@/lib/bizdata');
+        const biz = await loadBiz(bizId);
+        const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
+        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, prices: { ...((m.prices as Record<string, number>) || {}), [draft.name]: Number(draft.price) || 0 } } : m));
+        await patchBiz(bizId, { team: { ...teamWrap, members } });
+      } else if (editId) await updateService(bizId, editId, draft);
       else await addService(bizId, draft);
       setOpen(false); await load();
     } finally { setSaving(false); }
@@ -153,7 +162,7 @@ export default function ServicesPage() {
                         </Box>
                       </Box>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography sx={{ fontSize: 21, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>{s.priceFrom ? <span style={{ fontSize: 12, fontWeight: 700 }}>{'החל מ־'}</span> : null}₪{s.price}</Typography>
+                        <Typography sx={{ fontSize: 21, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>{s.priceFrom ? <span style={{ fontSize: 12, fontWeight: 700 }}>{'החל מ־'}</span> : null}₪{isStaff && myPrices[s.name] !== undefined ? myPrices[s.name] : s.price}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
                         <Button onClick={() => openEdit(s)} size="small" sx={{ minWidth: 32, color: c.text3, '&:hover': { color: c.accent } }}>✎</Button>

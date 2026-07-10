@@ -319,6 +319,7 @@ export interface BookingBranding {
   appIcon?: string;             // square 512 icon generated from the logo (fills the tile, no bars)
   appIconV?: number;            // bumped on every icon change — busts device/browser caches
   requireRegistration?: boolean; // customers must join before using the app (default: on)
+  otpOn?: boolean;              // require SMS code verification on registration/find
   peakOn?: boolean;             // dynamic peak-hours pricing
   peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; // surcharge windows
   benefitOn?: boolean;          // loyalty punch-card enabled
@@ -455,6 +456,7 @@ export interface TeamMember {
   role: string;          // e.g. "ספר בכיר", "קוסמטיקאית"
   phone?: string;        // for SMS notifications about their bookings
   blockedDates?: string[]; // personal days off (YYYY-MM-DD) — blocks only this member
+  prices?: Record<string, number>; // personal price per service name — overrides the business price
   photo: string;         // data URL or hosted URL
   description: string;
   services: string[];    // names of services this member provides

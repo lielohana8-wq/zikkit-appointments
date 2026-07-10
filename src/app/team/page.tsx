@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Button, CircularProgress, Dialog, TextField, Chip, Slider, Switch } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { uploadImageToStorage } from '@/lib/firebase';
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, loadBiz, setStations, type TeamMember } from '@/lib/bizdata';
 import { useToast } from '@/components/Toast';
 import { createStaffAccount } from '@/lib/staff';
@@ -68,7 +69,8 @@ export default function TeamPage() {
         const scale = Math.max(size / img.width, size / img.height);
         const w = img.width * scale, h = img.height * scale;
         ctx?.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-        setDraft((p) => ({ ...p, photo: canvas.toDataURL('image/jpeg', 0.75) }));
+        const dPh = canvas.toDataURL('image/jpeg', 0.75);
+        uploadImageToStorage(bizId || '', 'team', dPh).then((u) => setDraft((pp) => ({ ...pp, photo: u }))).catch(() => setDraft((pp) => ({ ...pp, photo: dPh })));
       };
       img.src = reader.result as string;
     };

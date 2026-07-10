@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Box, Typography, Button, CircularProgress, TextField, Switch, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { uploadImageToStorage } from '@/lib/firebase';
 import { getBranding, saveBranding, type BookingBranding } from '@/lib/bizdata';
 import { useToast } from '@/components/Toast';
 import { zikkitColors as c } from '@/styles/theme';
@@ -63,6 +64,32 @@ export default function BookingPageSettings() {
     } finally { setAiLoading(false); }
   };
 
+  // One-time migration: move existing base64 images to Storage (fast URLs)
+  const migratedRef = useRef(false);
+  useEffect(() => {
+    if (!b || !bizId || migratedRef.current) return;
+    const isData = (v?: string) => !!v && v.startsWith('data:');
+    const heavy = ['logo', 'banner', 'appIcon'].filter((f) => isData((b as unknown as Record<string, string>)[f])) as Array<'logo' | 'banner' | 'appIcon'>;
+    const heavyGallery = (b.gallery || []).some((g) => isData(g));
+    if (heavy.length === 0 && !heavyGallery) { migratedRef.current = true; return; }
+    migratedRef.current = true;
+    (async () => {
+      try {
+        for (const f of heavy) {
+          const u = await uploadImageToStorage(bizId, f.toLowerCase(), (b as unknown as Record<string, string>)[f]);
+          set(f, u);
+        }
+        if (heavyGallery) {
+          const g2: string[] = [];
+          for (const g of (b.gallery || [])) g2.push(isData(g) ? await uploadImageToStorage(bizId, 'gallery', g) : g);
+          set('gallery', g2);
+        }
+        showToast('🚀 התמונות הועברו לאחסון מהיר — לחצו "שמור הכל"', 'success');
+      } catch { /* storage not enabled yet — keep base64, nothing breaks */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [b, bizId]);
+
   // Self-heal: generate the square app icon for logos uploaded before this feature
   useEffect(() => {
     if (!b?.logo || b.appIcon) return;
@@ -74,7 +101,7 @@ export default function BookingPageSettings() {
       if (!ictx) return;
       const side = Math.min(img.width, img.height);
       ictx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 512, 512);
-      set('appIcon', icon.toDataURL('image/jpeg', 0.82)); set('appIconV', Date.now());
+      { const dIc = icon.toDataURL('image/jpeg', 0.82); uploadImageToStorage(bizId || '', 'appicon', dIc).then((u) => { set('appIcon', u); set('appIconV', Date.now()); }).catch(() => { set('appIcon', dIc); set('appIconV', Date.now()); }); }
     };
     img.src = b.logo;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +124,7 @@ export default function BookingPageSettings() {
         const w = img.width * scale; const h = img.height * scale;
         ctx.drawImage(img, (512 - w) / 2, (512 - h) / 2, w, h);
       }
-      set('appIcon', cv.toDataURL('image/jpeg', 0.85)); set('appIconV', Date.now());
+      { const dIc = cv.toDataURL('image/jpeg', 0.85); uploadImageToStorage(bizId || '', 'appicon', dIc).then((u) => { set('appIcon', u); set('appIconV', Date.now()); }).catch(() => { set('appIcon', dIc); set('appIconV', Date.now()); }); }
     };
     img.src = b.logo;
   };
@@ -113,7 +140,8 @@ export default function BookingPageSettings() {
         const canvas = document.createElement('canvas');
         canvas.width = img.width * scale; canvas.height = img.height * scale;
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        set(field, canvas.toDataURL('image/jpeg', 0.7));
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        uploadImageToStorage(bizId || '', field, dataUrl).then((u) => set(field, u)).catch(() => set(field, dataUrl));
         // The app icon must be a perfect square that FILLS the home-screen tile:
         // center cover-crop of the logo at 512x512 — no white bars, ever.
         if (field === 'logo') {
@@ -125,7 +153,7 @@ export default function BookingPageSettings() {
             const sx = (img.width - side) / 2;
             const sy = (img.height - side) / 2;
             ictx.drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
-            set('appIcon', icon.toDataURL('image/jpeg', 0.82)); set('appIconV', Date.now());
+            { const dIc = icon.toDataURL('image/jpeg', 0.82); uploadImageToStorage(bizId || '', 'appicon', dIc).then((u) => { set('appIcon', u); set('appIconV', Date.now()); }).catch(() => { set('appIcon', dIc); set('appIconV', Date.now()); }); }
           }
         }
       };
@@ -147,7 +175,7 @@ export default function BookingPageSettings() {
         canvas.width = img.width * scale; canvas.height = img.height * scale;
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        set('gallery', [...(b.gallery || []), dataUrl].slice(0, 12));
+        uploadImageToStorage(bizId || '', 'gallery', dataUrl).then((u) => set('gallery', [...(b.gallery || []), u].slice(0, 12))).catch(() => set('gallery', [...(b.gallery || []), dataUrl].slice(0, 12)));
       };
       img.src = reader.result as string;
     };
@@ -486,6 +514,13 @@ export default function BookingPageSettings() {
               <Typography sx={{ fontSize: 12, color: c.text3 }}>לקוחות חייבים להצטרף (שם+טלפון) לפני שרואים את האפליקציה</Typography>
             </Box>
             <Switch checked={b.requireRegistration !== false} onChange={(e) => set('requireRegistration', e.target.checked)} />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, color: c.text }}>🔐 אימות בקוד SMS (OTP)</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>מונע התחזות למספר של אחר. ⚠️ הפעל רק אחרי שההודעות עובדות (בדוק ביומן ההודעות)</Typography>
+            </Box>
+            <Switch checked={!!b.otpOn} onChange={(e) => set('otpOn', e.target.checked)} />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
             <Box>

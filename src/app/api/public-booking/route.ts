@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     // Only active staff, only public-safe fields
     const team = (teamData.members || [])
       .filter((m) => m.active !== false)
-      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [], hours: m.hours || null }));
+      .map((m) => ({ id: m.id, name: m.name, role: m.role || '', photo: m.photo || '', services: m.services || [], hours: m.hours || null, blockedDates: (m.blockedDates as string[]) || [] }));
 
     // Only published reviews, public-safe fields
     const reviews = (reviewsData.items || [])
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       blockedDates: ((cfg.hours as Record<string, unknown>)?.blockedDates as string[]) || [],
       bookings: ((apt.bookings as Array<Record<string, unknown>>) || [])
         .filter((b) => b.status !== 'cancelled')
-        .map((b) => ({ date: b.date, time: b.time, duration: b.duration, staff: b.staff || null })), // include staff for per-staff availability
+        .map((b) => ({ date: b.date, time: b.time, duration: b.duration, staff: b.staff || null, status: (b.status as string) || '' })), // include staff for per-staff availability
       branding: {
         logo: booking.logo || '',
         banner: booking.banner || '',
@@ -107,6 +107,8 @@ export async function GET(req: NextRequest) {
         brandColor2: (booking.brandColor2 as string) || '',
         nameFont: (booking.nameFont as string) || 'serif',
         bandImageOn: booking.bandImageOn === true,
+        peakOn: booking.peakOn === true,
+        peakRules: (booking.peakRules as unknown[]) || [],
         approvalMode: booking.approvalMode === 'manual' ? 'manual' : 'auto',
         policyOn: booking.policyOn === true,
         policyText: booking.policyText || '',
@@ -128,7 +130,7 @@ export async function GET(req: NextRequest) {
         depositAmount: booking.depositAmount || 0,
         depositPercent: booking.depositPercent || 0,
       },
-    });
+    }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' } });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
@@ -240,10 +242,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'השעה שבחרת כבר עברה — רעננו את הדף ובחרו שעה חדשה 🙂' }, { status: 400 });
     }
 
+    // Peak-hours surcharge — computed on the server, not trusted from the client
+    const bookCfgP = (biz.booking as Record<string, unknown>) || {};
+    const peakRulesArr = (bookCfgP.peakOn === true ? (bookCfgP.peakRules as Array<{ days?: number[]; from?: string; to?: string; extra?: number }>) : []) || [];
+    const dowP = new Date(`${booking.date}T00:00:00`).getDay();
+    const t2mP = (t: string) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); };
+    const peakExtra = peakRulesArr.reduce((acc, r) => ((r.days || []).includes(dowP) && newStart >= t2mP(r.from || '00:00') && newStart < t2mP(r.to || '23:59') ? acc + (Number(r.extra) || 0) : acc), 0);
+
     const teamMembers = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).filter((m) => m.active !== false);
     const overlapsWith = (staffName: string | null) => existing.filter((b) => {
       if (b.date !== booking.date || b.status === 'cancelled') return false;
-      if (staffName && b.staff !== staffName) return false; // per-barber check
+      if (staffName && b.staff !== staffName && !(b.status === 'blocked' && !b.staff)) return false; // per-barber check (general blocks hit everyone)
       const bStart = toMin(b.time as string);
       const bEnd = bStart + ((b.duration as number) || 30);
       return newStart < bEnd && newEnd > bStart;
@@ -287,8 +296,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: 'התור הזה כבר נתפס. בחר שעה אחרת.' }, { status: 409 });
       }
       // Auto-assign a free barber so the calendar always knows who takes it
-      const free = teamMembers.find((m) => overlapsWith(String(m.name)) === 0);
+      const free = teamMembers.find((m) => overlapsWith(String(m.name)) === 0 && !(((m.blockedDates as string[]) || []).includes(String(booking.date))));
       if (free) assignedStaff = String(free.name);
+    }
+
+    // Personal vacation day of the assigned member blocks only them
+    if (assignedStaff) {
+      const memRec = teamMembers.find((m) => String(m.name) === assignedStaff);
+      if (memRec && ((memRec.blockedDates as string[]) || []).includes(String(booking.date))) {
+        return NextResponse.json({ success: false, error: `${assignedStaff} לא זמין/ה בתאריך הזה — בחרו יום אחר או איש צוות אחר` }, { status: 409 });
+      }
     }
 
     const manageToken = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -304,7 +321,7 @@ export async function POST(req: NextRequest) {
       date: booking.date,
       time: booking.time,
       staff: assignedStaff,
-      price: booking.price || 0,
+      price: (Number(booking.price) || 0) + peakExtra,
       status: needsApproval ? 'pending' : 'confirmed',
       reminded: false,
       isNew: true,

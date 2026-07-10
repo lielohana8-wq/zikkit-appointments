@@ -373,6 +373,37 @@ export default function BookingPageSettings() {
         </Section>
 
         {/* Booking rules */}
+        <Section title="💰 שעות שיא — תמחור דינמי">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, color: c.text }}>תוספת מחיר בשעות מבוקשות</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>למשל: שישי 12:00-15:00 בתוספת 20 ₪ — מוצג ללקוח בשקיפות (⭐)</Typography>
+            </Box>
+            <Switch checked={!!b.peakOn} onChange={(e) => set('peakOn', e.target.checked)} />
+          </Box>
+          {b.peakOn && (
+            <Box sx={{ mt: 1.5 }}>
+              {(b.peakRules || []).map((rule, ri) => (
+                <Box key={ri} sx={{ bgcolor: c.surface2, borderRadius: 2.5, p: 1.5, mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
+                    {['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'].map((dl, di) => (
+                      <Box key={di} onClick={() => { const rules = [...(b.peakRules || [])]; const ds = new Set(rules[ri].days || []); if (ds.has(di)) ds.delete(di); else ds.add(di); rules[ri] = { ...rules[ri], days: Array.from(ds) }; set('peakRules', rules); }}
+                        sx={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 800, bgcolor: (rule.days || []).includes(di) ? c.accent : c.surface3, color: (rule.days || []).includes(di) ? '#fff' : c.text3 }}>{dl}</Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <TextField size="small" type="time" label="מ־" value={rule.from || '12:00'} onChange={(e) => { const rules = [...(b.peakRules || [])]; rules[ri] = { ...rules[ri], from: e.target.value }; set('peakRules', rules); }} sx={{ width: 110 }} InputLabelProps={{ shrink: true }} />
+                    <TextField size="small" type="time" label="עד" value={rule.to || '15:00'} onChange={(e) => { const rules = [...(b.peakRules || [])]; rules[ri] = { ...rules[ri], to: e.target.value }; set('peakRules', rules); }} sx={{ width: 110 }} InputLabelProps={{ shrink: true }} />
+                    <TextField size="small" type="number" label="תוספת ₪" value={rule.extra || 0} onChange={(e) => { const rules = [...(b.peakRules || [])]; rules[ri] = { ...rules[ri], extra: Math.max(0, Number(e.target.value) || 0) }; set('peakRules', rules); }} sx={{ width: 100 }} />
+                    <Button onClick={() => set('peakRules', (b.peakRules || []).filter((_, i) => i !== ri))} sx={{ color: c.hot, minWidth: 'auto', fontWeight: 800 }}>✕</Button>
+                  </Box>
+                </Box>
+              ))}
+              <Button onClick={() => set('peakRules', [...(b.peakRules || []), { days: [5], from: '12:00', to: '15:00', extra: 20 }])} sx={{ color: c.accent, fontWeight: 800 }}>+ הוסף כלל</Button>
+            </Box>
+          )}
+        </Section>
+
         <Section title="🎨 עיצוב האפליקציה">
           <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>ערכת נושא</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 2.5 }}>

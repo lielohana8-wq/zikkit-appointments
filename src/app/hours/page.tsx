@@ -43,8 +43,8 @@ export default function HoursPage() {
         const { loadBiz } = await import('@/lib/bizdata');
         const biz = await loadBiz(bizId);
         const members = ((biz as Record<string, unknown>).team as { members?: Array<{ name: string; hours?: BizHours['days'] }> })?.members || [];
-        const mine = members.find((m) => m.name === staffName);
-        setHoursState(mine?.hours ? { days: mine.hours } : bizHours);
+        const mine = members.find((m) => m.name === staffName) as { name: string; hours?: BizHours['days']; blockedDates?: string[] } | undefined;
+        setHoursState({ days: mine?.hours || bizHours.days, blockedDates: mine?.blockedDates || [] });
       } else {
         setHoursState(bizHours);
       }
@@ -65,7 +65,7 @@ export default function HoursPage() {
         const { loadBiz, patchBiz } = await import('@/lib/bizdata');
         const biz = await loadBiz(bizId);
         const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
-        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, hours: hours.days } : m));
+        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, hours: hours.days, blockedDates: hours.blockedDates || [] } : m));
         await patchBiz(bizId, { team: { ...teamWrap, members } });
       } else {
         await setHours(bizId, hours);
@@ -111,8 +111,7 @@ export default function HoursPage() {
           })}
         </Box>
 
-        {!isStaff && (<>
-        {/* Blocked dates — holidays / vacation */}
+        {/* Blocked dates — holidays / vacation (staff: personal days off) */}
         <Box sx={{ mt: 4 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 0.5 }}>🚫 ימים חסומים</Typography>
           <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>חופשות, חגים או ימים שבהם אינך עובד. לקוחות לא יוכלו לקבוע תור בתאריכים האלה.</Typography>
@@ -130,7 +129,6 @@ export default function HoursPage() {
             {(hours.blockedDates || []).length === 0 && <Typography sx={{ fontSize: 13, color: c.text3 }}>אין ימים חסומים</Typography>}
           </Box>
         </Box>
-        </>)}
 
         <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שעות'}

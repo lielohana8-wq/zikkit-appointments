@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -20,7 +20,7 @@ interface BizInfo {
   reviews?: Review[];
   hours: Record<number, { open: boolean; start: string; end: string }> | null;
   blockedDates?: string[];
-  bookings: Array<{ date: string; time: string; duration: number; staff?: string | null }>;
+  bookings: Array<{ date: string; time: string; duration: number; staff?: string | null; status?: string }>;
   branding: Branding;
 }
 
@@ -178,6 +178,13 @@ export default function PublicBookingPage() {
     bold: { bandBg: `linear-gradient(140deg, ${accent} 0%, ${c2} 100%)`, bandText: '#fff', bandSub: 'rgba(255,255,255,0.78)', pageBase: 'linear-gradient(180deg,#FAF9FE 0%,#F2EFF8 100%)', navBg: 'rgba(20,14,30,0.9)', navBorder: 'rgba(255,255,255,0.14)', navActive: '#fff', navIdle: 'rgba(255,255,255,0.5)' },
   };
   const th = THEMES[(info?.branding?.theme as string) || 'dark'] || THEMES.dark;
+  const peakExtraFor = (date: string, time: string) => {
+    if (!info?.branding?.peakOn || !date || !time) return 0;
+    const dow = new Date(date + 'T00:00:00').getDay();
+    const tm = (x: string) => { const [h, m] = x.split(':').map(Number); return h * 60 + (m || 0); };
+    const t = tm(time);
+    return (info.branding.peakRules || []).reduce((acc, r) => ((r.days || []).includes(dow) && t >= tm(r.from || '00:00') && t < tm(r.to || '23:59') ? acc + (Number(r.extra) || 0) : acc), 0);
+  };
   const bandText = bandImg ? '#fff' : th.bandText;
   const bandSub = bandImg ? 'rgba(255,255,255,0.75)' : th.bandSub;
   const accentDark = shade(accent, -30);
@@ -191,6 +198,7 @@ export default function PublicBookingPage() {
     if (selectedStaff) {
       const member = (info.team || []).find((t) => t.name === (selectedStaff as unknown as { name?: string })?.name) as { hours?: Record<number, { open: boolean; start: string; end: string }> } | undefined;
       if (member?.hours?.[dow]) dh = member.hours[dow]; // personal hours override
+      if ((member as unknown as { blockedDates?: string[] })?.blockedDates?.includes(date)) return []; // personal day off
     }
     if (!dh.open) return [];
     // Never offer times that already passed today (+30 min prep buffer)
@@ -204,7 +212,7 @@ export default function PublicBookingPage() {
     // If a specific staff member is chosen, only that staff's bookings block the slot
     // (each staff can take one booking at a time). Otherwise use station capacity.
     const relevantBookings = selectedStaff
-      ? info.bookings.filter((b) => b.staff === selectedStaff.name)
+      ? info.bookings.filter((b) => b.staff === selectedStaff.name || (b.status === 'blocked' && !b.staff))
       : info.bookings;
     const capacity = selectedStaff ? 1 : (info.staffCount || info.stations);
     const open = toMin(dh.start); const close = toMin(dh.end);
@@ -589,8 +597,13 @@ export default function PublicBookingPage() {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
                   {freeSlots(selectedDate).map((t) => (
                     <Box key={t} onClick={() => { setSelectedTime(t); setStage('details'); }}
-                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.65, borderRadius: 3, bgcolor: '#fff', border: '1px solid rgba(16,24,40,0.07)', fontWeight: 900, fontSize: 15.5, letterSpacing: '0.01em', color: '#171412', transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 1px 2px rgba(16,24,40,0.04)', '&:hover': { border: '1px solid transparent', background: `linear-gradient(155deg, ${accent}, ${accentDark})`, color: '#fff', transform: 'translateY(-3px) scale(1.05)', boxShadow: `0 14px 30px ${accent}4D` } }}>{t}</Box>
+                      sx={{ cursor: 'pointer', textAlign: 'center', py: 1.65, borderRadius: 3, bgcolor: '#fff', border: '1px solid rgba(16,24,40,0.07)', fontWeight: 900, fontSize: 15.5, letterSpacing: '0.01em', color: '#171412', transition: 'all 0.18s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 1px 2px rgba(16,24,40,0.04)', '&:hover': { border: '1px solid transparent', background: `linear-gradient(155deg, ${accent}, ${accentDark})`, color: '#fff', transform: 'translateY(-3px) scale(1.05)', boxShadow: `0 14px 30px ${accent}4D` } }}>{t}{peakExtraFor(selectedDate, t) > 0 && <Box component="span" sx={{ fontSize: 10, mr: 0.4 }}>⭐</Box>}</Box>
                   ))}
+                  </Box>
+                {info.branding.peakOn && selectedDate && freeSlots(selectedDate).some((t) => peakExtraFor(selectedDate, t) > 0) && (
+                  <Typography sx={{ fontSize: 11.5, color: '#A8A29E', mt: 1 }}>⭐ שעת שיא — תוספת ₪{Math.max(...freeSlots(selectedDate).map((t) => peakExtraFor(selectedDate, t)))} למחיר</Typography>
+                )}
+                <Box sx={{ display: 'none' }}>
                   {freeSlots(selectedDate).length === 0 && (
                     <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 3 }}>
                       <Typography sx={{ color: '#A8A29E', mb: 1.5 }}>אין תורים פנויים ביום זה 😔</Typography>
@@ -615,7 +628,7 @@ export default function PublicBookingPage() {
             <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: 2.5, mb: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, mb: 1.5, borderBottom: '1px solid #F5F3F0' }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1C1917' }}>{selectedService.name}</Typography>
-                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>{selectedService.priceFrom ? 'החל מ־' : ''}₪{selectedService.price}</Typography> : null}
+                {info.branding.showPrices && selectedService.price ? <Typography sx={{ fontSize: 17, fontWeight: 800, color: accent }}>{selectedService.priceFrom ? 'החל מ־' : ''}₪{(Number(selectedService.price) || 0) + peakExtraFor(selectedDate, selectedTime || '')}{selectedTime && peakExtraFor(selectedDate, selectedTime) > 0 ? ' ⭐' : ''}</Typography> : null}
               </Box>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Typography sx={{ fontSize: 13.5, color: '#57534E' }}>📅 {new Date(selectedDate).getDate()} {HEBREW_MONTHS[new Date(selectedDate).getMonth()]}</Typography>

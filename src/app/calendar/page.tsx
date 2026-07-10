@@ -5,6 +5,8 @@ import { Box, Typography, Button, CircularProgress, Dialog, TextField, MenuItem,
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBookings, addBooking, updateBooking, loadBiz, getCustomers, type Booking, type TeamMember, type Customer } from '@/lib/bizdata';
+import { getFirestoreDb, doc, BIZ_COLLECTION } from '@/lib/firebase';
+import { onSnapshot } from 'firebase/firestore';
 import { BookingDetailDialog } from '@/components/BookingDetailDialog';
 import { useToast } from '@/components/Toast';
 import { PageSkeleton } from '@/components/Skeleton';
@@ -53,6 +55,20 @@ export default function CalendarPage() {
   }, [bizId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Realtime: the barbershop screen updates itself — a cancelled booking
+  // disappears within a second, a new one pops in. No manual refresh.
+  useEffect(() => {
+    if (!bizId) return;
+    let first = true;
+    const unsub = onSnapshot(doc(getFirestoreDb(), BIZ_COLLECTION, bizId), () => {
+      if (first) { first = false; return; } // initial snapshot — load() already ran
+      load();
+    });
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    return () => { unsub(); window.removeEventListener('focus', onFocus); };
+  }, [bizId, load]);
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('add') === '1') {
       setAddOpen(true);

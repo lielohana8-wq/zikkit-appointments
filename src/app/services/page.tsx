@@ -56,12 +56,15 @@ export default function ServicesPage() {
     if (!bizId || !draft.name) return;
     setSaving(true);
     try {
-      if (isStaff && staffName && editId) {
+      if (isStaff && editId) {
         // A team member's price is PERSONAL — it never touches the business price list
         const { loadBiz, patchBiz } = await import('@/lib/bizdata');
         const biz = await loadBiz(bizId);
         const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
-        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, prices: { ...((m.prices as Record<string, number>) || {}), [draft.name]: Number(draft.price) || 0 } } : m));
+        const membersAll = (teamWrap.members || []);
+        const meName = staffName || String((membersAll.find((mm) => (mm as { loginEmail?: string }).loginEmail === user?.email) || {}).name || '');
+        if (!meName) { showToast('לא זוהה כרטיס הצוות שלך — בקש מבעל העסק להוסיף את האימייל שלך בכרטיס הצוות', 'error'); return; }
+        const members = membersAll.map((m) => (m.name === meName ? { ...m, prices: { ...((m.prices as Record<string, number>) || {}), [draft.name]: Number(draft.price) || 0 } } : m));
         await patchBiz(bizId, { team: { ...teamWrap, members } });
       } else if (editId) await updateService(bizId, editId, draft);
       else await addService(bizId, draft);

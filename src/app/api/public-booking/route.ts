@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
         depositAmount: booking.depositAmount || 0,
         depositPercent: booking.depositPercent || 0,
       },
-    }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600' } });
+    }, { headers: { 'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=45' } });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

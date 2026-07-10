@@ -114,23 +114,30 @@ export default function PublicBookingPage() {
     }
   };
 
-  // Web-push: once the customer joined, quietly register for notifications
+  // Web-push, fully automatic: already-granted devices subscribe silently on
+  // load; new devices get the permission prompt on their FIRST natural tap
+  // anywhere in the app (Apple requires a user gesture for the prompt).
   useEffect(() => {
     const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!me || !vapid || typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    (async () => {
+    const doSubscribe = async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        if (Notification.permission === 'denied') return;
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') return;
-        const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
-        const pad = '='.repeat((4 - (b64.length % 4)) % 4);
-        const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
-        await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: me.phone, sub }) });
+      const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+      await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: me?.phone || '', sub }) });
       } catch { /* best effort */ }
-    })();
+    };
+    if (Notification.permission === 'granted') { doSubscribe(); return; }
+    if (Notification.permission === 'denied') return;
+    const onFirstTap = () => {
+      window.removeEventListener('pointerdown', onFirstTap);
+      Notification.requestPermission().then((perm) => { if (perm === 'granted') doSubscribe(); }).catch(() => {});
+    };
+    window.addEventListener('pointerdown', onFirstTap, { once: true });
+    return () => window.removeEventListener('pointerdown', onFirstTap);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, bizId]);
 

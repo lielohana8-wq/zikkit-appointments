@@ -107,33 +107,39 @@ export default function DashboardPage() {
     } catch (e) { alert('❌ ' + String((e as Error)?.message || 'שגיאה').slice(0, 90)); }
   };
 
-  // Owners & staff get push notifications for new bookings — subscribe quietly
+  // Owners & staff: fully automatic push — granted devices subscribe silently,
+  // new devices get the prompt on their first tap in the dashboard.
   useEffect(() => {
     const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!bizId || !user || !vapid || typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    (async () => {
+    const doSubscribe = async () => {
       try {
         const { loadBiz } = await import('@/lib/bizdata');
         const biz = (await loadBiz(bizId)) as Record<string, unknown>;
         const bk = (biz.booking as Record<string, unknown>) || {};
         const cfg = (biz.cfg as Record<string, unknown>) || {};
         let myPhone = String(bk.notifyPhone || cfg.owner_phone || '');
-        if (user.role === 'staff' && staffName) {
+        if (user.role === 'staff') {
           const members = (((biz.team as Record<string, unknown>) || {}).members as Array<Record<string, unknown>>) || [];
-          myPhone = String((members.find((mm) => mm.name === staffName) || {}).phone || '');
+          myPhone = String((members.find((mm) => mm.name === staffName || (mm as { loginEmail?: string }).loginEmail === user.email) || {}).phone || '');
         }
         if (myPhone.replace(/\D/g, '').length < 9) return;
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        if (Notification.permission === 'denied') return;
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') return;
-        const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
-        const pad = '='.repeat((4 - (b64.length % 4)) % 4);
-        const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
-        await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: myPhone, sub }) });
+      const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+      await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: myPhone, sub }) });
       } catch { /* best effort */ }
-    })();
+    };
+    if (Notification.permission === 'granted') { doSubscribe(); return; }
+    if (Notification.permission === 'denied') return;
+    const onFirstTap = () => {
+      window.removeEventListener('pointerdown', onFirstTap);
+      Notification.requestPermission().then((perm) => { if (perm === 'granted') doSubscribe(); }).catch(() => {});
+    };
+    window.addEventListener('pointerdown', onFirstTap, { once: true });
+    return () => window.removeEventListener('pointerdown', onFirstTap);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bizId, user, staffName]);
   const { showToast } = useToast();

@@ -43,9 +43,11 @@ export default function HoursPage() {
       const bizHours = await getHours(bizId);
       const { loadBiz } = await import('@/lib/bizdata');
       const biz = await loadBiz(bizId);
-      const members = (((biz as Record<string, unknown>).team as { members?: Array<{ name: string; active?: boolean; hours?: BizHours['days']; blockedDates?: string[] }> })?.members || []);
+      const members = (((biz as Record<string, unknown>).team as { members?: Array<{ name: string; active?: boolean; loginEmail?: string; hours?: BizHours['days']; blockedDates?: string[] }> })?.members || []);
       setTeamNames(members.filter((m) => m.active !== false).map((m) => m.name));
-      const who = isStaff ? staffName : target;
+      const who = user?.role === 'staff'
+        ? (staffName || (members.find((m) => m.loginEmail === user?.email) || {}).name || '')
+        : target;
       if (who) {
         const mine = members.find((m) => m.name === who);
         setHoursState({ days: mine?.hours || bizHours.days, blockedDates: mine?.blockedDates || [] });
@@ -53,26 +55,43 @@ export default function HoursPage() {
         setHoursState(bizHours);
       }
     } finally { setDataLoading(false); }
-  }, [bizId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bizId, target, staffName, user]);
 
   useEffect(() => { load(); }, [load]);
 
   const update = (day: number, field: 'open' | 'start' | 'end', value: boolean | string) => {
-    setHoursState((prev) => prev ? { days: { ...prev.days, [day]: { ...prev.days[day], [field]: value } } } : prev);
+    setHoursState((prev) => prev ? { ...prev, days: { ...prev.days, [day]: { ...prev.days[day], [field]: value } } } : prev);
   };
 
   const save = async () => {
     if (!bizId || !hours) return;
     setSaving(true);
     try {
-      const who = isStaff ? staffName : target;
+      const isStaffRole = user?.role === 'staff';
+      const { loadBiz, patchBiz } = await import('@/lib/bizdata');
+      const biz = await loadBiz(bizId);
+      const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
+      const membersAll = (teamWrap.members || []);
+      let who = isStaffRole ? (staffName || '') : target;
+      if (isStaffRole && !who) who = String((membersAll.find((mm) => (mm as { loginEmail?: string }).loginEmail === user?.email) || {}).name || '');
+      if (isStaffRole && !who) { alert('לא זוהה כרטיס הצוות שלך — בקש מבעל העסק להוסיף את האימייל שלך בכרטיס הצוות'); return; }
       if (who) {
-        const { loadBiz, patchBiz } = await import('@/lib/bizdata');
-        const biz = await loadBiz(bizId);
-        const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
-        const members = (teamWrap.members || []).map((m) => (m.name === who ? { ...m, hours: hours.days, blockedDates: hours.blockedDates || [] } : m));
+        // Personal hours — touches ONLY this member
+        const members = membersAll.map((mm) => (mm.name === who ? { ...mm, hours: hours.days, blockedDates: hours.blockedDates || [] } : mm));
         await patchBiz(bizId, { team: { ...teamWrap, members } });
       } else {
+        // Owner saving BUSINESS hours: barbers stay independent — anyone without
+        // personal hours is first sealed with the previous business hours, so a
+        // business change never silently moves the whole team.
+        const prev = await getHours(bizId);
+        let changed = false;
+        const seeded = membersAll.map((mm) => {
+          if (mm.hours) return mm;
+          changed = true;
+          return { ...mm, hours: prev.days };
+        });
+        if (changed) await patchBiz(bizId, { team: { ...teamWrap, members: seeded } });
         await setHours(bizId, hours);
       }
       setSaved(true); setTimeout(() => setSaved(false), 2000);

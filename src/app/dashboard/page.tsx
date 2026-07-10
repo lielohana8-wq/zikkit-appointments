@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, Button, CircularProgress, Drawer, TextField, Collapse } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { getFirestoreDb, doc, BIZ_COLLECTION } from '@/lib/firebase';
+import { onSnapshot } from 'firebase/firestore';
 import { getBizDocCached } from '@/lib/firebase';
 import { getNotifications, markNotificationsRead, computeInsights, type AppNotification } from '@/lib/bizdata';
 import { findChurning } from '@/lib/revenue-engine';
@@ -161,11 +163,12 @@ export default function DashboardPage() {
     if (!loading && !firebaseUser) { router.push('/login'); return; }
   }, [loading, firebaseUser, router]);
 
+  const [rtTick, setRtTick] = useState(0);
   useEffect(() => {
     if (!bizId) return;
     (async () => {
       try {
-        const raw = await getBizDocCached(bizId);
+        const raw = await getBizDocCached(bizId, rtTick > 0);
         if (raw) {
           const data = raw as { cfg?: { biz_name?: string; hours?: unknown }; dana?: { phoneNumber?: string; services?: unknown[] }; hours?: unknown; booking?: { enabled?: boolean }; appointments?: { bookings?: unknown[] }; customers?: { items?: CustomerLite[] } };
           setBizName(data.cfg?.biz_name || '');
@@ -186,7 +189,20 @@ export default function DashboardPage() {
         }
       } catch (e) { console.error(e); } finally { setDataLoading(false); }
     })();
-  }, [bizId, user?.role, staffName]);
+  }, [bizId, user?.role, staffName, rtTick]);
+
+  // Realtime: cancelled/new bookings update the dashboard by themselves
+  useEffect(() => {
+    if (!bizId) return;
+    let first = true;
+    const unsub = onSnapshot(doc(getFirestoreDb(), BIZ_COLLECTION, bizId), () => {
+      if (first) { first = false; return; }
+      setRtTick((t) => t + 1);
+    });
+    const onFocus = () => setRtTick((t) => t + 1);
+    window.addEventListener('focus', onFocus);
+    return () => { unsub(); window.removeEventListener('focus', onFocus); };
+  }, [bizId]);
 
   const isStaff = user?.role === 'staff';
   const isPlatformOwner = ['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase());
@@ -214,7 +230,6 @@ export default function DashboardPage() {
     if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
     const pendingCount = bookings.filter((b) => b.status === 'pending' && b.date >= today).length;
     if (pendingCount > 0) out.push({ icon: '⏳', text: `${pendingCount} תורים ממתינים לאישור שלך`, onClick: () => router.push('/calendar'), hot: true });
-    out.push({ icon: '🔔', text: 'הפעלת התראות על תורים חדשים במכשיר הזה (לחצו)', onClick: () => { enablePushBiz(); } });
     const steps = [setupState.hasServices, setupState.hasHours, setupState.bookingEnabled, setupState.hasBooking];
     const done = steps.filter(Boolean).length;
     if (done < steps.length) out.push({ icon: '🚀', text: `העסק מוכן ב-${Math.round((done / steps.length) * 100)}% — השלם את ההקמה`, onClick: () => router.push('/activate') });

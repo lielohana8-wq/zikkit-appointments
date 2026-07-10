@@ -1073,10 +1073,6 @@ export default function PublicBookingPage() {
                   <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 0.25 }}>{me.phone}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: accent, fontWeight: 800, mt: 1 }}>חבר/ה באפליקציה של {info.businessName} 💜</Typography>
                 </Box>
-                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 2.25, mb: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
-                  <Button onClick={enablePush} fullWidth variant="outlined" sx={{ borderColor: `${accent}55`, color: accent, borderRadius: 3, fontWeight: 900, py: 1.2 }}>🔔 הפעלת התראות על התורים שלי</Button>
-                  {pushMsg && <Typography sx={{ fontSize: 12.5, mt: 1, textAlign: 'center', color: pushMsg.startsWith('✅') ? accent : '#DC2626', fontWeight: 700 }}>{pushMsg}</Typography>}
-                </Box>
                 {myUpcoming.length > 0 && (
                   <Box sx={{ mb: 2 }}>
                     <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 900, color: '#44403C', mb: 1.25, '&::before': { content: '""', width: 20, height: 3.5, borderRadius: 99, background: `linear-gradient(90deg, ${accent}, ${accentDark})`, display: 'inline-block' } }}>התורים הקרובים שלך</Typography>

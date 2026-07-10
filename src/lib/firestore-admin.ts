@@ -95,6 +95,42 @@ export async function getBiz(bizId: string): Promise<Record<string, unknown> | n
   return decode(data.fields || {});
 }
 
+/**
+ * Atomic read-modify-write with optimistic concurrency (compare-and-swap).
+ * Re-reads the doc, applies the mutator, and writes ONLY if the document
+ * hasn't changed since the read (currentDocument.updateTime precondition).
+ * On a concurrent write it retries with fresh data — no lost updates, ever.
+ */
+export async function mutateBizField(
+  bizId: string,
+  fieldPath: string[],
+  mutate: (current: unknown, doc: Record<string, unknown>) => unknown,
+): Promise<void> {
+  const token = await getAccessToken();
+  const docUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${BIZ_COLLECTION}/${bizId}`;
+  const buildNested = (path: string[], val: unknown): Record<string, FV> =>
+    path.length === 1 ? { [path[0]]: encode(val) } : { [path[0]]: { mapValue: { fields: buildNested(path.slice(1), val) } } };
+  let lastErr = '';
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const getRes = await fetch(docUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!getRes.ok) throw new Error('Firestore read failed: ' + getRes.status);
+    const raw = await getRes.json() as { updateTime: string; fields?: Record<string, FV> };
+    const docData = decode(raw.fields || {});
+    const current = fieldPath.reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], docData);
+    const next = mutate(current, docData);
+    const res = await fetch(`${docUrl}?updateMask.fieldPaths=${fieldPath.join('.')}&currentDocument.updateTime=${encodeURIComponent(raw.updateTime)}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: buildNested(fieldPath, next) }),
+    });
+    if (res.ok) return;
+    lastErr = await res.text();
+    if (!lastErr.includes('FAILED_PRECONDITION') && res.status !== 409) throw new Error('Firestore write failed: ' + lastErr);
+    // someone wrote in between — loop retries with fresh data
+  }
+  throw new Error('Firestore CAS exhausted: ' + lastErr.slice(0, 120));
+}
+
 export async function setBizField(bizId: string, fieldPath: string[], value: unknown): Promise<void> {
   const token = await getAccessToken();
   const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${BIZ_COLLECTION}/${bizId}?updateMask.fieldPaths=${fieldPath.join('.')}`;

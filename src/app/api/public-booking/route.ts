@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBiz, setBizField, sendSms } from '@/lib/firestore-admin';
+import { getBiz, setBizField, mutateBizField, sendSms } from '@/lib/firestore-admin';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
       hours: ((cfg.hours as { days?: unknown })?.days as never) || null,
       blockedDates: ((cfg.hours as Record<string, unknown>)?.blockedDates as string[]) || [],
       bookings: ((apt.bookings as Array<Record<string, unknown>>) || [])
-        .filter((b) => b.status !== 'cancelled')
+        .filter((b) => b.status !== 'cancelled' && !(b.status === 'pending' && b.createdAt && Date.parse(String(b.createdAt)) < Date.now() - 12 * 3600000))
         .map((b) => ({ date: b.date, time: b.time, duration: b.duration, staff: b.staff || null, status: (b.status as string) || '' })), // include staff for per-staff availability
       branding: {
         logo: booking.logo || '',
@@ -252,6 +252,7 @@ export async function POST(req: NextRequest) {
     const teamMembers = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).filter((m) => m.active !== false);
     const overlapsWith = (staffName: string | null) => existing.filter((b) => {
       if (b.date !== booking.date || b.status === 'cancelled') return false;
+      if (b.status === 'pending' && b.createdAt && Date.parse(String(b.createdAt)) < Date.now() - 12 * 3600000) return false; // expired pending frees the slot
       if (staffName && b.staff !== staffName && !(b.status === 'blocked' && !b.staff)) return false; // per-barber check (general blocks hit everyone)
       const bStart = toMin(b.time as string);
       const bEnd = bStart + ((b.duration as number) || 30);
@@ -329,7 +330,28 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    await setBizField(bizId, ['appointments', 'bookings'], [newBooking, ...existing]);
+    try {
+      await mutateBizField(bizId, ['appointments', 'bookings'], (cur) => {
+        const fresh = (cur as Array<Record<string, unknown>>) || [];
+        // Re-validate on the FRESH data inside the atomic write — two customers
+        // hitting the same second can no longer double-book or erase each other.
+        const clashing = fresh.filter((b) => {
+          if (b.date !== booking.date || b.status === 'cancelled') return false;
+          if (b.status === 'pending' && b.createdAt && Date.parse(String(b.createdAt)) < Date.now() - 12 * 3600000) return false;
+          if (assignedStaff && b.staff !== assignedStaff && !(b.status === 'blocked' && !b.staff)) return false;
+          const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30);
+          return newStart < be && newEnd > bs;
+        }).length;
+        const cap = assignedStaff ? 1 : (teamMembers.length > 0 ? teamMembers.length : stations);
+        if (clashing >= cap) throw new Error('RACE_CONFLICT');
+        return [newBooking, ...fresh];
+      });
+    } catch (raceErr) {
+      if ((raceErr as Error).message === 'RACE_CONFLICT') {
+        return NextResponse.json({ success: false, error: 'השעה נתפסה ממש עכשיו על ידי לקוח אחר — בחרו שעה אחרת 🙏' }, { status: 409 });
+      }
+      throw raceErr;
+    }
 
     // In-app notification (always works, no Twilio needed)
     const notifications = ((biz.notifications as Record<string, unknown>)?.items as unknown[]) || [];

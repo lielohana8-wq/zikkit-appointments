@@ -91,6 +91,14 @@ export default function CalendarPage() {
         const bs = t2m(b.time); const be = bs + (b.duration || 30);
         return ns < be && ne > bs;
       }).length;
+      if (staffAssign) {
+        const memG = team.find((m) => m.name === staffAssign) as { blockedDates?: string[] } | undefined;
+        if (memG?.blockedDates?.includes(selectedDate)) {
+          setSaving(false);
+          showToast(`${staffAssign} בחופש בתאריך הזה — בחר/י תאריך או איש צוות אחר`, 'error');
+          return;
+        }
+      }
       const cap = staffAssign ? 1 : Math.max(team.length, 1);
       if (clashes >= cap) {
         setSaving(false);

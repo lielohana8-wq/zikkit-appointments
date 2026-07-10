@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBiz, setBizField, sendSms } from '@/lib/firestore-admin';
+import { getBiz, setBizField, mutateBizField, sendSms } from '@/lib/firestore-admin';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -42,7 +42,16 @@ export async function GET(req: NextRequest) {
     const stations = (apt.stations as number) || 1;
     const dur = booking.duration || 30;
     const dow = new Date(slotsDate + 'T00:00:00').getDay();
-    const dh = (hours && hours[dow]) || { open: dow !== 6, start: '09:00', end: '19:00' };
+    let dh = (hours && hours[dow]) || { open: dow !== 6, start: '09:00', end: '19:00' };
+    // Availability = business rules ∩ the barber's personal rules
+    const bizBlockedDays = ((cfg.hours as Record<string, unknown>)?.blockedDates as string[]) || [];
+    if (bizBlockedDays.includes(String(slotsDate))) return NextResponse.json({ slots: [] });
+    const rsMember = booking.staff ? ((((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).find((m) => String(m.name) === booking.staff)) : null;
+    if (rsMember) {
+      const mh = rsMember.hours as Record<number, { open: boolean; start: string; end: string }> | undefined;
+      if (mh && mh[dow]) dh = mh[dow];
+      if (((rsMember.blockedDates as string[]) || []).includes(String(slotsDate))) return NextResponse.json({ slots: [] });
+    }
     const slots: string[] = [];
     if (dh.open) {
       const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); };
@@ -113,8 +122,20 @@ export async function POST(req: NextRequest) {
         const mem = (((biz.team as Record<string, unknown>)?.members as Array<Record<string, unknown>>) || []).find((m) => String(m.name) === booking.staff);
         if (mem && mem.phone) await sendSms(String(mem.phone), `בוטל תור אצלך: ${booking.customerName} · ${booking.date} בשעה ${booking.time}`, bizId).catch(() => {});
       }
-      const updated = bookings.map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b));
-      await setBizField(bizId, ['appointments', 'bookings'], updated);
+      await mutateBizField(bizId, ['appointments', 'bookings'], (cur) =>
+        ((cur as Array<Record<string, unknown>>) || []).map((b) => (b.manageToken === token ? { ...b, status: 'cancelled' } : b)));
+
+      // Live waitlist: a slot just opened — tell the people waiting for it
+      try {
+        const wlItems = (((biz.waitlist as Record<string, unknown>)?.items as Array<Record<string, unknown>>) || []);
+        const toNotify = wlItems.filter((w) => w.status === 'waiting' && w.phone && (!w.preferredDate || w.preferredDate === booking.date)).slice(0, 3);
+        for (const w of toNotify) {
+          await sendSms(String(w.phone), `התפנה מקום ב${bizName}! 🎉 ${booking.date} בשעה ${booking.time}${booking.staff ? ' אצל ' + booking.staff : ''}. מהרו לקבוע בדף ההזמנות — כל הקודם זוכה`, bizId).catch(() => {});
+        }
+        if (toNotify.length) {
+          await setBizField(bizId, ['waitlist', 'items'], wlItems.map((w) => (toNotify.includes(w) ? { ...w, status: 'notified', notifiedAt: new Date().toISOString() } : w)));
+        }
+      } catch { /* waitlist notify must never break a cancel */ }
       // Notify owner
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
       if (ownerPhone) await sendSms(ownerPhone, `ביטול תור: ${booking.customerName} · ${booking.service} · ${booking.date} ${booking.time}`, bizId).catch(() => {});
@@ -137,8 +158,22 @@ export async function POST(req: NextRequest) {
       }).length;
       if (overlap >= (bStaff ? 1 : stations)) return NextResponse.json({ error: 'slot_taken' }, { status: 409 });
 
-      const updated = bookings.map((b) => (b.manageToken === token ? { ...b, date, time } : b));
-      await setBizField(bizId, ['appointments', 'bookings'], updated);
+      try {
+        await mutateBizField(bizId, ['appointments', 'bookings'], (cur) => {
+          const fresh = (cur as Array<Record<string, unknown>>) || [];
+          const clash = fresh.filter((b) => {
+            if (b.manageToken === token || b.date !== date || b.status === 'cancelled') return false;
+            if (bStaff && b.staff !== bStaff && !(b.status === 'blocked' && !b.staff)) return false;
+            const bs = toMin(b.time as string); const be = bs + ((b.duration as number) || 30);
+            return ns < be && ne > bs;
+          }).length;
+          if (clash >= (bStaff ? 1 : stations)) throw new Error('RACE_CONFLICT');
+          return fresh.map((b) => (b.manageToken === token ? { ...b, date, time } : b));
+        });
+      } catch (raceErr) {
+        if ((raceErr as Error).message === 'RACE_CONFLICT') return NextResponse.json({ error: 'slot_taken' }, { status: 409 });
+        throw raceErr;
+      }
       const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
       if (ownerPhone) await sendSms(ownerPhone, `שינוי תור: ${booking.customerName} · ${booking.service}\nל-${date} ${time}`, bizId).catch(() => {});
       if (booking.customerPhone) await sendSms(booking.customerPhone, `התור שלך ב${bizName} עודכן ל-${date} בשעה ${time}. נתראה!`, bizId).catch(() => {});

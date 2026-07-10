@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const { bizId, phone, sub } = await req.json();
     const key = String(phone || '').replace(/\D/g, '').slice(-9);
     if (!bizId || key.length < 9 || !sub?.endpoint) return NextResponse.json({ ok: false }, { status: 400 });
-    await setBizField(bizId, ['pushSubs', key], sub);
+    await setBizField(bizId, ['pushSubs', 'p' + key], sub);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false }, { status: 500 });

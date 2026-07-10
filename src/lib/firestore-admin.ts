@@ -173,7 +173,8 @@ export async function sendPush(bizId: string, phoneRaw: string, title: string, m
     const key = String(phoneRaw || '').replace(/\D/g, '').slice(-9);
     if (key.length < 9) return;
     const biz = await getBiz(bizId);
-    const sub = ((biz?.pushSubs as Record<string, unknown>) || {})[key];
+    const subs = (biz?.pushSubs as Record<string, unknown>) || {};
+    const sub = subs['p' + key] || subs[key];
     if (!sub) { await logPush(false, 'המכשיר של המספר הזה לא נרשם להתראות — יש לפתוח את המערכת במכשיר ולאשר התראות'); return; }
     const webpush = (await import('web-push')).default;
     webpush.setVapidDetails('mailto:support@zikkit.app', pub, priv);

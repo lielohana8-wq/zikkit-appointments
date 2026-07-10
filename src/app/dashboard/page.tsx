@@ -208,8 +208,8 @@ export default function DashboardPage() {
   const isPlatformOwner = ['ohanaliel@gmail.com'].includes((firebaseUser?.email || '').toLowerCase());
 
   const today = new Date().toISOString().split('T')[0];
-  const todayBookings = bookings.filter((b) => b.date === today && b.status !== 'blocked');
-  const upcoming = bookings.filter((b) => b.date > today && b.status !== 'blocked').slice(0, 5);
+  const todayBookings = bookings.filter((b) => b.date === today && b.status !== 'blocked' && b.status !== 'cancelled');
+  const upcoming = bookings.filter((b) => b.date > today && b.status !== 'blocked' && b.status !== 'cancelled').slice(0, 5);
   const todayRevenue = todayBookings
     .filter((b) => b.status !== 'cancelled' && b.status !== 'no_show')
     .reduce((sum, b) => sum + (Number(b.price) || 0), 0);

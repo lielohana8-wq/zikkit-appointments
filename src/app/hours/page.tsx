@@ -13,6 +13,8 @@ export default function HoursPage() {
   const router = useRouter();
   const { firebaseUser, bizId, loading, user, staffName } = useAuth();
   const isStaff = user?.role === 'staff' && !!staffName;
+  const [target, setTarget] = useState('');           // '' = the business; otherwise a member name (owner mode)
+  const [teamNames, setTeamNames] = useState<string[]>([]);
   const [hours, setHoursState] = useState<BizHours | null>(null);
   const [newBlockDate, setNewBlockDate] = useState('');
 
@@ -39,11 +41,13 @@ export default function HoursPage() {
     if (!bizId) return;
     try {
       const bizHours = await getHours(bizId);
-      if (isStaff) {
-        const { loadBiz } = await import('@/lib/bizdata');
-        const biz = await loadBiz(bizId);
-        const members = ((biz as Record<string, unknown>).team as { members?: Array<{ name: string; hours?: BizHours['days'] }> })?.members || [];
-        const mine = members.find((m) => m.name === staffName) as { name: string; hours?: BizHours['days']; blockedDates?: string[] } | undefined;
+      const { loadBiz } = await import('@/lib/bizdata');
+      const biz = await loadBiz(bizId);
+      const members = (((biz as Record<string, unknown>).team as { members?: Array<{ name: string; active?: boolean; hours?: BizHours['days']; blockedDates?: string[] }> })?.members || []);
+      setTeamNames(members.filter((m) => m.active !== false).map((m) => m.name));
+      const who = isStaff ? staffName : target;
+      if (who) {
+        const mine = members.find((m) => m.name === who);
         setHoursState({ days: mine?.hours || bizHours.days, blockedDates: mine?.blockedDates || [] });
       } else {
         setHoursState(bizHours);
@@ -61,11 +65,12 @@ export default function HoursPage() {
     if (!bizId || !hours) return;
     setSaving(true);
     try {
-      if (isStaff) {
+      const who = isStaff ? staffName : target;
+      if (who) {
         const { loadBiz, patchBiz } = await import('@/lib/bizdata');
         const biz = await loadBiz(bizId);
         const teamWrap = ((biz as Record<string, unknown>).team as { members?: Array<Record<string, unknown>> }) || {};
-        const members = (teamWrap.members || []).map((m) => (m.name === staffName ? { ...m, hours: hours.days, blockedDates: hours.blockedDates || [] } : m));
+        const members = (teamWrap.members || []).map((m) => (m.name === who ? { ...m, hours: hours.days, blockedDates: hours.blockedDates || [] } : m));
         await patchBiz(bizId, { team: { ...teamWrap, members } });
       } else {
         await setHours(bizId, hours);
@@ -81,7 +86,15 @@ export default function HoursPage() {
     <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
       <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>{isStaff ? 'השעות שלי' : 'שעות פעילות'}</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>{isStaff ? 'השעות שלי' : target ? `הזמינות של ${target}` : 'שעות פעילות'}</Typography>
+        {!isStaff && teamNames.length > 0 && (
+          <Box sx={{ position: 'absolute', top: 64, right: 0, left: 0, zIndex: 19, bgcolor: c.bg, borderBottom: `1px solid ${c.border}`, px: { xs: 2, sm: 4 }, py: 1, display: 'flex', gap: 0.75, overflowX: 'auto' }}>
+            <Box onClick={() => setTarget('')} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap', bgcolor: !target ? c.accent : c.surface2, color: !target ? '#fff' : c.text2 }}>🏢 העסק</Box>
+            {teamNames.map((n) => (
+              <Box key={n} onClick={() => setTarget(n)} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap', bgcolor: target === n ? c.accent : c.surface2, color: target === n ? '#fff' : c.text2 }}>{n}</Box>
+            ))}
+          </Box>
+        )}
         <Box sx={{ width: 80 }} />
       </Box>
 

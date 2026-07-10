@@ -92,6 +92,28 @@ export default function PublicBookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
+  const [pushMsg, setPushMsg] = useState('');
+  const enablePush = async () => {
+    setPushMsg('');
+    try {
+      const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapid) { setPushMsg('❌ המערכת עוד לא הוגדרה להתראות (מפתח חסר)'); return; }
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) { setPushMsg('❌ הדפדפן הזה לא תומך — באייפון: שמרו את האפליקציה למסך הבית ופתחו מהאייקון'); return; }
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { setPushMsg('❌ ההרשאה נדחתה — הגדרות > התראות > אפשרו לאפליקציה'); return; }
+      const b64 = vapid.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const rawKey = Uint8Array.from(atob(b64 + pad), (ch) => ch.charCodeAt(0));
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: rawKey });
+      const rr = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, phone: me?.phone || '', sub }) });
+      const dj = await rr.json();
+      setPushMsg(dj.ok ? '✅ ההתראות פעילות! תקבלו עדכון על כל תור' : '❌ השמירה נכשלה — נסו שוב');
+    } catch (e) {
+      setPushMsg('❌ ' + String((e as Error)?.message || 'שגיאה').slice(0, 90));
+    }
+  };
+
   // Web-push: once the customer joined, quietly register for notifications
   useEffect(() => {
     const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -1043,6 +1065,10 @@ export default function PublicBookingPage() {
                   <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#1C1917' }}>{me.name}</Typography>
                   <Typography sx={{ fontSize: 13.5, color: '#78716C', mt: 0.25 }}>{me.phone}</Typography>
                   <Typography sx={{ fontSize: 12.5, color: accent, fontWeight: 800, mt: 1 }}>חבר/ה באפליקציה של {info.businessName} 💜</Typography>
+                </Box>
+                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 2.25, mb: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
+                  <Button onClick={enablePush} fullWidth variant="outlined" sx={{ borderColor: `${accent}55`, color: accent, borderRadius: 3, fontWeight: 900, py: 1.2 }}>🔔 הפעלת התראות על התורים שלי</Button>
+                  {pushMsg && <Typography sx={{ fontSize: 12.5, mt: 1, textAlign: 'center', color: pushMsg.startsWith('✅') ? accent : '#DC2626', fontWeight: 700 }}>{pushMsg}</Typography>}
                 </Box>
                 {myUpcoming.length > 0 && (
                   <Box sx={{ mb: 2 }}>

@@ -300,6 +300,11 @@ export default function DashboardPage() {
   }
 
   if (user?.role === 'pending') {
+    if (typeof window !== 'undefined') window.location.replace('/welcome');
+    return null;
+  }
+  const NEVER_LEGACY = false;
+  if (NEVER_LEGACY) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
         <Box sx={{ textAlign: 'center', maxWidth: 420 }}>

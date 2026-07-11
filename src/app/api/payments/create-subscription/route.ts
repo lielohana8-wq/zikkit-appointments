@@ -8,6 +8,7 @@ import { getBiz } from '@/lib/firestore-admin';
  * Creates a payment page for the business's own subscription to Zikkit.
  */
 const PLANS: Record<string, { amount: number; name: string }> = {
+  founder: { amount: 99, name: 'Zikkit מייסדים — חודשי (מחיר נעול)' },
   base: { amount: 149, name: 'Zikkit Base — חודשי' },
   dana: { amount: 349, name: 'Zikkit + דנה — חודשי' },
 };
@@ -23,7 +24,12 @@ export async function POST(req: NextRequest) {
     const biz = await getBiz(bizId);
     if (!biz) return NextResponse.json({ ok: false, error: 'business not found' }, { status: 404 });
 
-    const p = PLANS[plan];
+    const p = { ...PLANS[plan] };
+    try {
+      const platform = await getBiz('_platform');
+      const priceOverride = Number(((platform?.plans as Record<string, number>) || {})[plan]);
+      if (Number.isFinite(priceOverride) && priceOverride > 0) p.amount = priceOverride;
+    } catch { /* defaults hold */ }
     const origin = req.nextUrl.origin;
     const result = await createPaymentPage({
       amount: p.amount,

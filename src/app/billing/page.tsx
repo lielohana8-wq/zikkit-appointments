@@ -10,8 +10,9 @@ import { zikkitColors as c } from '@/styles/theme';
 interface Sub { plan?: string; status?: string; renewsAt?: string; }
 
 const PLANS = [
+  { id: 'founder', name: '⭐ מייסדים', price: 99, tagline: 'לעסקי הפיילוט — מחיר נעול', features: ['כל מה שב-Base', 'מחיר מייסדים קבוע לשנה', 'קו ישיר למייסד', 'השפעה על הפיצ\'רים הבאים'], featured: true },
   { id: 'base', name: 'Base', price: 149, tagline: 'כל הכלים לניהול העסק', features: ['יומן ותורים ללא הגבלה', 'דף הזמנות ממותג', 'ניהול לקוחות', 'דוחות ורווחיות', 'תזכורות וואטסאפ', 'ביקורות ומבצעים'] },
-  { id: 'dana', name: '+ דנה AI', price: 349, tagline: 'הכל + סוכנת AI שעונה לטלפון', features: ['כל מה שב-Base', '🎙️ דנה עונה לטלפון 24/7', 'קביעת תורים אוטומטית', 'סיכום שיחות ב-SMS', 'מספר טלפון ייעודי', 'עדיפות בתמיכה'], featured: true },
+  { id: 'dana', name: '+ דנה AI', price: 349, tagline: 'הכל + סוכנת AI שעונה לטלפון', features: ['כל מה שב-Base', '🎙️ דנה עונה לטלפון 24/7', 'קביעת תורים אוטומטית', 'סיכום שיחות ב-SMS', 'מספר טלפון ייעודי', 'עדיפות בתמיכה'] },
 ];
 
 export default function BillingPage() {
@@ -29,6 +30,9 @@ export default function BillingPage() {
       setSub(((biz as Record<string, unknown>).subscription as Sub) || {});
     }).catch(() => {}).finally(() => setDataLoading(false));
   }, [bizId]);
+
+  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+  useEffect(() => { fetch('/api/platform/plans').then((r) => r.json()).then((d) => setLivePrices(d.plans || {})).catch(() => {}); }, []);
 
   const subscribe = async (plan: string) => {
     if (!bizId) return;
@@ -80,7 +84,7 @@ export default function BillingPage() {
               <Typography sx={{ fontSize: 20, fontWeight: 900, color: c.text }}>{p.name}</Typography>
               <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>{p.tagline}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 2.5 }}>
-                <Typography sx={{ fontSize: 40, fontWeight: 900, color: c.text, letterSpacing: '-0.04em' }}>₪{p.price}</Typography>
+                <Typography sx={{ fontSize: 40, fontWeight: 900, color: c.text, letterSpacing: '-0.04em' }}>₪{livePrices[p.id] ?? p.price}</Typography>
                 <Typography sx={{ fontSize: 14, color: c.text3, fontWeight: 600 }}>/ חודש</Typography>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>

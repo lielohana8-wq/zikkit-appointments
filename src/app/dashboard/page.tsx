@@ -165,11 +165,18 @@ export default function DashboardPage() {
   }, [loading, firebaseUser, router]);
 
   const [rtTick, setRtTick] = useState(0);
+  const [subInfo, setSubInfo] = useState<{ status?: string; plan?: string; created?: string } | null>(null);
   useEffect(() => {
     if (!bizId) return;
     (async () => {
       try {
         const raw = await getBizDocCached(bizId, rtTick > 0);
+        try {
+          const rw = raw as Record<string, unknown>;
+          const subx = (rw.subscription as { status?: string; plan?: string }) || {};
+          const cfgx = (rw.cfg as Record<string, unknown>) || {};
+          setSubInfo({ status: subx.status, plan: subx.plan, created: String(rw.createdAt || cfgx.created_at || cfgx.createdAt || '') });
+        } catch { /* non-critical */ }
         if (raw) {
           const data = raw as { cfg?: { biz_name?: string; hours?: unknown }; dana?: { phoneNumber?: string; services?: unknown[] }; hours?: unknown; booking?: { enabled?: boolean }; appointments?: { bookings?: unknown[] }; customers?: { items?: CustomerLite[] } };
           setBizName(data.cfg?.biz_name || '');
@@ -231,6 +238,22 @@ export default function DashboardPage() {
     if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
     const pendingCount = bookings.filter((b) => b.status === 'pending' && b.date >= today).length;
     if (pendingCount > 0) out.push({ icon: '⏳', text: `${pendingCount} תורים ממתינים לאישור שלך`, onClick: () => router.push('/calendar'), hot: true });
+    if (subInfo && !isStaff) {
+      if (subInfo.status === 'active') {
+        // paying customer — quiet confidence, no banner
+      } else {
+        const createdMs = subInfo.created ? new Date(subInfo.created).getTime() : 0;
+        const daysLeft = createdMs ? 30 - Math.floor((Date.now() - createdMs) / (24 * 60 * 60 * 1000)) : null;
+        out.push({
+          icon: '⭐',
+          text: daysLeft === null ? 'תקופת ניסיון — הצטרפו במחיר מייסדים ₪99/חודש'
+            : daysLeft > 0 ? `נותרו ${daysLeft} ימי ניסיון — נעלו מחיר מייסדים ₪99/חודש`
+            : 'תקופת הניסיון הסתיימה — הצטרפו במחיר מייסדים ₪99/חודש',
+          onClick: () => router.push('/billing'),
+          hot: daysLeft !== null && daysLeft <= 5,
+        });
+      }
+    }
     const steps = [setupState.hasServices, setupState.hasHours, setupState.bookingEnabled, setupState.hasBooking];
     const done = steps.filter(Boolean).length;
     if (done < steps.length) out.push({ icon: '🚀', text: `העסק מוכן ב-${Math.round((done / steps.length) * 100)}% — השלם את ההקמה`, onClick: () => router.push('/activate') });

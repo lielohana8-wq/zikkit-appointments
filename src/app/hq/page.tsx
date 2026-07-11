@@ -37,6 +37,19 @@ export default function HQPage() {
   const [system, setSystem] = useState<{ services: SystemSvc[]; growEnv: string; ownerEmails: string } | null>(null);
   const [leads, setLeads] = useState<Array<Record<string, string>>>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [planPrices, setPlanPrices] = useState<Record<string, number>>({});
+  const [pricesBusy, setPricesBusy] = useState(false);
+  useEffect(() => { fetch('/api/platform/plans').then((r) => r.json()).then((d) => setPlanPrices(d.plans || {})).catch(() => {}); }, []);
+  const savePrices = async () => {
+    setPricesBusy(true);
+    try {
+      const res = await fetch('/api/platform/plans', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: firebaseUser?.email, plans: planPrices }) });
+      const d = await res.json();
+      if (d.ok) { setPlanPrices(d.plans); showToast('המחירים עודכנו — חיים באוויר', 'success'); }
+      else showToast('שמירה נכשלה', 'error');
+    } catch { showToast('שגיאת רשת', 'error'); }
+    finally { setPricesBusy(false); }
+  };
   const [bizSearch, setBizSearch] = useState('');
   const [bizFilter, setBizFilter] = useState<'all' | 'paying' | 'active' | 'churned'>('all');
   const [busyId, setBusyId] = useState('');
@@ -180,6 +193,17 @@ export default function HQPage() {
         {tab === 'businesses' && (
           <>
             <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 3, p: 2, mb: 2 }}>
+          <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: c.text, mb: 1.25 }}>💳 תמחור מנויים (חי — בלי דיפלוי)</Typography>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+            {([['founder', '⭐ מייסדים'], ['base', 'Base'], ['dana', 'דנה AI']] as const).map(([k, lb]) => (
+              <TextField key={k} size="small" type="number" label={`${lb} ₪/חודש`} value={planPrices[k] ?? ''} onChange={(e) => setPlanPrices((pp) => ({ ...pp, [k]: Number(e.target.value) }))} sx={{ width: 150 }} />
+            ))}
+            <Button onClick={savePrices} disabled={pricesBusy} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 800, borderRadius: 2 }}>{pricesBusy ? '...' : 'שמור מחירים'}</Button>
+          </Box>
+          <Typography sx={{ fontSize: 11.5, color: c.text3, mt: 1 }}>המחירים נכנסים לתוקף מיידית בעמוד המנויים ובתשלום עצמו</Typography>
+        </Box>
+
               <TextField size="small" placeholder="חיפוש עסק / אימייל" value={bizSearch} onChange={(e) => setBizSearch(e.target.value)} sx={{ flex: 1, minWidth: 180 }} />
               <Box sx={{ display: 'flex', gap: 0.5, bgcolor: c.surface3, p: 0.5, borderRadius: 99 }}>
                 {([['all', 'הכל'], ['paying', 'משלמים'], ['active', 'פעילים'], ['churned', 'נטשו']] as [typeof bizFilter, string][]).map(([f, label]) => (

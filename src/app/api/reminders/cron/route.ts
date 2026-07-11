@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listAllBiz, setBizField, sendSms } from '@/lib/firestore-admin';
+import { listAllBiz, setBizField, sendSms, sendPush } from '@/lib/firestore-admin';
 
 /**
  * GET /api/reminders/cron
@@ -17,6 +17,8 @@ export async function GET() {
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
     const businesses = await listAllBiz();
+    const yd = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const yesterdayStr = `${yd.getFullYear()}-${String(yd.getMonth() + 1).padStart(2, '0')}-${String(yd.getDate()).padStart(2, '0')}`;
     let sent = 0;
 
     for (const { id, data } of businesses) {
@@ -26,6 +28,13 @@ export async function GET() {
       let changed = false;
 
       for (const b of bookings) {
+        // Auto review request: the morning after a visit, a free push asks
+        // for feedback — the reviews carousel fills itself.
+        if (b.date === yesterdayStr && b.status !== 'cancelled' && b.status !== 'blocked' && !b.reviewAsked && b.customerPhone) {
+          await sendPush(id, String(b.customerPhone), `איך היה ב${bizName}? ⭐`, 'נשמח לשמוע! כתבו לנו ביקורת קצרה בפרופיל שבאפליקציה 💜').catch(() => {});
+          b.reviewAsked = true;
+          changed = true;
+        }
         if (
           b.date === tomorrowStr &&
           b.status === 'confirmed' &&
@@ -36,6 +45,7 @@ export async function GET() {
             b.customerPhone as string,
             `תזכורת מ${bizName}: יש לך תור מחר ב-${b.time} ל${b.service}. נתראה! (להשיב "ביטול" לביטול)`
           );
+          await sendPush(id, String(b.customerPhone), `תזכורת — ${bizName} 🔔`, `יש לך תור מחר ב-${b.time} · ${b.service}. נתראה!`).catch(() => {});
           if (ok) {
             b.reminded = true;
             changed = true;

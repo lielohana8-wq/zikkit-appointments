@@ -141,6 +141,45 @@ export default function PublicBookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, bizId]);
 
+  const [rebookMsg, setRebookMsg] = useState('');
+  const rebook = async (weeks: number) => {
+    if (!selectedService || !selectedDate || !selectedTime) return;
+    setRebookMsg('⏳ בודק זמינות…');
+    try {
+      const d = new Date(selectedDate + 'T00:00:00');
+      d.setDate(d.getDate() + weeks * 7);
+      const newDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const res = await fetch('/api/public-booking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bizId, booking: {
+          customerName: form.name, customerPhone: form.phone,
+          service: selectedService.name, duration: selectedService.duration,
+          date: newDate, time: selectedTime,
+          staff: selectedStaff?.name || null,
+          price: typeof selectedService.price === 'string' ? parseInt(selectedService.price) || 0 : selectedService.price || 0,
+        } }),
+      });
+      const dj = await res.json();
+      const dateHe = newDate.split('-').reverse().slice(0, 2).join('.');
+      setRebookMsg(res.ok && !dj.error ? `✅ נקבע גם ל-${dateHe} ב-${selectedTime}!` : `❌ ${dj.error || 'השעה תפוסה בתאריך הזה'}`);
+    } catch { setRebookMsg('❌ שגיאה — נסו שוב'); }
+  };
+
+  const [recurWeeks, setRecurWeeks] = useState(3);
+  const [recurCount] = useState(3);
+  const [recurBusy, setRecurBusy] = useState(false);
+  const [recurDone, setRecurDone] = useState('');
+  const bookRecurring = async () => {
+    if (!selectedService || !selectedDate || !selectedTime) return;
+    setRecurBusy(true);
+    try {
+      const res = await fetch('/api/public-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, action: 'recur', recur: { service: selectedService.name, staff: (selectedStaff as unknown as { name?: string })?.name || '', date: selectedDate, time: selectedTime, name: me?.name || '', phone: me?.phone || '', weeks: recurWeeks, count: recurCount, price: staffPriceFor(selectedService.name, selectedService.price), duration: selectedService.duration || 30 } }) });
+      const d = await res.json();
+      if (d.ok && d.created?.length) setRecurDone(`✅ נקבעו ${d.created.length} תורים קבועים! הקרוב: ${d.created[0]}${d.skipped?.length ? ` (דולגו ${d.skipped.length} — תפוסים)` : ''}`);
+      else setRecurDone('לא הצלחנו לקבוע — נסו מהאפליקציה');
+    } catch { setRecurDone('שגיאה — נסו שוב'); }
+    finally { setRecurBusy(false); }
+  };
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const registerNow = async () => {
@@ -805,7 +844,33 @@ export default function PublicBookingPage() {
               }}
               fullWidth sx={{ mt: 2, mb: 1, border: `1.5px solid ${accent}44`, color: accent, borderRadius: 3, fontWeight: 800, py: 1.2 }}>
               💬 שתפו את {info.businessName} עם חברים
+                <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 2.25, mt: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', textAlign: 'center' }}>
+                  {recurDone ? (
+                    <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: accent }}>{recurDone}</Typography>
+                  ) : (<>
+                    <Typography sx={{ fontSize: 14.5, fontWeight: 900, color: '#171412', mb: 1 }}>🔁 להפוך לתור קבוע?</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', alignItems: 'center', mb: 1.5, flexWrap: 'wrap' }}>
+                      <Typography sx={{ fontSize: 13, color: '#6B6660' }}>כל</Typography>
+                      {[2, 3, 4].map((w) => <Box key={w} onClick={() => setRecurWeeks(w)} sx={{ cursor: 'pointer', px: 1.5, py: 0.5, borderRadius: 99, fontSize: 13, fontWeight: 800, bgcolor: recurWeeks === w ? accent : '#F4F1EE', color: recurWeeks === w ? '#fff' : '#6B6660' }}>{w} שב׳</Box>)}
+                      <Typography sx={{ fontSize: 13, color: '#6B6660' }}>· {recurCount} פעמים קדימה</Typography>
+                    </Box>
+                    <Button onClick={bookRecurring} disabled={recurBusy} fullWidth variant="outlined" sx={{ borderColor: `${accent}55`, color: accent, borderRadius: 3, fontWeight: 900 }}>{recurBusy ? '...' : 'קבעו לי אותם 🔁'}</Button>
+                  </>)}
+                </Box>
             </Button>
+
+            {/* Recurring: one-tap rebook — server validates availability */}
+            <Box sx={{ mt: 2.5, bgcolor: '#fff', borderRadius: 4, p: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 900, color: '#171412', mb: 1.25 }}>🔁 לקבוע את אותו תור שוב?</Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {[1, 2, 3, 4].map((w) => (
+                  <Box key={w} onClick={() => rebook(w)} sx={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 800, color: accent, border: `1.5px solid ${accent}44`, borderRadius: 99, px: 1.75, py: 0.7, '&:hover': { bgcolor: `${accent}11` } }}>
+                    בעוד {w === 1 ? 'שבוע' : `${w} שבועות`}
+                  </Box>
+                ))}
+              </Box>
+              {rebookMsg && <Typography sx={{ fontSize: 13, fontWeight: 700, mt: 1.25, color: rebookMsg.startsWith('✅') ? '#059669' : rebookMsg.startsWith('⏳') ? '#78716C' : '#DC2626' }}>{rebookMsg}</Typography>}
+            </Box>
 
             {/* Add to calendar — reduces no-shows */}
             <Button

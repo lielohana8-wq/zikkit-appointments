@@ -173,6 +173,34 @@ export async function POST(req: NextRequest) {
 
     // ---- Find my bookings: phone lookup so customers who lost the manage
     // link can still cancel/reschedule. Strictly rate-limited (enumeration guard). ----
+    if (action === 'recur') {
+      // Recurring appointments: replicate a just-confirmed booking every N
+      // weeks, K times. Each occurrence is conflict-checked; taken slots skip.
+      const r = (body.recur as { service?: string; staff?: string; date?: string; time?: string; name?: string; phone?: string; weeks?: number; count?: number; price?: number; duration?: number }) || {};
+      const weeks = Math.min(8, Math.max(1, Number(r.weeks) || 3));
+      const count = Math.min(6, Math.max(1, Number(r.count) || 3));
+      if (!r.date || !r.time || !r.service) return NextResponse.json({ ok: false, error: 'missing' }, { status: 400 });
+      const aptR = (biz.appointments as Record<string, unknown>) || {};
+      const allR = ((aptR.bookings as Array<Record<string, unknown>>) || []);
+      const t2m = (t: string) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); };
+      const dur = Math.max(10, Number(r.duration) || 30);
+      const startM = t2m(String(r.time));
+      const created: string[] = [];
+      const skipped: string[] = [];
+      const newOnes: Array<Record<string, unknown>> = [];
+      for (let i = 1; i <= count; i++) {
+        const d = new Date(`${r.date}T00:00:00`);
+        d.setDate(d.getDate() + i * weeks * 7);
+        const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const clash = [...allR, ...newOnes].some((b) => b.date === ds && b.status !== 'cancelled' && (!r.staff || !b.staff || b.staff === r.staff) && Math.max(startM, t2m(String(b.time || '00:00'))) < Math.min(startM + dur, t2m(String(b.time || '00:00')) + (Number(b.duration) || 30)));
+        if (clash) { skipped.push(ds); continue; }
+        newOnes.push({ id: 'bk_' + Date.now() + '_' + i, service: r.service, staff: r.staff || '', date: ds, time: r.time, duration: dur, customerName: r.name || '', customerPhone: r.phone || '', price: Number(r.price) || 0, status: 'confirmed', createdAt: new Date().toISOString(), recurring: true });
+        created.push(ds);
+      }
+      if (newOnes.length) await setBizField(bizId, ['appointments', 'bookings'], [...allR, ...newOnes]);
+      return NextResponse.json({ ok: true, created, skipped });
+    }
+
     if (action === 'otp-send') {
       const rawO = String(body.phone || '').replace(/\D/g, '');
       if (rawO.length < 9) return NextResponse.json({ success: false, error: 'מספר לא תקין' }, { status: 400 });

@@ -524,6 +524,13 @@ export default function BookingPageSettings() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
             <Box>
+              <Typography sx={{ fontSize: 14, color: c.text }}>⚡ אפשרות &quot;הראשון שפנוי&quot;</Typography>
+              <Typography sx={{ fontSize: 12, color: c.text3 }}>כבוי = הלקוח חייב לבחור איש צוות ספציפי</Typography>
+            </Box>
+            <Switch checked={b.firstFreeOn !== false} onChange={(e) => set('firstFreeOn', e.target.checked)} />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.5 }}>
+            <Box>
               <Typography sx={{ fontSize: 14, color: c.text }}>אישור תורים ידני</Typography>
               <Typography sx={{ fontSize: 12, color: c.text3 }}>{b.approvalMode === 'manual' ? 'תור חדש ממתין לאישור שלך לפני שהוא נקבע' : 'כבוי — כל תור מאושר אוטומטית'}</Typography>
             </Box>

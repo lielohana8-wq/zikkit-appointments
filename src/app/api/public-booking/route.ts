@@ -100,6 +100,7 @@ export async function GET(req: NextRequest) {
         slotMode: booking.slotMode === 'packed' ? 'packed' : 'interval',
         requireRegistration: booking.requireRegistration !== false,
         otpOn: booking.otpOn === true,
+        firstFreeOn: booking.firstFreeOn !== false,
         benefitOn: booking.benefitOn === true,
         benefitText: (booking.benefitText as string) || '',
         benefitEvery: (booking.benefitEvery as number) || 10,

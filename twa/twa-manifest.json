@@ -1,0 +1,20 @@
+{
+  "packageId": "il.zikkit.app",
+  "host": "zikkit-appointments.vercel.app",
+  "name": "זיקית — ניהול העסק",
+  "launcherName": "זיקית",
+  "display": "standalone",
+  "themeColor": "#0A0710",
+  "navigationColor": "#0A0710",
+  "backgroundColor": "#0A0710",
+  "startUrl": "/login",
+  "iconUrl": "https://zikkit-appointments.vercel.app/icon-512.png",
+  "maskableIconUrl": "https://zikkit-appointments.vercel.app/icon-512-maskable.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "signingKey": { "path": "./android.keystore", "alias": "zikkit" },
+  "enableNotifications": true,
+  "orientation": "portrait",
+  "fallbackType": "customtabs"
+}

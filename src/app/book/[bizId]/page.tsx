@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; otpOn?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; otpOn?: boolean; firstFreeOn?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -652,14 +652,14 @@ export default function PublicBookingPage() {
             <Typography sx={{ fontSize: 24, fontWeight: 900, color: '#171412', letterSpacing: '-0.025em', mb: 2.25 }}>עם מי תרצו?</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {/* Any available */}
-              <Box onClick={() => { setSelectedStaff(null); setStage('slot'); }}
+              {info.branding.firstFreeOn !== false && <Box onClick={() => { setSelectedStaff(null); setStage('slot'); }}
                 sx={{ cursor: 'pointer', bgcolor: '#fff', border: `1px solid ${accent}30`, borderRadius: 4, p: 2.25, display: 'flex', alignItems: 'center', gap: 2, boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 12px 32px rgba(16,24,40,0.08)', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', '&:hover': { borderColor: accent, transform: 'translateY(-3px)', boxShadow: `0 18px 40px ${accent}26` } }}>
                 <Box sx={{ width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}22, ${accent}0D)`, border: `1px solid ${accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>⚡</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: '#1C1917' }}>הראשון שפנוי</Typography>
                   <Typography sx={{ fontSize: 12.5, color: '#78716C' }}>ללא העדפה — התור המוקדם ביותר</Typography>
                 </Box>
-              </Box>
+              </Box>}
               {/* Staff who provide this service (or all if none specified) */}
               {info.team.filter((m) => !m.services?.length || m.services.includes(selectedService.name)).map((m) => (
                 <Box key={m.id} onClick={() => { setSelectedStaff(m); setStage('slot'); }}

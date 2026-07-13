@@ -84,6 +84,22 @@ export default function TeamPage() {
       const { createLogin, loginPassword, ...memberData } = draft;
       let memberId = editId;
       if (editId) {
+        // Rename cascade: bookings reference staff by NAME. Renaming a member
+        // must carry every booking, block and waitlist entry with it —
+        // otherwise the old name becomes a ghost barber and double-booking opens.
+        try {
+          const bizAll = (await loadBiz(bizId)) as Record<string, unknown>;
+          const teamWrapC = (bizAll.team as { members?: Array<Record<string, unknown>> }) || {};
+          const oldName = String(((teamWrapC.members || []).find((mm) => mm.id === editId) || {}).name || '');
+          if (oldName && oldName !== draft.name) {
+            const aptC = (bizAll.appointments as Record<string, unknown>) || {};
+            const bksC = ((aptC.bookings as Array<Record<string, unknown>>) || []).map((b) => (b.staff === oldName ? { ...b, staff: draft.name } : b));
+            const wlC = (bizAll.waitlist as Record<string, unknown>) || {};
+            const wlItems = ((wlC.items as Array<Record<string, unknown>>) || []).map((w) => (w.staff === oldName ? { ...w, staff: draft.name } : w));
+            const { patchBiz } = await import('@/lib/bizdata');
+            await patchBiz(bizId, { appointments: { ...aptC, bookings: bksC }, waitlist: { ...wlC, items: wlItems } });
+          }
+        } catch { /* best-effort; the member update below still applies */ }
         await updateTeamMember(bizId, editId, memberData);
       } else {
         // Create the team member first to get an id

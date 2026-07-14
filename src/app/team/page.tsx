@@ -49,6 +49,20 @@ export default function TeamPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const moveMember = async (id: string, dir: number) => {
+    if (!bizId) return;
+    const bizAll = (await loadBiz(bizId)) as Record<string, unknown>;
+    const teamWrap = (bizAll.team as { members?: Array<Record<string, unknown>> }) || {};
+    const arr = [...(teamWrap.members || [])];
+    const i = arr.findIndex((mm) => mm.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    const { patchBiz } = await import('@/lib/bizdata');
+    await patchBiz(bizId, { team: { ...teamWrap, members: arr } });
+    await load();
+  };
+
   const openNew = () => { setDraft(emptyDraft); setEditId(null); setOpen(true); };
   const openEdit = (m: TeamMember) => {
     setDraft({ name: m.name, role: m.role, phone: m.phone || '', photo: m.photo, description: m.description, services: m.services, station: m.station, color: m.color, loginEmail: m.loginEmail || '', loginPassword: '', createLogin: false });
@@ -84,6 +98,22 @@ export default function TeamPage() {
       const { createLogin, loginPassword, ...memberData } = draft;
       let memberId = editId;
       if (editId) {
+        // Rename cascade: bookings reference staff by NAME. Renaming a member
+        // must carry every booking, block and waitlist entry with it —
+        // otherwise the old name becomes a ghost barber and double-booking opens.
+        try {
+          const bizAll = (await loadBiz(bizId)) as Record<string, unknown>;
+          const teamWrapC = (bizAll.team as { members?: Array<Record<string, unknown>> }) || {};
+          const oldName = String(((teamWrapC.members || []).find((mm) => mm.id === editId) || {}).name || '');
+          if (oldName && oldName !== draft.name) {
+            const aptC = (bizAll.appointments as Record<string, unknown>) || {};
+            const bksC = ((aptC.bookings as Array<Record<string, unknown>>) || []).map((b) => (b.staff === oldName ? { ...b, staff: draft.name } : b));
+            const wlC = (bizAll.waitlist as Record<string, unknown>) || {};
+            const wlItems = ((wlC.items as Array<Record<string, unknown>>) || []).map((w) => (w.staff === oldName ? { ...w, staff: draft.name } : w));
+            const { patchBiz } = await import('@/lib/bizdata');
+            await patchBiz(bizId, { appointments: { ...aptC, bookings: bksC }, waitlist: { ...wlC, items: wlItems } });
+          }
+        } catch { /* best-effort; the member update below still applies */ }
         await updateTeamMember(bizId, editId, memberData);
       } else {
         // Create the team member first to get an id
@@ -173,6 +203,12 @@ export default function TeamPage() {
             {team.map((m) => (
               <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
+                  {(
+                    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.25 }}>
+                      <Box onClick={() => moveMember(m.id, -1)} sx={{ cursor: 'pointer', fontSize: 13, color: c.text3, lineHeight: 1, px: 0.5, '&:hover': { color: c.accent } }}>▲</Box>
+                      <Box onClick={() => moveMember(m.id, 1)} sx={{ cursor: 'pointer', fontSize: 13, color: c.text3, lineHeight: 1, px: 0.5, '&:hover': { color: c.accent } }}>▼</Box>
+                    </Box>
+                  )}
                   {m.photo ? (
                     <Box component="img" src={m.photo} sx={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${m.color}` }} />
                   ) : (

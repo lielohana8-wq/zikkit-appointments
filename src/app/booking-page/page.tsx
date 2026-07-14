@@ -175,7 +175,7 @@ export default function BookingPageSettings() {
         canvas.width = img.width * scale; canvas.height = img.height * scale;
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        uploadImageToStorage(bizId || '', 'gallery', dataUrl).then((u) => set('gallery', [...(b.gallery || []), u].slice(0, 12))).catch(() => set('gallery', [...(b.gallery || []), dataUrl].slice(0, 12)));
+        uploadImageToStorage(bizId || '', 'gallery', dataUrl).then((u) => set('gallery', [...(b.gallery || []), u].slice(0, 30))).catch(() => set('gallery', [...(b.gallery || []), dataUrl].slice(0, 30)));
       };
       img.src = reader.result as string;
     };
@@ -316,7 +316,7 @@ export default function BookingPageSettings() {
 
         {/* Gallery */}
         <Section title="📸 גלריית תמונות">
-          <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>הציגו את העבודות שלכם — תמונות שימשכו לקוחות לקבוע. עד 12 תמונות.</Typography>
+          <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>הציגו את העבודות שלכם — תמונות שימשכו לקוחות לקבוע. עד 30 תמונות.</Typography>
           <TextField fullWidth size="small" label="כותרת הגלריה" value={b.galleryTitle} onChange={(e) => set('galleryTitle', e.target.value)} sx={{ mb: 2 }} placeholder="העבודות שלנו" />
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mb: 2 }}>
             {(b.gallery || []).map((img, i) => (

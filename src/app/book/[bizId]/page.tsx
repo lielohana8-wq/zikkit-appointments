@@ -515,7 +515,7 @@ export default function PublicBookingPage() {
         <Box sx={{ position: 'absolute', bottom: -70, left: -50, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30, transparent 70%)` }} />
         <Box sx={{ position: 'relative' }}>
           {info.branding.logo && (
-            <Box sx={{ width: 132, height: 132, borderRadius: '50%', mx: 'auto', mb: 1.75, p: '4px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
+            <Box sx={{ width: 208, height: 208, borderRadius: '50%', mx: 'auto', mb: 2, p: '4px', background: `conic-gradient(from 140deg, rgba(255,255,255,0.9), ${accent}AA, rgba(255,255,255,0.25), rgba(255,255,255,0.9))`, boxShadow: `0 16px 44px rgba(0,0,0,0.55), 0 0 0 10px ${accent}14` }}>
               <Box component="img" src={info.branding.logo} sx={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2.5px solid rgba(255,255,255,0.85)' }} />
             </Box>
           )}

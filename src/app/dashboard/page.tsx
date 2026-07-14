@@ -239,6 +239,7 @@ export default function DashboardPage() {
     if (unreadNotifs.length > 0) out.push({ icon: '🔔', text: `${unreadNotifs.length} התראות חדשות`, onClick: () => setShowNotifs((v) => !v), hot: true });
     const pendingCount = bookings.filter((b) => b.status === 'pending' && b.date >= today).length;
     if (pendingCount > 0) out.push({ icon: '⏳', text: `${pendingCount} תורים ממתינים לאישור שלך`, onClick: () => router.push('/calendar'), hot: true });
+    if (!isStaff && bookings.length === 0) out.push({ icon: '🎭', text: 'רוצים לראות את המערכת חיה? מלאו נתוני דמו — לקוחות, תורים והיסטוריה (לחצו)', onClick: async () => { if (!confirm('למלא נתוני דמו? (ניתן לאפס בהגדרות)')) return; const { seedDemoData } = await import('@/lib/demo-data'); await seedDemoData(bizId!); window.location.reload(); } });
     if (subInfo && !isStaff) {
       if (subInfo.status === 'active') {
         // paying customer — quiet confidence, no banner

@@ -101,6 +101,7 @@ export async function GET(req: NextRequest) {
         requireRegistration: booking.requireRegistration !== false,
         otpOn: booking.otpOn === true,
         firstFreeOn: booking.firstFreeOn !== false,
+        pageBg: (booking.pageBg as string) || 'none',
         benefitOn: booking.benefitOn === true,
         benefitText: (booking.benefitText as string) || '',
         benefitEvery: (booking.benefitEvery as number) || 10,

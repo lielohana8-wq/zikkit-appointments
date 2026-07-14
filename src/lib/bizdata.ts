@@ -321,6 +321,7 @@ export interface BookingBranding {
   requireRegistration?: boolean; // customers must join before using the app (default: on)
   otpOn?: boolean;              // require SMS code verification on registration/find
   firstFreeOn?: boolean;        // show the 'first available' staff option (default: on)
+  pageBg?: string;              // booking page background: 'none' | 'logo' | 'banner'
   peakOn?: boolean;             // dynamic peak-hours pricing
   peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; // surcharge windows
   benefitOn?: boolean;          // loyalty punch-card enabled

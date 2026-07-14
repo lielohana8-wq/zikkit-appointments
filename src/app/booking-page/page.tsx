@@ -463,6 +463,15 @@ export default function BookingPageSettings() {
               <Switch checked={!!b.bandImageOn} onChange={(e) => set('bandImageOn', e.target.checked)} />
             </Box>
           )}
+          <Box sx={{ py: 0.5, mt: 0.5 }}>
+            <Typography sx={{ fontSize: 14, color: c.text, mb: 0.25 }}>🖼 רקע הדף</Typography>
+            <Typography sx={{ fontSize: 12, color: c.text3, mb: 1 }}>הלוגו או הבאנר כרקע מעודן מאחורי כל הדף</Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {[{ v: 'none', lb: 'נקי' }, { v: 'logo', lb: 'לוגו מרוקע' }, { v: 'banner', lb: 'באנר עדין' }].map((opt) => (
+                <Box key={opt.v} onClick={() => set('pageBg', opt.v)} sx={{ cursor: 'pointer', px: 1.75, py: 0.75, borderRadius: 99, fontSize: 13, fontWeight: 800, bgcolor: (b.pageBg || 'none') === opt.v ? c.accent : c.surface2, color: (b.pageBg || 'none') === opt.v ? '#fff' : c.text3 }}>{opt.lb}</Box>
+              ))}
+            </Box>
+          </Box>
         </Section>
 
         <Section title="כללי קביעת תורים">

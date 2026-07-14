@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
 
 interface Service { id: string; name: string; duration: number; price?: string | number; priceFrom?: boolean; description?: string; category?: string; }
-interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; otpOn?: boolean; firstFreeOn?: boolean; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
+interface Branding { logo: string; banner: string; brandColor: string; headerStyle?: string; welcomeText: string; thankYouMessage?: string; cancellationNote?: string; address?: string; phone?: string; instagram?: string; whatsapp?: string; showPrices: boolean; showDuration?: boolean; requireEmail?: boolean; requirePhone?: boolean; gallery?: string[]; galleryTitle?: string; announcement?: string; announcementOn?: boolean; popupTitle?: string; popupText?: string; popupOn?: boolean; promoText?: string; promoOn?: boolean; aboutText?: string; tiktok?: string; facebook?: string; showReviews?: boolean; depositOn?: boolean; depositAmount?: number; depositPercent?: number; slotInterval?: number; slotMode?: string; bookingWindowDays?: number; approvalMode?: string; policyOn?: boolean; policyText?: string; requireRegistration?: boolean; otpOn?: boolean; firstFreeOn?: boolean; pageBg?: string; iconV?: number; theme?: string; brandColor2?: string; nameFont?: string; bandImageOn?: boolean; benefitOn?: boolean; benefitText?: string; benefitEvery?: number; peakOn?: boolean; peakRules?: Array<{ days: number[]; from: string; to: string; extra: number }>; products?: Array<{ id?: string; name: string; price?: number; photo?: string; description?: string }>; }
 interface Staff { id: string; name: string; role: string; photo: string; services: string[]; }
 interface Review { customerName: string; rating: number; text: string; date: string; }
 interface BizInfo {
@@ -479,7 +479,12 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', background: `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%), ${th.pageBase}`, direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
+    <Box sx={{ minHeight: '100vh', background: (() => {
+      const bgPick = info.branding.pageBg === 'logo' ? info.branding.logo : info.branding.pageBg === 'banner' ? info.branding.banner : '';
+      const base = `radial-gradient(1100px 460px at 50% -8%, ${accent}14, transparent 62%)`;
+      if (!bgPick) return `${base}, ${th.pageBase}`;
+      return `${base}, linear-gradient(${th.pageBase}F0, ${th.pageBase}F7), url(${bgPick}) center 20% / cover no-repeat fixed ${th.pageBase}`;
+    })(), direction: 'rtl', fontFamily: fontStack, pb: 17 }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
         @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }\n        @keyframes spin { to { transform: rotate(360deg); } }`}</style>

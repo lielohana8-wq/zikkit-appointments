@@ -165,6 +165,13 @@ export default function PublicBookingPage() {
     } catch { setRebookMsg('❌ שגיאה — נסו שוב'); }
   };
 
+  const [annClosed, setAnnClosed] = useState(false);
+  useEffect(() => {
+    try {
+      if (bizId && info?.branding?.announcement && localStorage.getItem('zk_ann_' + bizId) === String(info.branding.announcement)) setAnnClosed(true);
+    } catch { /* private mode */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bizId, info?.branding?.announcement]);
   const [recurWeeks, setRecurWeeks] = useState(3);
   const [recurCount] = useState(3);
   const [recurBusy, setRecurBusy] = useState(false);
@@ -479,9 +486,11 @@ export default function PublicBookingPage() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap'); @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
 
       {/* Announcement banner */}
-      {info.branding.announcementOn && info.branding.announcement && (
-        <Box sx={{ bgcolor: accentDark, color: '#fff', textAlign: 'center', py: 1.25, px: 2, fontSize: 13.5, fontWeight: 600, position: 'sticky', top: 0, zIndex: 20 }}>
+      {info.branding.announcementOn && info.branding.announcement && !annClosed && (
+        <Box sx={{ bgcolor: accentDark, color: '#fff', textAlign: 'center', py: 1.25, pr: 2, pl: 5.5, fontSize: 13.5, fontWeight: 600, position: 'sticky', top: 0, zIndex: 20 }}>
           📢 {info.branding.announcement}
+          <Box onClick={() => { setAnnClosed(true); try { localStorage.setItem('zk_ann_' + bizId, String(info.branding.announcement)); } catch { /* private mode */ } }}
+            sx={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: 10, cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.18)', color: '#fff', fontSize: 14, fontWeight: 900, lineHeight: 1, zIndex: 21 }}>✕</Box>
         </Box>
       )}
 

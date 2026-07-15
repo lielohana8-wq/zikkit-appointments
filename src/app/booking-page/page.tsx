@@ -325,7 +325,7 @@ export default function BookingPageSettings() {
                 <Box onClick={() => removeGalleryImage(i)} sx={{ position: 'absolute', top: 4, left: 4, width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, cursor: 'pointer', '&:hover': { bgcolor: c.hot } }}>✕</Box>
               </Box>
             ))}
-            {(b.gallery || []).length < 12 && (
+            {(b.gallery || []).length < 30 && (
               <Box component="label" sx={{ cursor: 'pointer', borderRadius: 2, border: `2px dashed ${c.border}`, aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: c.text3, gap: 0.5, '&:hover': { borderColor: c.accent, color: c.accent } }}>
                 <Box sx={{ fontSize: 24 }}>+</Box>
                 <Typography sx={{ fontSize: 11, fontWeight: 600 }}>הוסף</Typography>

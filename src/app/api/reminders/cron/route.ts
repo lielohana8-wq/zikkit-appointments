@@ -38,21 +38,25 @@ export async function GET() {
           b.reviewAsked = true;
           changed = true;
         }
-        if (
-          b.date === tomorrowStr &&
-          b.status === 'confirmed' &&
-          !b.reminded &&
-          b.customerPhone
-        ) {
-          const ok = await sendSms(
-            b.customerPhone as string,
-            `תזכורת מ${bizName}: יש לך תור מחר ב-${b.time} ל${b.service}. נתראה! (להשיב "ביטול" לביטול)`
-          );
-          await sendPush(id, String(b.customerPhone), `תזכורת — ${bizName} 🔔`, `יש לך תור מחר ב-${b.time} · ${b.service}. נתראה!`).catch(() => {});
-          if (ok) {
-            b.reminded = true;
-            changed = true;
-            sent++;
+        // Two reminders, each EXACTLY once: ~24h before and ~12h before.
+        // Flags are set on ATTEMPT (not on SMS success) — a broken SMS provider
+        // must never turn reminders into spam.
+        if (b.status === 'confirmed' && b.customerPhone && b.date && b.time) {
+          const apptMs = new Date(`${b.date}T${b.time}:00`).getTime();
+          const hrs = (apptMs - Date.now()) / 3600000;
+          if (hrs > 0 && hrs <= 24) {
+            const had24 = !!(b.rem24 || b.reminded);
+            const send12 = hrs <= 12 && !b.rem12;
+            const send24 = !send12 && !had24;
+            if (send12 || send24) {
+              const dayWord = hrs <= 22 ? 'היום' : 'מחר';
+              await sendSms(b.customerPhone as string, `תזכורת מ${bizName}: יש לך תור ${dayWord} ב-${b.time} ל${b.service}. נתראה! (להשיב "ביטול" לביטול)`).catch(() => {});
+              await sendPush(id, String(b.customerPhone), `תזכורת — ${bizName} 🔔`, `יש לך תור ${dayWord} ב-${b.time} · ${b.service}. נתראה!`).catch(() => {});
+              if (send12) { b.rem12 = true; b.rem24 = true; } else { b.rem24 = true; }
+              b.reminded = true;
+              changed = true;
+              sent++;
+            }
           }
         }
       }

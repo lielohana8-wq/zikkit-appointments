@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Box, Typography, Button, CircularProgress, TextField , Dialog } from '@mui/material';
 import { useParams } from 'next/navigation';
 import { track, Events } from '@/lib/analytics';
@@ -165,6 +165,22 @@ export default function PublicBookingPage() {
     } catch { setRebookMsg('❌ שגיאה — נסו שוב'); }
   };
 
+  const trackedRef = useRef<Record<string, boolean>>({});
+  const beacon = (ev: string) => {
+    if (trackedRef.current[ev] || !bizId) return;
+    trackedRef.current[ev] = true;
+    try { fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, ev }), keepalive: true }).catch(() => {}); } catch { /* fine */ }
+  };
+  useEffect(() => { if (info) beacon('book_view'); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info]);
+  useEffect(() => { if (stage === 'done') beacon('booked'); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+  useEffect(() => {
+    const onInstall = () => beacon('a2hs');
+    window.addEventListener('appinstalled', onInstall);
+    return () => window.removeEventListener('appinstalled', onInstall);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [annClosed, setAnnClosed] = useState(false);
   useEffect(() => {
     try {

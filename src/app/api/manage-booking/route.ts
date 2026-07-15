@@ -177,8 +177,24 @@ export async function POST(req: NextRequest) {
         if ((raceErr as Error).message === 'RACE_CONFLICT') return NextResponse.json({ error: 'slot_taken' }, { status: 409 });
         throw raceErr;
       }
-      const ownerPhone = ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || ((biz.booking as Record<string, unknown>)?.notifyPhone as string);
-      if (ownerPhone) await sendSms(ownerPhone, `שינוי תור: ${booking.customerName} · ${booking.service}\nל-${date} ${time}`, bizId).catch(() => {});
+
+      // Reschedule notifications — owner, staff and customer all hear about it
+      const bizNameR = ((biz.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
+      const bookCfgR = (biz.booking as Record<string, unknown>) || {};
+      const ownerPhoneR = (bookCfgR.notifyPhone as string) || ((biz.cfg as Record<string, unknown>)?.owner_phone as string) || '';
+      const msgR = `שינוי מועד: ${booking.customerName} · ${booking.service} → ${date} בשעה ${time}${booking.staff ? ' · אצל ' + booking.staff : ''}`;
+      if (ownerPhoneR) {
+        await sendSms(ownerPhoneR, msgR, bizId).catch(() => {});
+        await sendPush(bizId, String(ownerPhoneR), '🔁 שינוי מועד', `${booking.customerName} · ${date} ב-${time}`).catch(() => {});
+      }
+      if (booking.staff) {
+        const memR = ((((biz.team as Record<string, unknown>) || {}).members as Array<Record<string, unknown>>) || []).find((m) => m.name === booking.staff);
+        if (memR && memR.phone) {
+          await sendSms(String(memR.phone), `שינוי מועד אצלך: ${booking.customerName} · ${date} בשעה ${time}`, bizId).catch(() => {});
+          await sendPush(bizId, String(memR.phone), '🔁 שינוי מועד אצלך', `${booking.customerName} · ${date} ב-${time}`).catch(() => {});
+        }
+      }
+      if (booking.customerPhone) await sendPush(bizId, String(booking.customerPhone), 'התור עודכן ✓', `${booking.service} · ${date} ב-${time} — נתראה!`).catch(() => {});
       if (booking.customerPhone) await sendSms(booking.customerPhone, `התור שלך ב${bizName} עודכן ל-${date} בשעה ${time}. נתראה!`, bizId).catch(() => {});
       return NextResponse.json({ success: true, status: 'rescheduled' });
     }

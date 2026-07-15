@@ -18,6 +18,7 @@ interface Stats {
   growthByMonth: Record<string, number>; recentPayments: Array<{ biz: string; type: string; paidAt: string }>;
 }
 interface Biz {
+  onlinePct?: number | null; usage?: Record<string, number>; pushSubsCount?: number; trialDaysLeft?: number | null; healthScore?: number;
   bookings7?: number; upcoming?: number; cancelledCount?: number; revenueMonth?: number;
   customersCount?: number; teamCount?: number; servicesCount?: number; smsOk?: number; smsFail?: number;
   galleryCount?: number; hasLogo?: boolean; hasBanner?: boolean; otpOn?: boolean; peakOn?: boolean; theme?: string;
@@ -200,6 +201,15 @@ export default function HQPage() {
               <TextField key={k} size="small" type="number" label={`${lb} ₪/חודש`} value={planPrices[k] ?? ''} onChange={(e) => setPlanPrices((pp) => ({ ...pp, [k]: Number(e.target.value) }))} sx={{ width: 150 }} />
             ))}
             <Button onClick={savePrices} disabled={pricesBusy} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 800, borderRadius: 2 }}>{pricesBusy ? '...' : 'שמור מחירים'}</Button>
+            <Button onClick={() => {
+              const cols = ['name', 'bookings7', 'upcoming', 'cancelledCount', 'revenueMonth', 'customersCount', 'teamCount', 'servicesCount', 'onlinePct', 'pushSubsCount', 'healthScore', 'trialDaysLeft', 'smsOk', 'smsFail'];
+              const rows = businesses.map((bb) => cols.map((k) => JSON.stringify((bb as unknown as Record<string, unknown>)[k] ?? '')).join(','));
+              const csv = [cols.join(','), ...rows].join('\n');
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+              a.download = 'zikkit-businesses.csv';
+              a.click();
+            }} variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>⬇️ CSV</Button>
           </Box>
           <Typography sx={{ fontSize: 11.5, color: c.text3, mt: 1 }}>המחירים נכנסים לתוקף מיידית בעמוד המנויים ובתשלום עצמו</Typography>
         </Box>
@@ -252,6 +262,12 @@ export default function HQPage() {
                     {b.otpOn && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🔐 OTP</Box>}
                     {b.peakOn && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>💰 שעות שיא</Box>}
                     <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🎭 {b.theme || 'dark'}</Box>
+                    <Box sx={{ fontSize: 10.5, fontWeight: 900, borderRadius: 99, px: 1, py: 0.25, bgcolor: (b.healthScore ?? 0) >= 70 ? '#10B98133' : (b.healthScore ?? 0) >= 40 ? '#F59E0B33' : c.hotDim, color: (b.healthScore ?? 0) >= 70 ? '#6EE7B7' : (b.healthScore ?? 0) >= 40 ? '#FCD34D' : c.hot }}>❤️ בריאות {b.healthScore ?? 0}</Box>
+                    {b.onlinePct !== null && b.onlinePct !== undefined && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🌐 {b.onlinePct}% אונליין</Box>}
+                    <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>🔔 {b.pushSubsCount ?? 0} מנויי פוש</Box>
+                    {typeof b.trialDaysLeft === 'number' && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: b.trialDaysLeft <= 5 ? c.hotDim : c.surface2, color: b.trialDaysLeft <= 5 ? c.hot : c.text3 }}>⏳ ניסיון: {b.trialDaysLeft} ימים</Box>}
+                    {b.usage && (b.usage.book_view ?? 0) > 0 && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>👁 {b.usage.book_view} צפיות → {b.usage.booked ?? 0} תורים ({Math.round(((b.usage.booked ?? 0) / b.usage.book_view) * 100)}%)</Box>}
+                    {b.usage && (b.usage.a2hs ?? 0) > 0 && <Box sx={{ fontSize: 10.5, fontWeight: 700, borderRadius: 99, px: 1, py: 0.25, bgcolor: c.surface2, color: c.text3 }}>📲 {b.usage.a2hs} שמרו למסך</Box>}
                   </Box>
                   <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
                     <Button href={`/book/${b.id}`} target="_blank" size="small" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12 }}>👁 דף הזמנות</Button>

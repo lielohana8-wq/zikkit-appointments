@@ -45,7 +45,23 @@ export async function GET(req: NextRequest) {
       const smsFail = smsItems.filter((e) => e.ok !== true).length;
       const galleryCount = ((booking.gallery as unknown[]) || []).length;
 
+      const onlineCnt = live.filter((b) => b.source === 'online' || b.source === 'app').length;
+      const manualCnt = live.filter((b) => b.source === 'manual').length;
+      const onlinePct = onlineCnt + manualCnt > 0 ? Math.round((onlineCnt / (onlineCnt + manualCnt)) * 100) : null;
+      const usage = ((data.usage as Record<string, number>) || {});
+      const pushSubsCount = Object.keys(((data.pushSubs as Record<string, unknown>) || {})).length;
+      const createdMs = new Date(String(data.createdAt || (data.cfg as Record<string, unknown>)?.created_at || '')).getTime() || 0;
+      const trialDaysLeft = ((data.subscription as Record<string, unknown>)?.status === 'active') ? null : (createdMs ? Math.max(0, 30 - Math.floor((now - createdMs) / day)) : null);
+      const healthScore = Math.min(100, Math.round(
+        Math.min(40, bookings7 * 2) +
+        (booking.logo ? 10 : 0) + (booking.banner ? 5 : 0) +
+        (servicesCount > 0 ? 10 : 0) + (teamCount > 0 ? 5 : 0) +
+        (smsFail > 0 ? 0 : smsOk > 0 ? 15 : 5) +
+        (pushSubsCount > 0 ? 5 : 0) + (upcoming > 0 ? 10 : 0)
+      ));
+
       return {
+        onlinePct, usage, pushSubsCount, trialDaysLeft, healthScore,
         bookings7, upcoming, cancelledCount, revenueMonth,
         customersCount, teamCount, servicesCount, smsOk, smsFail, galleryCount,
         hasLogo: !!booking.logo, hasBanner: !!booking.banner,

@@ -165,6 +165,11 @@ export default function DashboardPage() {
     if (!loading && !firebaseUser) { router.push('/login'); return; }
   }, [loading, firebaseUser, router]);
 
+  useEffect(() => {
+    if (!bizId || user?.role === 'staff') return;
+    try { fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bizId, ev: 'dashboard' }), keepalive: true }).catch(() => {}); } catch { /* fine */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bizId]);
   const [rtTick, setRtTick] = useState(0);
   const [subInfo, setSubInfo] = useState<{ status?: string; plan?: string; created?: string } | null>(null);
   useEffect(() => {

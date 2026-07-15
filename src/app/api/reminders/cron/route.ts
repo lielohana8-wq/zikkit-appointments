@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { listAllBiz, setBizField, sendSms, sendPush } from '@/lib/firestore-admin';
+import { getBiz } from '@/lib/firestore-admin';
+
+export const maxDuration = 60;
 
 /**
  * GET /api/reminders/cron
@@ -55,6 +58,31 @@ export async function GET() {
       }
 
       if (changed) {
+
+      // ── Robustness: archive old bookings (defuses the 1MB doc bomb) ──
+      try {
+        if (bookings.length > 300) {
+          const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          const cutoffCancelled = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          const toArchive = bookings.filter((b) => String(b.date || '') < ((b.status === 'cancelled') ? cutoffCancelled : cutoff));
+          if (toArchive.length > 0) {
+            const keep = bookings.filter((b) => !toArchive.includes(b));
+            const ym = new Date().toISOString().slice(0, 7).replace('-', '');
+            const archId = `arch_${id}_${ym}`;
+            const archDoc = await getBiz(archId);
+            const existing = ((archDoc?.bookings as unknown[]) || []);
+            await setBizField(archId, ['bookings'], [...existing, ...toArchive]);
+            await setBizField(id, ['appointments', 'bookings'], keep);
+            console.log(`[cron] archived ${toArchive.length} bookings for ${id}`);
+          }
+        }
+      } catch (archErr) { console.error('[cron] archive failed', id, archErr); }
+
+      // ── Robustness: rolling daily backup snapshot ──
+      try {
+        await setBizField(`bak_${id}`, ['snapshot'], data);
+        await setBizField(`bak_${id}`, ['at'], new Date().toISOString());
+      } catch (bakErr) { console.error('[cron] backup failed', id, bakErr); }
         await setBizField(id, ['appointments', 'bookings'], bookings);
       }
     }

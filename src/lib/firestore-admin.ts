@@ -150,10 +150,11 @@ export async function listAllBiz(): Promise<Array<{ id: string; data: Record<str
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) return [];
   const data = await res.json();
+  // System documents (archives, backups, platform config) are not businesses
   return (data.documents || []).map((d: { name: string; fields: Record<string, FV> }) => ({
     id: d.name.split('/').pop()!,
     data: decode(d.fields || {}),
-  }));
+  })).filter((d: { id: string }) => !d.id.startsWith('arch_') && !d.id.startsWith('bak_') && d.id !== '_platform');
 }
 
 // Web push to a customer who saved the app — free, instant, no carrier filtering.

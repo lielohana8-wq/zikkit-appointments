@@ -1210,7 +1210,7 @@ export default function PublicBookingPage() {
           📅 כבר קבעתם תור? ניהול / ביטול תור
         </Box>
       </Box>
-      <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments · <Box component="span" sx={{ fontSize: 10, opacity: 0.75 }}>גרסה 9.7-studio</Box></Typography>
+      <Typography sx={{ textAlign: 'center', mt: 2.5, fontSize: 11.5, color: '#C4BDB4' }}>מופעל ע"י ZikkitAppointments · <Box component="span" sx={{ fontSize: 10, opacity: 0.75 }}>גרסה 9.8-robust</Box> · <Box component="a" href="/terms" sx={{ color: 'inherit' }}>תנאים ופרטיות</Box> · <Box component="a" href="/accessibility" sx={{ color: 'inherit' }}>נגישות</Box></Typography>
 
       {/* ════════ Bottom app navigation ════════ */}
       <Box sx={{ position: 'fixed', bottom: 'calc(12px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 28px)', maxWidth: 430, zIndex: 40, bgcolor: th.navBg, backdropFilter: 'blur(24px) saturate(1.6)', border: `1px solid ${th.navBorder}`, borderRadius: 99, boxShadow: '0 22px 52px rgba(0,0,0,0.45)', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', pt: 0.75, pb: 0.75, px: 1.5 }}>

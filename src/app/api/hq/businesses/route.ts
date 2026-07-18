@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
       ));
 
       return {
+        ownerPhone: String((data.cfg as Record<string, unknown>)?.owner_phone || booking.notifyPhone || ''),
         onlinePct, usage, pushSubsCount, trialDaysLeft, healthScore,
         bookings7, upcoming, cancelledCount, revenueMonth,
         customersCount, teamCount, servicesCount, smsOk, smsFail, galleryCount,

@@ -18,6 +18,7 @@ interface Stats {
   growthByMonth: Record<string, number>; recentPayments: Array<{ biz: string; type: string; paidAt: string }>;
 }
 interface Biz {
+  ownerPhone?: string;
   onlinePct?: number | null; usage?: Record<string, number>; pushSubsCount?: number; trialDaysLeft?: number | null; healthScore?: number;
   bookings7?: number; upcoming?: number; cancelledCount?: number; revenueMonth?: number;
   customersCount?: number; teamCount?: number; servicesCount?: number; smsOk?: number; smsFail?: number;
@@ -210,6 +211,7 @@ export default function HQPage() {
               a.download = 'zikkit-businesses.csv';
               a.click();
             }} variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>⬇️ CSV</Button>
+            <Button component="a" href="/pilot-requests" variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>🎯 לידים</Button>
           </Box>
           <Typography sx={{ fontSize: 11.5, color: c.text3, mt: 1 }}>המחירים נכנסים לתוקף מיידית בעמוד המנויים ובתשלום עצמו</Typography>
         </Box>
@@ -275,6 +277,11 @@ export default function HQPage() {
                     {!b.plan && <Button onClick={() => bizAction(b.id, 'setPlan', 'dana')} disabled={busyId === b.id} size="small" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.accent, borderColor: c.border2 }}>הענק דנה</Button>}
                     {b.suspended
                       ? <Button onClick={() => bizAction(b.id, 'activate')} disabled={busyId === b.id} size="small" variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, bgcolor: c.green }}>הפעל</Button>
+                      : null}
+                    <Button component="a" href={`/book/${b.id}`} target="_blank" size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.text2 }}>🔗 דף</Button>
+                    {b.ownerPhone && <Button component="a" href={`https://wa.me/972${String(b.ownerPhone).replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: '#25D366' }}>💬 וואטסאפ</Button>}
+                    {false
+                      ? <Button size="small">x</Button>
                       : <Button onClick={() => bizAction(b.id, 'suspend')} disabled={busyId === b.id} size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.hot }}>השהה</Button>}
                   </Box>
                 </Box>

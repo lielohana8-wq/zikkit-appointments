@@ -11,6 +11,12 @@ import { cleanStr, cleanPhone, cleanEmail } from '@/lib/validate';
 const PROJECT_ID = 'zikkit-e87ff';
 const OWNER_EMAIL = process.env.PILOT_NOTIFY_EMAIL || 'ohanaliel@gmail.com';
 
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS });
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Rate limit: 5 lead submissions per IP per minute (anti-spam)

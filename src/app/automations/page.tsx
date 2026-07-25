@@ -37,11 +37,11 @@ export default function AutomationsPage() {
   const Row = AutomationRow;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>אוטומציות</Typography>
-        <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 700 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
+        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>אוטומציות</Typography>
+        <Button onClick={save} variant="contained" disabled={saving} sx={{ borderRadius: 99, fontWeight: 500 }}>{saved ? '✓' : saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
@@ -52,24 +52,24 @@ export default function AutomationsPage() {
         </Box>
 
         {/* Channel */}
-        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, mb: 3 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.text, mb: 1.5 }}>📡 ערוץ שליחה</Typography>
+        <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, mb: 3 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text, mb: 1.5 }}>📡 ערוץ שליחה</Typography>
           <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Box onClick={() => set('channel', 'sms')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 2.5, bgcolor: a.channel === 'sms' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'sms' ? c.accent : c.border}` }}>
+            <Box onClick={() => set('channel', 'sms')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 4, bgcolor: a.channel === 'sms' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'sms' ? c.accent : c.border}` }}>
               <Box sx={{ fontSize: 26 }}>💬</Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>SMS</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text }}>SMS</Typography>
               <Typography sx={{ fontSize: 11, color: c.text3 }}>דורש Twilio</Typography>
             </Box>
-            <Box onClick={() => set('channel', 'whatsapp')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 2.5, bgcolor: a.channel === 'whatsapp' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'whatsapp' ? c.accent : c.border}` }}>
+            <Box onClick={() => set('channel', 'whatsapp')} sx={{ flex: 1, cursor: 'pointer', textAlign: 'center', py: 2, borderRadius: 4, bgcolor: a.channel === 'whatsapp' ? c.accentDim : c.surface2, border: `2px solid ${a.channel === 'whatsapp' ? c.accent : c.border}` }}>
               <Box sx={{ fontSize: 26 }}>📱</Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>וואטסאפ</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text }}>וואטסאפ</Typography>
               <Typography sx={{ fontSize: 11, color: c.text3 }}>דורש חיבור</Typography>
             </Box>
           </Box>
           {a.channel === 'whatsapp' && (
             <Box sx={{ mt: 2 }}>
               <TextField fullWidth size="small" label="מספר הוואטסאפ העסקי שלך" value={a.whatsappNumber} onChange={(e) => set('whatsappNumber', e.target.value)} placeholder="0501234567" />
-              <Box sx={{ bgcolor: '#FEF3C7', borderRadius: 2, p: 1.5, mt: 1.5 }}>
+              <Box sx={{ bgcolor: '#FEF3C7', borderRadius: 4, p: 1.5, mt: 1.5 }}>
                 <Typography sx={{ fontSize: 12, color: '#92400E', lineHeight: 1.5 }}>
                   ⚠️ חיבור וואטסאפ דורש הגדרה חד-פעמית מול WhatsApp Business. צור קשר לתמיכה כדי לחבר את המספר שלך.
                 </Typography>
@@ -78,7 +78,7 @@ export default function AutomationsPage() {
           )}
         </Box>
 
-        <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 2 }}>הודעות אוטומטיות</Typography>
+        <Typography sx={{ fontSize: 16, fontWeight: 600, color: c.text, mb: 2 }}>הודעות אוטומטיות</Typography>
 
         <Row icon="✅" title="אישור בעת קביעת תור" desc="הלקוח מקבל הודעה מיד כשנקבע תור" on={a.confirmOnBooking} onToggle={(v) => set('confirmOnBooking', v)}>
           <TextField fullWidth size="small" label="טקסט מותאם (אופציונלי)" value={a.customConfirmText} onChange={(e) => set('customConfirmText', e.target.value)} placeholder="התור שלך אושר! נתראה" multiline rows={2} />
@@ -103,7 +103,7 @@ export default function AutomationsPage() {
 
         <Row icon="🎂" title="ברכת יום הולדת" desc="הודעת ברכה אוטומטית ללקוחות" on={a.birthdayGreeting} onToggle={(v) => set('birthdayGreeting', v)} />
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 1.5, fontWeight: 800, mt: 1 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ py: 1.75, borderRadius: 1.5, fontWeight: 600, mt: 1 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור אוטומציות'}
         </Button>
       </Box>
@@ -113,11 +113,11 @@ export default function AutomationsPage() {
 
 function AutomationRow({ icon, title, desc, on, onToggle, children }: { icon: string; title: string; desc: string; on: boolean; onToggle: (v: boolean) => void; children?: React.ReactNode }) {
   return (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${on ? c.accentMid : c.border}`, borderRadius: 2, p: 2.5, mb: 2, transition: 'all 0.2s' }}>
+    <Box sx={{ bgcolor: c.card, border: `1px solid ${on ? c.accentMid : c.border}`, borderRadius: 4, p: 2.5, mb: 2, transition: 'all 0.2s' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={{ width: 46, height: 46, borderRadius: 1.5, bgcolor: on ? c.accentDim : c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, transition: 'all 0.2s' }}>{icon}</Box>
         <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{title}</Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>{title}</Typography>
           <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{desc}</Typography>
         </Box>
         <Switch checked={on} onChange={(e) => onToggle(e.target.checked)} />

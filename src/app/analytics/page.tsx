@@ -89,17 +89,17 @@ export default function AnalyticsPage() {
   });
 
   const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 2.5 }}>
-      <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, mb: 2.5 }}>{title}</Typography>
+    <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 3, mb: 2.5 }}>
+      <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text, mb: 2.5 }}>{title}</Typography>
       {children}
     </Box>
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>אנליטיקס</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>אנליטיקס</Typography>
         <Box sx={{ width: 80 }} />
       </Box>
 
@@ -116,8 +116,8 @@ export default function AnalyticsPage() {
               <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 180 }}>
                 {months.map((m, i) => (
                   <Box key={i} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, height: '100%', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: 10, color: c.text3, fontWeight: 700 }}>{m.revenue > 0 ? `₪${m.revenue >= 1000 ? (m.revenue / 1000).toFixed(1) + 'k' : m.revenue}` : ''}</Typography>
-                    <Box sx={{ width: '100%', height: `${Math.max((m.revenue / maxMonthRev) * 130, 4)}px`, background: `linear-gradient(to top, ${c.accent}, ${c.accent2})`, borderRadius: 2, transition: 'height 0.5s cubic-bezier(0.22,1,0.36,1)' }} />
+                    <Typography sx={{ fontSize: 10, color: c.text3, fontWeight: 500 }}>{m.revenue > 0 ? `₪${m.revenue >= 1000 ? (m.revenue / 1000).toFixed(1) + 'k' : m.revenue}` : ''}</Typography>
+                    <Box sx={{ width: '100%', height: `${Math.max((m.revenue / maxMonthRev) * 130, 4)}px`, background: `linear-gradient(to top, ${c.accent}, ${c.accent2})`, borderRadius: 4, transition: 'height 0.5s cubic-bezier(0.22,1,0.36,1)' }} />
                     <Typography sx={{ fontSize: 11, color: c.text2, fontWeight: 600 }}>{m.label}</Typography>
                   </Box>
                 ))}
@@ -137,7 +137,7 @@ export default function AnalyticsPage() {
                       <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ width: 12, height: 12, borderRadius: '3px', bgcolor: s.color }} />
                         <Typography sx={{ fontSize: 13, color: c.text, flex: 1 }}>{s.name}</Typography>
-                        <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2 }}>{s.pct}%</Typography>
+                        <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text2 }}>{s.pct}%</Typography>
                       </Box>
                     ))}
                   </Box>
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
               <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, height: 120 }}>
                 {dowCount.map((v, i) => (
                   <Box key={i} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, height: '100%', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: c.text2 }}>{v || ''}</Typography>
+                    <Typography sx={{ fontSize: 11, fontWeight: 500, color: c.text2 }}>{v || ''}</Typography>
                     <Box sx={{ width: '100%', height: `${Math.max((v / maxDow) * 80, 3)}px`, bgcolor: v === maxDow ? c.accent : c.accentMid, borderRadius: 1.5, transition: 'height 0.4s' }} />
                     <Typography sx={{ fontSize: 12, color: c.text3, fontWeight: 600 }}>{HEB_DAYS[i]}</Typography>
                   </Box>
@@ -174,12 +174,12 @@ export default function AnalyticsPage() {
             <Card title="לקוחות חוזרים מול חדשים">
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Box sx={{ flex: returning || 1, bgcolor: c.accent, borderRadius: 1.5, p: 2, color: '#fff', textAlign: 'center', minWidth: 80 }}>
-                  <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{returning}</Typography>
+                  <Typography sx={{ fontSize: 26, fontWeight: 600 }}>{returning}</Typography>
                   <Typography sx={{ fontSize: 12, opacity: 0.9 }}>חוזרים</Typography>
                   <Typography sx={{ fontSize: 11, opacity: 0.8 }}>{Math.round((returning / totalCust) * 100)}%</Typography>
                 </Box>
-                <Box sx={{ flex: newCust || 1, bgcolor: c.surface3, borderRadius: 1.5, p: 2, textAlign: 'center', minWidth: 80 }}>
-                  <Typography sx={{ fontSize: 26, fontWeight: 800, color: c.text }}>{newCust}</Typography>
+                <Box sx={{ flex: newCust || 1, bgcolor: c.fill, borderRadius: 1.5, p: 2, textAlign: 'center', minWidth: 80 }}>
+                  <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text }}>{newCust}</Typography>
                   <Typography sx={{ fontSize: 12, color: c.text3 }}>חדשים</Typography>
                   <Typography sx={{ fontSize: 11, color: c.text3 }}>{Math.round((newCust / totalCust) * 100)}%</Typography>
                 </Box>

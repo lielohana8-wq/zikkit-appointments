@@ -56,30 +56,30 @@ export default function WelcomePage() {
 
   const canNext = step === 0 ? bizName.trim().length >= 2 && phone.replace(/\D/g, '').length >= 9 : step === 1 ? true : svcName.trim().length >= 2 && Number(svcPrice) > 0;
 
-  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bg }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.canvas }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2, py: 5 }}>
-      <Typography sx={{ fontSize: 26, fontWeight: 900, color: c.text, mb: 0.5 }}>ברוכים הבאים לזיקית 💜</Typography>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas, display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2, py: 5 }}>
+      <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text, mb: 0.5 }}>ברוכים הבאים לזיקית 💜</Typography>
       <Typography sx={{ fontSize: 13.5, color: c.text3, mb: 3 }}>3 צעדים — והאפליקציה של העסק שלך באוויר</Typography>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 3.5 }}>
         {[0, 1, 2].map((i) => <Box key={i} sx={{ width: i === step ? 26 : 9, height: 9, borderRadius: 99, bgcolor: i <= step ? c.accent : c.surface3, transition: 'all .3s' }} />)}
       </Box>
 
-      <Box sx={{ width: '100%', maxWidth: 440, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 4, p: 3 }}>
+      <Box sx={{ width: '100%', maxWidth: 440, bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 3 }}>
         {step === 0 && (<>
-          <Typography sx={{ fontSize: 17, fontWeight: 900, color: c.text, mb: 2 }}>🏪 מי אתם?</Typography>
+          <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text, mb: 2 }}>🏪 מי אתם?</Typography>
           <TextField fullWidth label="שם העסק (כמו שהלקוחות מכירים)" value={bizName} onChange={(e) => setBizName(e.target.value)} sx={{ mb: 2 }} autoFocus />
           <TextField fullWidth label="הטלפון שלך (להתראות על תורים)" value={phone} onChange={(e) => setPhone(e.target.value)} inputProps={{ inputMode: 'tel' }} />
         </>)}
 
         {step === 1 && (<>
-          <Typography sx={{ fontSize: 17, fontWeight: 900, color: c.text, mb: 0.5 }}>🕐 שעות פעילות</Typography>
+          <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text, mb: 0.5 }}>🕐 שעות פעילות</Typography>
           <Typography sx={{ fontSize: 12, color: c.text3, mb: 2 }}>אפשר לדייק הכל אחר-כך בהגדרות</Typography>
           {DAY_NAMES.map((dn, i) => (
             <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Box onClick={() => setDays((p) => ({ ...p, [i]: { ...p[i], open: !p[i].open } }))} sx={{ cursor: 'pointer', width: 64, fontSize: 13, fontWeight: 800, color: days[i].open ? c.accent : c.text3 }}>{days[i].open ? '✓' : '✕'} {dn}</Box>
+              <Box onClick={() => setDays((p) => ({ ...p, [i]: { ...p[i], open: !p[i].open } }))} sx={{ cursor: 'pointer', width: 64, fontSize: 13, fontWeight: 600, color: days[i].open ? c.accent : c.text3 }}>{days[i].open ? '✓' : '✕'} {dn}</Box>
               {days[i].open && (<>
                 <TextField size="small" type="time" value={days[i].start} onChange={(e) => setDays((p) => ({ ...p, [i]: { ...p[i], start: e.target.value } }))} sx={{ width: 115 }} />
                 <Typography sx={{ color: c.text3 }}>–</Typography>
@@ -90,7 +90,7 @@ export default function WelcomePage() {
         </>)}
 
         {step === 2 && (<>
-          <Typography sx={{ fontSize: 17, fontWeight: 900, color: c.text, mb: 2 }}>💈 השירות הראשון שלך</Typography>
+          <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text, mb: 2 }}>💈 השירות הראשון שלך</Typography>
           <TextField fullWidth label="שם השירות (למשל: תספורת גבר)" value={svcName} onChange={(e) => setSvcName(e.target.value)} sx={{ mb: 2 }} autoFocus />
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <TextField label="מחיר ₪" type="number" value={svcPrice} onChange={(e) => setSvcPrice(e.target.value)} sx={{ flex: 1 }} />
@@ -100,10 +100,10 @@ export default function WelcomePage() {
         </>)}
 
         <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
-          {step > 0 && <Button onClick={() => setStep(step - 1)} sx={{ color: c.text2, fontWeight: 700 }}>← חזרה</Button>}
+          {step > 0 && <Button onClick={() => setStep(step - 1)} sx={{ color: c.text2, fontWeight: 500 }}>← חזרה</Button>}
           <Box sx={{ flex: 1 }} />
-          {step < 2 && <Button onClick={() => setStep(step + 1)} disabled={!canNext} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 900, borderRadius: 2.5, px: 4 }}>המשך ←</Button>}
-          {step === 2 && <Button onClick={finish} disabled={!canNext || busy} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 900, borderRadius: 2.5, px: 4 }}>{busy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : '🚀 שגר את העסק!'}</Button>}
+          {step < 2 && <Button onClick={() => setStep(step + 1)} disabled={!canNext} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 600, borderRadius: 4, px: 4 }}>המשך ←</Button>}
+          {step === 2 && <Button onClick={finish} disabled={!canNext || busy} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 600, borderRadius: 4, px: 4 }}>{busy ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : '🚀 שגר את העסק!'}</Button>}
         </Box>
       </Box>
     </Box>

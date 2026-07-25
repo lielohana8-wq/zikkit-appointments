@@ -312,10 +312,10 @@ export default function DashboardPage() {
   const NEVER_LEGACY = false;
   if (NEVER_LEGACY) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: c.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
         <Box sx={{ textAlign: 'center', maxWidth: 420 }}>
           <Box sx={{ fontSize: 56, mb: 2 }}>👋</Box>
-          <Typography sx={{ fontSize: 24, fontWeight: 800, color: c.text, mb: 1 }}>ברוך הבא!</Typography>
+          <Typography sx={{ fontSize: 24, fontWeight: 600, color: c.text, mb: 1 }}>ברוך הבא!</Typography>
           <Typography sx={{ fontSize: 14, color: c.text2, mb: 3 }}>בוא נקים את העסק שלך — לוקח 10 שניות</Typography>
           <Button onClick={async () => {
             if (!firebaseUser) return;
@@ -327,7 +327,7 @@ export default function DashboardPage() {
               ownerEmail: firebaseUser.email?.toLowerCase() || '',
             }, { merge: true });
             window.location.reload();
-          }} variant="contained" size="large" sx={{ py: 1.75, px: 5, borderRadius: 1.5, fontWeight: 800 }}>
+          }} variant="contained" size="large" sx={{ py: 1.75, px: 5, borderRadius: 1.5, fontWeight: 600 }}>
             צור את העסק שלי →
           </Button>
         </Box>
@@ -336,9 +336,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
       {/* Header */}
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <ZikkitLogo size={34} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.text2, display: { xs: 'none', sm: 'block' } }}>{bizName}</Typography>
@@ -346,7 +346,7 @@ export default function DashboardPage() {
           <Button onClick={toggleTheme} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>{themeMode === 'dark' ? '☀️' : '🌙'}</Button>
           <Button onClick={() => router.push('/settings')} sx={{ color: c.text3, fontWeight: 600, fontSize: 18, minWidth: 'auto', p: 0.5 }}>⚙️</Button>
           {isPlatformOwner && (
-            <Button onClick={() => router.push('/hq')} sx={{ color: '#fff', bgcolor: c.text, fontWeight: 800, fontSize: 12, minWidth: 'auto', px: 1.25, py: 0.5, borderRadius: 1, letterSpacing: '0.05em', '&:hover': { bgcolor: c.accent } }}>HQ</Button>
+            <Button onClick={() => router.push('/hq')} sx={{ color: '#fff', bgcolor: c.text, fontWeight: 600, fontSize: 12, minWidth: 'auto', px: 1.25, py: 0.5, borderRadius: 1, letterSpacing: '0.05em', '&:hover': { bgcolor: c.accent } }}>HQ</Button>
           )}
           <Button onClick={() => logout()} sx={{ color: c.text3, fontWeight: 600, fontSize: 14, minWidth: 'auto' }}>יציאה</Button>
         </Box>
@@ -355,20 +355,20 @@ export default function DashboardPage() {
       <Box className="zk-page" sx={{ maxWidth: 940, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: { xs: 3, sm: 5 } }}>
         {/* Greeting */}
         <Box sx={{ mb: 3 }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.12em', mb: 1 }}>
+          <Typography sx={{ fontSize: 12, fontWeight: 500, color: c.accent, textTransform: 'uppercase', letterSpacing: '0.12em', mb: 1 }}>
             {(() => { const d = new Date(); return `${['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'][d.getDay()]} · ${d.getDate()}.${d.getMonth()+1}`; })()}
           </Typography>
-          <Typography sx={{ fontSize: { xs: 40, sm: 56 }, fontWeight: 900, color: c.text, letterSpacing: '-0.045em', lineHeight: 0.95 }}>
+          <Typography sx={{ fontSize: { xs: 40, sm: 56 }, fontWeight: 600, color: c.text, letterSpacing: '-0.045em', lineHeight: 0.95 }}>
             {(() => { const h = new Date().getHours(); return h < 12 ? 'בוקר טוב' : h < 18 ? 'צהריים טובים' : 'ערב טוב'; })()}
           </Typography>
           <Typography sx={{ fontSize: 17, color: c.text2, mt: 1.5, fontWeight: 500 }}>{todayBookings.length > 0 ? `${todayBookings.length} תורים מחכים לך היום` : 'אין תורים היום — זמן טוב לקדם את העסק'}</Typography>
         </Box>
 
         {/* Quick search */}
-        <Box onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); window.dispatchEvent(e); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 99, px: 2.5, py: 1.5, mb: 3, transition: 'all 0.2s', '&:hover': { borderColor: c.border2 } }}>
+        <Box onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); window.dispatchEvent(e); }} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 99, px: 2.5, py: 1.5, mb: 3, transition: 'all 0.2s', '&:hover': { borderColor: c.border2 } }}>
           <Box sx={{ fontSize: 18 }}>🔍</Box>
           <Typography sx={{ fontSize: 14.5, color: c.text3, flex: 1 }}>חיפוש לקוחות, תורים, עמודים...</Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'block' } }}><kbd style={{ background: 'var(--zk-surface3)', color: 'var(--zk-text3)', padding: '3px 8px', borderRadius: 2, fontSize: 11, fontWeight: 600 }}>⌘K</kbd></Box>
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}><kbd style={{ background: 'var(--zk-surface3)', color: 'var(--zk-text3)', padding: '3px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>⌘K</kbd></Box>
         </Box>
 
         {/* Next appointment — hero card */}
@@ -382,16 +382,16 @@ export default function DashboardPage() {
           if (!next) return null;
           const isToday = next.date === nowStr;
           return (
-            <Box onClick={() => setSelectedBooking(next)} sx={{ cursor: 'pointer', background: c.accent, borderRadius: 2, p: { xs: 2.5, sm: 3 }, mb: 3, color: '#fff', position: 'relative', overflow: 'hidden', transition: 'all 0.18s', '&:hover': { background: c.accent3 } }}>
+            <Box onClick={() => setSelectedBooking(next)} sx={{ cursor: 'pointer', background: c.accent, borderRadius: 4, p: { xs: 2.5, sm: 3 }, mb: 3, color: '#fff', position: 'relative', overflow: 'hidden', transition: 'all 0.18s', '&:hover': { background: c.accent3 } }}>
               <Box sx={{ position: 'absolute', top: -30, left: -20, width: 140, height: 140, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.08)' }} />
               <Typography sx={{ fontSize: 12, opacity: 0.85, fontWeight: 600, position: 'relative', textTransform: 'uppercase', letterSpacing: '0.05em' }}>התור הבא</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, position: 'relative' }}>
                 <Box sx={{ textAlign: 'center', bgcolor: 'rgba(255,255,255,0.18)', borderRadius: 1.5, px: 2, py: 1.25, minWidth: 72 }}>
-                  <Typography sx={{ fontSize: 24, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em' }}>{next.time}</Typography>
+                  <Typography sx={{ fontSize: 24, fontWeight: 600, lineHeight: 1, letterSpacing: '-0.02em' }}>{next.time}</Typography>
                   <Typography sx={{ fontSize: 10.5, opacity: 0.85, mt: 0.25 }}>{isToday ? 'היום' : next.date.slice(5)}</Typography>
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.02em' }}>{next.customerName}</Typography>
+                  <Typography sx={{ fontSize: 19, fontWeight: 600, letterSpacing: '-0.02em' }}>{next.customerName}</Typography>
                   <Typography sx={{ fontSize: 13.5, opacity: 0.9 }}>{next.service || 'טיפול'}{next.staff ? ` · ${next.staff}` : ''}</Typography>
                 </Box>
                 {next.customerPhone && (
@@ -406,10 +406,10 @@ export default function DashboardPage() {
         {alerts.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
             {alerts.map((a, i) => (
-              <Box key={i} onClick={a.onClick} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: a.hot ? c.accentDim : c.surface1, border: `1px solid ${a.hot ? c.accentMid : c.border2}`, borderRadius: 2, px: 2, py: 1.5, transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
+              <Box key={i} onClick={a.onClick} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: a.hot ? c.accentDim : c.surface1, border: `1px solid ${a.hot ? c.accentMid : c.border2}`, borderRadius: 4, px: 2, py: 1.5, transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
                 <Box sx={{ fontSize: 19 }}>{a.icon}</Box>
-                <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, flex: 1 }}>{a.text}</Typography>
-                <Box sx={{ color: c.accent, fontSize: 17, fontWeight: 700 }}>‹</Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text, flex: 1 }}>{a.text}</Typography>
+                <Box sx={{ color: c.accent, fontSize: 17, fontWeight: 500 }}>‹</Box>
               </Box>
             ))}
           </Box>
@@ -417,10 +417,10 @@ export default function DashboardPage() {
 
         {/* Notifications — expands from the 🔔 alert */}
         <Collapse in={showNotifs && unreadNotifs.length > 0}>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3 }}>
+          <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {unreadNotifs.slice(0, 5).map((n) => (
-                <Typography key={n.id} sx={{ fontSize: 13.5, color: c.text2, bgcolor: c.surface2, borderRadius: 2.5, px: 1.75, py: 1.25 }}>{n.text}</Typography>
+                <Typography key={n.id} sx={{ fontSize: 13.5, color: c.text2, bgcolor: c.fill, borderRadius: 4, px: 1.75, py: 1.25 }}>{n.text}</Typography>
               ))}
             </Box>
             <Button size="small" onClick={async () => { if (bizId) { await markNotificationsRead(bizId); setNotifs((p) => p.map((n) => ({ ...n, read: true }))); setShowNotifs(false); } }} sx={{ fontSize: 12.5, color: c.text3, mt: 1 }}>סמן הכל כנקרא</Button>
@@ -429,20 +429,20 @@ export default function DashboardPage() {
 
         {/* Tomorrow reminders — expands from the ⏰ alert */}
         <Collapse in={showTomorrow && tomorrowBookings.length > 0}>
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3 }}>
+          <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {tomorrowBookings.map((b, i) => {
                 if (!b.customerPhone) return null;
                 const manageUrl = b.manageToken && bizId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/manage/${bizId}/${b.manageToken}` : undefined;
                 const msg = messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: b.customerName, service: b.service, date: b.date, time: b.time, manageUrl });
                 return (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface2, borderRadius: 1.5, px: 1.75, py: 1.25 }}>
-                    <Box sx={{ fontSize: 14, fontWeight: 800, color: c.accent, minWidth: 44 }}>{b.time}</Box>
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.fill, borderRadius: 1.5, px: 1.75, py: 1.25 }}>
+                    <Box sx={{ fontSize: 14, fontWeight: 600, color: c.accent, minWidth: 44 }}>{b.time}</Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                       <Typography sx={{ fontSize: 12, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service}</Typography>
                     </Box>
-                    <Button href={waLink(b.customerPhone, msg)} target="_blank" size="small" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, fontSize: 12.5, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' }, whiteSpace: 'nowrap', flexShrink: 0 }}>💬 תזכורת</Button>
+                    <Button href={waLink(b.customerPhone, msg)} target="_blank" size="small" variant="contained" sx={{ borderRadius: 4, fontWeight: 500, fontSize: 12.5, bgcolor: '#25D366', '&:hover': { bgcolor: '#1EA952' }, whiteSpace: 'nowrap', flexShrink: 0 }}>💬 תזכורת</Button>
                   </Box>
                 );
               })}
@@ -451,15 +451,15 @@ export default function DashboardPage() {
         </Collapse>
 
         {/* Stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', mb: 3, border: `1.5px solid ${c.border}`, borderRadius: 2, overflow: 'hidden' }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', mb: 3, border: `1px solid ${c.cardLine}`, borderRadius: 4, overflow: 'hidden' }}>
           {[
             { label: 'תורים היום', value: String(todayBookings.length), accent: true },
             { label: 'צפי הכנסה היום', value: `₪${todayRevenue.toLocaleString()}`, accent: false },
             { label: 'הכנסה השבוע', value: `₪${weekRevenue.toLocaleString()}`, accent: false },
           ].map((s, i) => (
             <Box key={i} sx={{ bgcolor: s.accent ? c.accent : c.surface1, borderRight: i < 2 ? `1px solid ${s.accent || i === 0 ? c.accent : c.border2}` : 'none', p: { xs: 2, sm: 3 } }}>
-              <Typography sx={{ fontSize: { xs: 28, sm: 38 }, fontWeight: 900, color: s.accent ? '#fff' : c.text, letterSpacing: '-0.04em', lineHeight: 0.9 }}>{s.value}</Typography>
-              <Typography sx={{ fontSize: 11.5, color: s.accent ? 'rgba(255,255,255,0.8)' : c.text3, mt: 1, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</Typography>
+              <Typography sx={{ fontSize: { xs: 28, sm: 38 }, fontWeight: 600, color: s.accent ? '#fff' : c.text, letterSpacing: '-0.04em', lineHeight: 0.9 }}>{s.value}</Typography>
+              <Typography sx={{ fontSize: 11.5, color: s.accent ? 'rgba(255,255,255,0.8)' : c.text3, mt: 1, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</Typography>
             </Box>
           ))}
         </Box>
@@ -467,17 +467,17 @@ export default function DashboardPage() {
         {/* ===== 6 quick actions — big, thumb-friendly ===== */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: `repeat(${Math.min(quickActions.length, 6)}, 1fr)` }, gap: 1.25, mb: 4 }}>
           {quickActions.map((q) => (
-            <Box key={q.label} onClick={q.onClick} className="zk-card" sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2.5, py: 2.25, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' }, '&:active': { transform: 'scale(0.98)' } }}>
+            <Box key={q.label} onClick={q.onClick} className="zk-card" sx={{ cursor: 'pointer', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, py: 2.25, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent, transform: 'translateY(-2px)' }, '&:active': { transform: 'scale(0.98)' } }}>
               <Box sx={{ fontSize: 26, mb: 0.75 }}>{q.icon}</Box>
-              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text, letterSpacing: '-0.01em' }}>{q.label}</Typography>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text, letterSpacing: '-0.01em' }}>{q.label}</Typography>
             </Box>
           ))}
         </Box>
 
         {/* Today */}
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>התורים של היום</Typography>
         {todayBookings.length === 0 ? (
-          <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 5, textAlign: 'center', mb: 4 }}>
+          <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 5, textAlign: 'center', mb: 4 }}>
             <Box sx={{ fontSize: 32, mb: 1, opacity: 0.5 }}>☕</Box>
             <Typography sx={{ fontSize: 14, color: c.text3 }}>אין תורים היום</Typography>
           </Box>
@@ -492,7 +492,7 @@ export default function DashboardPage() {
         {/* Upcoming */}
         {upcoming.length > 0 && (
           <>
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, mt: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תורים קרובים</Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text3, mb: 1.5, mt: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>תורים קרובים</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {upcoming.map((b) => <BookingRow key={b.id} booking={b} bizName={bizName} showDate onClick={() => setSelectedBooking(b)} />)}
             </Box>
@@ -501,20 +501,20 @@ export default function DashboardPage() {
       </Box>
 
       {/* ===== All tools drawer ===== */}
-      <Drawer anchor="bottom" open={toolsOpen} onClose={() => setToolsOpen(false)} PaperProps={{ sx: { bgcolor: c.bg, borderRadius: '20px 20px 0 0', maxHeight: '86vh', maxWidth: 720, mx: 'auto', width: '100%' } }}>
+      <Drawer anchor="bottom" open={toolsOpen} onClose={() => setToolsOpen(false)} PaperProps={{ sx: { bgcolor: c.canvas, borderRadius: '20px 20px 0 0', maxHeight: '86vh', maxWidth: 720, mx: 'auto', width: '100%' } }}>
         <Box sx={{ p: { xs: 2.5, sm: 3 }, pb: 4 }}>
           <Box sx={{ width: 44, height: 5, borderRadius: 99, bgcolor: c.border2, mx: 'auto', mb: 2 }} />
-          <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text, mb: 1.5 }}>🧰 כל הכלים</Typography>
+          <Typography sx={{ fontSize: 18, fontWeight: 600, color: c.text, mb: 1.5 }}>🧰 כל הכלים</Typography>
           <TextField fullWidth size="small" placeholder="חפש כלי..." value={toolsQuery} onChange={(e) => setToolsQuery(e.target.value)} sx={{ mb: 2 }} />
           <Box sx={{ overflowY: 'auto', maxHeight: '58vh' }}>
             {filteredTools.map((sec) => (
               <Box key={sec.title} sx={{ mb: 2.5 }}>
-                <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, mb: 1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{sec.title}</Typography>
+                <Typography sx={{ fontSize: 11, fontWeight: 600, color: c.text3, mb: 1, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{sec.title}</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)' }, gap: 1 }}>
                   {sec.items.map((t) => (
-                    <Box key={t.path} onClick={() => { setToolsOpen(false); router.push(t.path); }} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, py: 1.75, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
+                    <Box key={t.path} onClick={() => { setToolsOpen(false); router.push(t.path); }} sx={{ cursor: 'pointer', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, py: 1.75, px: 1, textAlign: 'center', transition: 'all 0.15s', '&:hover': { borderColor: c.accent } }}>
                       <Box sx={{ fontSize: 22, mb: 0.5 }}>{t.icon}</Box>
-                      <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: c.text, lineHeight: 1.25 }}>{t.label}</Typography>
+                      <Typography sx={{ fontSize: 11.5, fontWeight: 500, color: c.text, lineHeight: 1.25 }}>{t.label}</Typography>
                     </Box>
                   ))}
                 </Box>
@@ -537,13 +537,13 @@ export default function DashboardPage() {
 function BookingRow({ booking, bizName, showDate, onClick }: { booking: Booking; bizName?: string; showDate?: boolean; onClick?: () => void }) {
   const msg = booking.customerPhone ? messageTemplates.reminder({ bizName: bizName || 'העסק', customerName: booking.customerName, service: booking.service, date: booking.date, time: booking.time }) : '';
   return (
-    <Box onClick={onClick} sx={{ cursor: onClick ? 'pointer' : 'default', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': onClick ? { borderColor: c.border, bgcolor: c.surface2 } : {} }}>
+    <Box onClick={onClick} sx={{ cursor: onClick ? 'pointer' : 'default', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.15s', '&:hover': onClick ? { borderColor: c.border, bgcolor: c.fill } : {} }}>
       <Box sx={{ textAlign: 'center', minWidth: 56, bgcolor: c.accentDim, borderRadius: 1.5, py: 1, px: 1.25 }}>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{booking.time}</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{booking.time}</Typography>
         {showDate && <Typography sx={{ fontSize: 10.5, color: c.accent, opacity: 0.7 }}>{booking.date?.slice(5)}</Typography>}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{booking.customerName}</Typography>
+        <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>{booking.customerName}</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3 }}>{booking.service || 'טיפול'}{booking.staff ? ` · ${booking.staff}` : ''} · {booking.duration} דק'</Typography>
       </Box>
       {booking.customerPhone && (

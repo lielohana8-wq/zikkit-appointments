@@ -82,15 +82,15 @@ export default function OnboardingPage() {
   };
   const addService = () => setServicesState((prev) => [...prev, { id: 'svc_' + Date.now(), name: '', category: '', price: 0, duration: 30, description: '', active: true }]);
 
-  if (loading || dataLoading || !hours) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bg }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading || !hours) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.canvas }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
       {/* Progress header */}
-      <Box sx={{ borderBottom: `1px solid ${c.border2}`, py: 2, px: { xs: 2.5, sm: 4 }, position: 'sticky', top: 0, bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', zIndex: 10 }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border2}`, py: 2, px: { xs: 2.5, sm: 4 }, position: 'sticky', top: 0, bgcolor: c.chrome, backdropFilter: 'blur(20px)', zIndex: 10 }}>
         <Box sx={{ maxWidth: 620, mx: 'auto' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-            <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>הקמת העסק · {step + 1}/{STEPS.length}</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 600, color: c.text }}>הקמת העסק · {step + 1}/{STEPS.length}</Typography>
             <Button onClick={finish} sx={{ fontSize: 13, color: c.text3, fontWeight: 600 }}>דלג להמשך</Button>
           </Box>
           <Box sx={{ display: 'flex', gap: 0.75 }}>
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
         {step === 0 && (
           <>
             <Box sx={{ fontSize: 40, mb: 1 }}>🏪</Box>
-            <Typography sx={{ fontSize: 26, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>ספר לנו על העסק</Typography>
+            <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>ספר לנו על העסק</Typography>
             <Typography sx={{ fontSize: 15, color: c.text3, mb: 3 }}>הפרטים האלה יופיעו בדף ההזמנות שלך.</Typography>
             <TextField fullWidth label="שם העסק" value={bizName} onChange={(e) => setBizName(e.target.value)} sx={{ mb: 2 }} placeholder="הסלון של דנה" />
             <TextField fullWidth label="טלפון" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} sx={{ mb: 2 }} placeholder="050-1234567" />
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
         {step === 1 && (
           <>
             <Box sx={{ fontSize: 40, mb: 1 }}>✂️</Box>
-            <Typography sx={{ fontSize: 26, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>מה אתה מציע?</Typography>
+            <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>מה אתה מציע?</Typography>
             <Typography sx={{ fontSize: 15, color: c.text3, mb: 3 }}>השירותים והמחירים שלקוחות יוכלו להזמין.</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {services.map((s, i) => (
@@ -129,7 +129,7 @@ export default function OnboardingPage() {
                 </Box>
               ))}
             </Box>
-            <Button onClick={addService} sx={{ mt: 2, fontWeight: 700, color: c.accent }}>+ הוסף שירות</Button>
+            <Button onClick={addService} sx={{ mt: 2, fontWeight: 500, color: c.accent }}>+ הוסף שירות</Button>
           </>
         )}
 
@@ -137,14 +137,14 @@ export default function OnboardingPage() {
         {step === 2 && hours && (
           <>
             <Box sx={{ fontSize: 40, mb: 1 }}>🕐</Box>
-            <Typography sx={{ fontSize: 26, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>מתי אתה פתוח?</Typography>
+            <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>מתי אתה פתוח?</Typography>
             <Typography sx={{ fontSize: 15, color: c.text3, mb: 3 }}>שעות הפעילות קובעות מתי אפשר להזמין תור.</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {DAYS.map((dayName, i) => {
                 const d = hours.days[i] || { open: false, start: '09:00', end: '19:00' };
                 return (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, px: 2, py: 1 }}>
-                    <Typography sx={{ width: 60, fontSize: 14, fontWeight: 700, color: c.text }}>{dayName}</Typography>
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, px: 2, py: 1 }}>
+                    <Typography sx={{ width: 60, fontSize: 14, fontWeight: 500, color: c.text }}>{dayName}</Typography>
                     <Switch checked={d.open} onChange={(e) => setHoursState({ ...hours, days: { ...hours.days, [i]: { ...d, open: e.target.checked } } })} size="small" />
                     {d.open ? (
                       <Box sx={{ display: 'flex', gap: 1, flex: 1 }}>
@@ -163,10 +163,10 @@ export default function OnboardingPage() {
         {step === 3 && (
           <>
             <Box sx={{ fontSize: 40, mb: 1 }}>🔗</Box>
-            <Typography sx={{ fontSize: 26, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>דף ההזמנות שלך</Typography>
+            <Typography sx={{ fontSize: 26, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', mb: 0.5 }}>דף ההזמנות שלך</Typography>
             <Typography sx={{ fontSize: 15, color: c.text3, mb: 3 }}>הלינק שתשתף עם לקוחות כדי שיקבעו תור לבד.</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 2.5 }}>
-              <Box><Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>הפעל דף הזמנות</Typography><Typography sx={{ fontSize: 12.5, color: c.text3 }}>לקוחות יוכלו לקבוע תור אונליין 24/7</Typography></Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 2.5 }}>
+              <Box><Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text }}>הפעל דף הזמנות</Typography><Typography sx={{ fontSize: 12.5, color: c.text3 }}>לקוחות יוכלו לקבוע תור אונליין 24/7</Typography></Box>
               <Switch checked={bookingEnabled} onChange={(e) => setBookingEnabled(e.target.checked)} />
             </Box>
             <TextField fullWidth label="הודעת ברוכים הבאים (אופציונלי)" value={welcomeText} onChange={(e) => setWelcomeText(e.target.value)} multiline rows={2} placeholder="ברוכים הבאים! נשמח לארח אתכם 💜" />
@@ -177,12 +177,12 @@ export default function OnboardingPage() {
         {step === 4 && (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Box sx={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(135deg, ${c.accent}, ${c.accentDeep})`, color: '#fff', fontSize: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3, boxShadow: `0 12px 36px ${c.accent}55` }}>✓</Box>
-            <Typography sx={{ fontSize: 28, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', mb: 1 }}>העסק שלך מוכן! 🎉</Typography>
+            <Typography sx={{ fontSize: 28, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', mb: 1 }}>העסק שלך מוכן! 🎉</Typography>
             <Typography sx={{ fontSize: 15.5, color: c.text2, lineHeight: 1.6, maxWidth: 380, mx: 'auto', mb: 4 }}>הכל מוגדר. עכשiv אפשר לשתף את דף ההזמנות, להוסיף תורים, ולתת ל-Zikkit לעבוד בשבילך.</Typography>
             {bizId && (
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 3, flexWrap: 'wrap' }}>
-                <Button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/book/${bizId}`); showToast('הלינק הועתק!', 'success'); }} variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>📋 העתק לינק הזמנות</Button>
-                <Button href={`/book/${bizId}`} target="_blank" variant="outlined" sx={{ borderRadius: 2, fontWeight: 700 }}>👁 תצוגה מקדימה</Button>
+                <Button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/book/${bizId}`); showToast('הלינק הועתק!', 'success'); }} variant="outlined" sx={{ borderRadius: 4, fontWeight: 500 }}>📋 העתק לינק הזמנות</Button>
+                <Button href={`/book/${bizId}`} target="_blank" variant="outlined" sx={{ borderRadius: 4, fontWeight: 500 }}>👁 תצוגה מקדימה</Button>
               </Box>
             )}
           </Box>
@@ -190,14 +190,14 @@ export default function OnboardingPage() {
 
         {/* Nav buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mt: 4 }}>
-          {step > 0 && step < 4 && <Button onClick={() => setStep(step - 1)} sx={{ borderRadius: 2, fontWeight: 700, color: c.text3, px: 3 }}>חזרה</Button>}
+          {step > 0 && step < 4 && <Button onClick={() => setStep(step - 1)} sx={{ borderRadius: 4, fontWeight: 500, color: c.text3, px: 3 }}>חזרה</Button>}
           <Box sx={{ flex: 1 }} />
           {step < 4 ? (
-            <Button onClick={saveStep} disabled={saving || (step === 0 && !bizName.trim())} variant="contained" sx={{ borderRadius: 2, fontWeight: 800, px: 4, py: 1.4 }}>
+            <Button onClick={saveStep} disabled={saving || (step === 0 && !bizName.trim())} variant="contained" sx={{ borderRadius: 4, fontWeight: 600, px: 4, py: 1.4 }}>
               {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : step === 3 ? 'סיום →' : 'המשך →'}
             </Button>
           ) : (
-            <Button onClick={finish} variant="contained" sx={{ borderRadius: 2, fontWeight: 800, px: 4, py: 1.4 }}>כניסה לדאשבורד →</Button>
+            <Button onClick={finish} variant="contained" sx={{ borderRadius: 4, fontWeight: 600, px: 4, py: 1.4 }}>כניסה לדאשבורד →</Button>
           )}
         </Box>
       </Box>

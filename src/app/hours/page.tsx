@@ -102,15 +102,15 @@ export default function HoursPage() {
   if (loading || dataLoading || !hours) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>{isStaff ? 'השעות שלי' : target ? `הזמינות של ${target}` : 'שעות פעילות'}</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>{isStaff ? 'השעות שלי' : target ? `הזמינות של ${target}` : 'שעות פעילות'}</Typography>
         {!isStaff && teamNames.length > 0 && (
-          <Box sx={{ position: 'absolute', top: 64, right: 0, left: 0, zIndex: 19, bgcolor: c.bg, borderBottom: `1px solid ${c.border}`, px: { xs: 2, sm: 4 }, py: 1, display: 'flex', gap: 0.75, overflowX: 'auto' }}>
-            <Box onClick={() => setTarget('')} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap', bgcolor: !target ? c.accent : c.surface2, color: !target ? '#fff' : c.text2 }}>🏢 העסק</Box>
+          <Box sx={{ position: 'absolute', top: 64, right: 0, left: 0, zIndex: 19, bgcolor: c.canvas, borderBottom: `1px solid ${c.border}`, px: { xs: 2, sm: 4 }, py: 1, display: 'flex', gap: 0.75, overflowX: 'auto' }}>
+            <Box onClick={() => setTarget('')} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', bgcolor: !target ? c.accent : c.surface2, color: !target ? '#fff' : c.text2 }}>🏢 העסק</Box>
             {teamNames.map((n) => (
-              <Box key={n} onClick={() => setTarget(n)} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap', bgcolor: target === n ? c.accent : c.surface2, color: target === n ? '#fff' : c.text2 }}>{n}</Box>
+              <Box key={n} onClick={() => setTarget(n)} sx={{ cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', bgcolor: target === n ? c.accent : c.surface2, color: target === n ? '#fff' : c.text2 }}>{n}</Box>
             ))}
           </Box>
         )}
@@ -126,8 +126,8 @@ export default function HoursPage() {
           {DAYS.map((dayName, i) => {
             const d = hours.days[i];
             return (
-              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${d.open ? c.border : c.border}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 1.5, opacity: d.open ? 1 : 0.7, transition: 'all 0.2s' }}>
-                <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text, minWidth: 52 }}>{dayName}</Typography>
+              <Box key={i} sx={{ bgcolor: c.card, border: `1px solid ${d.open ? c.border : c.border}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 1.5, opacity: d.open ? 1 : 0.7, transition: 'all 0.2s' }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text, minWidth: 52 }}>{dayName}</Typography>
                 <Switch checked={d.open} onChange={(e) => update(i, 'open', e.target.checked)} />
                 {d.open ? (
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
@@ -145,24 +145,24 @@ export default function HoursPage() {
 
         {/* Blocked dates — holidays / vacation (staff: personal days off) */}
         <Box sx={{ mt: 4 }}>
-          <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 0.5 }}>🚫 ימים חסומים</Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 600, color: c.text, mb: 0.5 }}>🚫 ימים חסומים</Typography>
           <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>חופשות, חגים או ימים שבהם אינך עובד. לקוחות לא יוכלו לקבוע תור בתאריכים האלה.</Typography>
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
             <TextField type="date" value={newBlockDate} onChange={(e) => setNewBlockDate(e.target.value)} size="small" sx={{ flex: 1 }} InputLabelProps={{ shrink: true }} />
-            <Button onClick={addBlockedDate} variant="outlined" disabled={!newBlockDate} sx={{ borderRadius: 1.5, fontWeight: 700, whiteSpace: 'nowrap' }}>+ חסום</Button>
+            <Button onClick={addBlockedDate} variant="outlined" disabled={!newBlockDate} sx={{ borderRadius: 1.5, fontWeight: 500, whiteSpace: 'nowrap' }}>+ חסום</Button>
           </Box>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {(hours.blockedDates || []).slice().sort().map((d) => (
               <Box key={d} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, bgcolor: c.hotDim, color: c.hot, borderRadius: 99, px: 1.75, py: 0.6, fontSize: 13, fontWeight: 600 }}>
                 {new Date(d + 'T00:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}
-                <Box onClick={() => removeBlockedDate(d)} sx={{ cursor: 'pointer', fontWeight: 800, ml: 0.25 }}>✕</Box>
+                <Box onClick={() => removeBlockedDate(d)} sx={{ cursor: 'pointer', fontWeight: 600, ml: 0.25 }}>✕</Box>
               </Box>
             ))}
             {(hours.blockedDates || []).length === 0 && <Typography sx={{ fontSize: 13, color: c.text3 }}>אין ימים חסומים</Typography>}
           </Box>
         </Box>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 800 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={saving} sx={{ mt: 3, py: 1.75, borderRadius: 1.5, fontWeight: 600 }}>
           {saved ? '✓ נשמר!' : saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור שעות'}
         </Button>
       </Box>

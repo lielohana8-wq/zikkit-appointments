@@ -18,6 +18,7 @@ interface Stats {
   growthByMonth: Record<string, number>; recentPayments: Array<{ biz: string; type: string; paidAt: string }>;
 }
 interface Biz {
+  bookingsTotal?: number;
   ownerPhone?: string;
   onlinePct?: number | null; usage?: Record<string, number>; pushSubsCount?: number; trialDaysLeft?: number | null; healthScore?: number;
   bookings7?: number; upcoming?: number; cancelledCount?: number; revenueMonth?: number;
@@ -243,6 +244,7 @@ export default function HQPage() {
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0.75, mb: 1.25 }}>
                     {([
                       ['📅 שבוע', b.bookings7 ?? 0],
+                      ['🗓 סה"כ', b.bookingsTotal ?? 0],
                       ['⏳ קרובים', b.upcoming ?? 0],
                       ['❌ ביטולים', b.cancelledCount ?? 0],
                       ['₪ החודש', b.revenueMonth ?? 0],

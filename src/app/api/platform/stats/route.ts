@@ -15,7 +15,11 @@ export async function OPTIONS() {
  */
 export async function GET() {
   try {
-    const businesses = await listAllBiz();
+    let businesses = await listAllBiz();
+    // Optional whitelist: STATS_INCLUDE_BIZ="id1,id2" → only these businesses
+    // feed the public scoreboard (e.g. flagship pilot only). Empty = all.
+    const include = (process.env.STATS_INCLUDE_BIZ || '').split(',').map((x) => x.trim()).filter(Boolean);
+    if (include.length > 0) businesses = businesses.filter((b) => include.includes(b.id));
     let bookingsTotal = 0, revenue = 0, customers = 0, views = 0, online = 0, manual = 0;
     for (const { data } of businesses) {
       const apt = (data.appointments as Record<string, unknown>) || {};

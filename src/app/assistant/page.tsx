@@ -40,33 +40,33 @@ export default function AssistantPage() {
     } finally { setBusy(false); }
   };
 
-  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.canvas }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bg }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas, display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20, bgcolor: c.chrome, backdropFilter: 'blur(20px)' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20, bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)' }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, color: c.text }}>🤖 העוזר החכם</Typography>
+        <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>🤖 העוזר החכם</Typography>
         <Box sx={{ width: 90 }} />
       </Box>
 
       <Box sx={{ flex: 1, maxWidth: 680, width: '100%', mx: 'auto', px: 2, py: 2.5, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
         {msgs.map((m, i) => (
-          <Box key={i} sx={{ alignSelf: m.role === 'user' ? 'flex-start' : 'flex-end', maxWidth: '85%', bgcolor: m.role === 'user' ? c.accent : c.surface1, color: m.role === 'user' ? '#fff' : c.text, borderRadius: 4, px: 2, py: 1.25, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', border: m.role === 'user' ? 'none' : `1px solid ${c.border2}` }}>{m.content}</Box>
+          <Box key={i} sx={{ alignSelf: m.role === 'user' ? 'flex-start' : 'flex-end', maxWidth: '85%', bgcolor: m.role === 'user' ? c.accent : c.surface1, color: m.role === 'user' ? '#fff' : c.text, borderRadius: 3, px: 2, py: 1.25, fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', border: m.role === 'user' ? 'none' : `1px solid ${c.border2}` }}>{m.content}</Box>
         ))}
-        {busy && <Box sx={{ alignSelf: 'flex-end', bgcolor: c.card, borderRadius: 4, px: 2, py: 1.25 }}><CircularProgress size={16} sx={{ color: c.accent }} /></Box>}
+        {busy && <Box sx={{ alignSelf: 'flex-end', bgcolor: c.surface1, borderRadius: 3, px: 2, py: 1.25 }}><CircularProgress size={16} sx={{ color: c.accent }} /></Box>}
         {msgs.length === 1 && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-            {QUICK.map((q) => <Box key={q} onClick={() => send(q)} sx={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 500, color: c.accent, border: `1px solid ${c.accent}44`, borderRadius: 99, px: 1.5, py: 0.6, '&:hover': { bgcolor: c.accentDim } }}>{q}</Box>)}
+            {QUICK.map((q) => <Box key={q} onClick={() => send(q)} sx={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: c.accent, border: `1px solid ${c.accent}44`, borderRadius: 99, px: 1.5, py: 0.6, '&:hover': { bgcolor: c.accentDim } }}>{q}</Box>)}
           </Box>
         )}
         <div ref={endRef} />
       </Box>
 
-      <Box sx={{ position: 'sticky', bottom: 0, bgcolor: c.canvas, borderTop: `1px solid ${c.border}`, p: 1.5 }}>
+      <Box sx={{ position: 'sticky', bottom: 0, bgcolor: c.bg, borderTop: `1px solid ${c.border}`, p: 1.5 }}>
         <Box sx={{ maxWidth: 680, mx: 'auto', display: 'flex', gap: 1 }}>
           <TextField fullWidth size="small" placeholder="שאלו אותי איך עושים משהו במערכת…" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-          <Button onClick={() => send()} disabled={busy || !input.trim()} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 600, borderRadius: 4, px: 3 }}>שלח</Button>
+          <Button onClick={() => send()} disabled={busy || !input.trim()} variant="contained" sx={{ bgcolor: c.accent, fontWeight: 800, borderRadius: 2, px: 3 }}>שלח</Button>
         </Box>
       </Box>
     </Box>

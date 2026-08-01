@@ -71,24 +71,24 @@ export default function DocumentsPage() {
   if (loading || dataLoading || !branding) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>קבלות והצעות מחיר</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>קבלות והצעות מחיר</Typography>
         <Button onClick={() => setBrandingOpen(true)} size="small" sx={{ color: c.text2, fontWeight: 600 }}>🎨 עיצוב</Button>
       </Box>
 
       <Box sx={{ maxWidth: 720, mx: 'auto', p: 3 }}>
         {/* Create buttons */}
         <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
-          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
+          <Box onClick={() => newDoc('receipt')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>🧾</Box>
-            <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>קבלה חדשה</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>קבלה חדשה</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>תיעוד תשלום שהתקבל</Typography>
           </Box>
-          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
+          <Box onClick={() => newDoc('quote')} sx={{ flex: 1, cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
             <Box sx={{ fontSize: 26, mb: 0.5 }}>📄</Box>
-            <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>הצעת מחיר</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>הצעת מחיר</Typography>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>הצעה מעוצבת ללקוח</Typography>
           </Box>
         </Box>
@@ -104,10 +104,10 @@ export default function DocumentsPage() {
             {docs.map((d) => {
               const { total } = docTotal(d);
               return (
-                <Box key={d.id} sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box key={d.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: c.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{d.type === 'receipt' ? '🧾' : '📄'}</Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 14.5, fontWeight: 500, color: c.text }}>{d.type === 'receipt' ? 'קבלה' : 'הצעה'} #{d.number} · {d.customerName || 'ללא שם'}</Typography>
+                    <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: c.text }}>{d.type === 'receipt' ? 'קבלה' : 'הצעה'} #{d.number} · {d.customerName || 'ללא שם'}</Typography>
                     <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{d.date} · ₪{total.toLocaleString()}</Typography>
                   </Box>
                   <Button onClick={() => setPreview(d)} size="small" sx={{ fontWeight: 600, color: c.accent }}>צפה</Button>
@@ -121,10 +121,10 @@ export default function DocumentsPage() {
       </Box>
 
       {/* Editor dialog */}
-      <Dialog scroll="body" open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 520, width: '100%' } }}>
+      <Dialog scroll="body" open={!!editor} onClose={() => setEditor(null)} PaperProps={{ sx: { borderRadius: 2, p: 3, maxWidth: 520, width: '100%' } }}>
         {editor && (
           <>
-            <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 2, color: c.text }}>{editor.type === 'receipt' ? 'קבלה' : 'הצעת מחיר'} #{editor.number}</Typography>
+            <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editor.type === 'receipt' ? 'קבלה' : 'הצעת מחיר'} #{editor.number}</Typography>
             <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
               <TextField fullWidth size="small" label="שם הלקוח" value={editor.customerName} onChange={(e) => setEditor({ ...editor, customerName: e.target.value })} />
               <TextField fullWidth size="small" label="טלפון" value={editor.customerPhone} onChange={(e) => setEditor({ ...editor, customerPhone: e.target.value })} />
@@ -132,7 +132,7 @@ export default function DocumentsPage() {
             <TextField fullWidth size="small" type="date" label="תאריך" InputLabelProps={{ shrink: true }} value={editor.date} onChange={(e) => setEditor({ ...editor, date: e.target.value })} sx={{ mb: 2 }} />
 
             {/* Items */}
-            <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text2, mb: 1 }}>פריטים</Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2, mb: 1 }}>פריטים</Typography>
             {editor.items.map((it, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
                 <TextField size="small" placeholder="תיאור" value={it.description} onChange={(e) => { const items = [...editor.items]; items[i] = { ...it, description: e.target.value }; setEditor({ ...editor, items }); }} sx={{ flex: 2 }} />
@@ -152,24 +152,24 @@ export default function DocumentsPage() {
             </Box>
             <TextField fullWidth size="small" label="הערות" value={editor.notes} onChange={(e) => setEditor({ ...editor, notes: e.target.value })} multiline rows={2} sx={{ mb: 2 }} />
 
-            <Box sx={{ bgcolor: c.fill, borderRadius: 1.5, p: 2, mb: 2, textAlign: 'left' }}>
-              <Typography sx={{ fontSize: 18, fontWeight: 600, color: c.text }}>סה״כ: ₪{docTotal(editor).total.toLocaleString()}</Typography>
+            <Box sx={{ bgcolor: c.surface2, borderRadius: 1.5, p: 2, mb: 2, textAlign: 'left' }}>
+              <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text }}>סה״כ: ₪{docTotal(editor).total.toLocaleString()}</Typography>
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button onClick={() => { setPreview(editor); }} variant="outlined" sx={{ flex: 1, borderRadius: 1.5, fontWeight: 600 }}>תצוגה מקדימה</Button>
-              <Button onClick={saveDoc} variant="contained" disabled={saving} sx={{ flex: 1, borderRadius: 1.5, fontWeight: 500 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
+              <Button onClick={saveDoc} variant="contained" disabled={saving} sx={{ flex: 1, borderRadius: 1.5, fontWeight: 700 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור'}</Button>
             </Box>
           </>
         )}
       </Dialog>
 
       {/* Branding dialog — deep design */}
-      <Dialog scroll="body" open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3, maxWidth: 480, width: '100%' } }}>
-        <Typography sx={{ fontSize: 21, fontWeight: 600, mb: 2.5, color: c.text }}>עיצוב המסמכים שלך</Typography>
+      <Dialog scroll="body" open={brandingOpen} onClose={() => setBrandingOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3, maxWidth: 480, width: '100%' } }}>
+        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>עיצוב המסמכים שלך</Typography>
 
         {/* Template chooser */}
-        <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>סגנון</Typography>
+        <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>סגנון</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, mb: 2.5 }}>
           {[
             { id: 'modern', label: 'מודרני', icon: '▰' },
@@ -177,7 +177,7 @@ export default function DocumentsPage() {
             { id: 'minimal', label: 'מינימלי', icon: '─' },
             { id: 'bold', label: 'נועז', icon: '█' },
           ].map((t) => (
-            <Box key={t.id} onClick={() => setBranding({ ...branding, template: t.id })} sx={{ cursor: 'pointer', textAlign: 'center', py: 1.25, borderRadius: 4, bgcolor: branding.template === t.id ? c.accentDim : c.surface2, border: `2px solid ${branding.template === t.id ? c.accent : 'transparent'}` }}>
+            <Box key={t.id} onClick={() => setBranding({ ...branding, template: t.id })} sx={{ cursor: 'pointer', textAlign: 'center', py: 1.25, borderRadius: 2.5, bgcolor: branding.template === t.id ? c.accentDim : c.surface2, border: `2px solid ${branding.template === t.id ? c.accent : 'transparent'}` }}>
               <Box sx={{ fontSize: 18, color: branding.template === t.id ? c.accent : c.text3, lineHeight: 1 }}>{t.icon}</Box>
               <Typography sx={{ fontSize: 11, fontWeight: 600, color: branding.template === t.id ? c.accent : c.text2, mt: 0.5 }}>{t.label}</Typography>
             </Box>
@@ -186,8 +186,8 @@ export default function DocumentsPage() {
 
         {/* Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          {branding.logo ? <Box component="img" src={branding.logo} sx={{ width: 52, height: 52, borderRadius: 4, objectFit: 'contain', bgcolor: c.fill }} /> : <Box sx={{ width: 52, height: 52, borderRadius: 4, bgcolor: c.fill, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</Box>}
-          <Button component="label" variant="outlined" size="small" sx={{ borderRadius: 4, fontWeight: 600 }}>העלה לוגו<input type="file" accept="image/*" hidden onChange={handleLogo} /></Button>
+          {branding.logo ? <Box component="img" src={branding.logo} sx={{ width: 52, height: 52, borderRadius: 2, objectFit: 'contain', bgcolor: c.surface2 }} /> : <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🖼️</Box>}
+          <Button component="label" variant="outlined" size="small" sx={{ borderRadius: 2, fontWeight: 600 }}>העלה לוגו<input type="file" accept="image/*" hidden onChange={handleLogo} /></Button>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
             <Typography sx={{ fontSize: 12, color: c.text3 }}>הצג לוגו</Typography>
             <input type="checkbox" checked={branding.showLogo} onChange={(e) => setBranding({ ...branding, showLogo: e.target.checked })} />
@@ -212,22 +212,22 @@ export default function DocumentsPage() {
         </Box>
         {branding.showSignature && <TextField fullWidth size="small" label="שם החותם" value={branding.signatureName} onChange={(e) => setBranding({ ...branding, signatureName: e.target.value })} sx={{ mb: 2 }} />}
 
-        <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>צבע מותג</Typography>
+        <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>צבע מותג</Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
           {COLORS.map((col) => <Box key={col} onClick={() => setBranding({ ...branding, accentColor: col })} sx={{ width: 30, height: 30, borderRadius: '50%', bgcolor: col, cursor: 'pointer', border: branding.accentColor === col ? `3px solid ${c.text}` : '3px solid transparent' }} />)}
         </Box>
 
         {/* Live mini preview */}
-        <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>תצוגה מקדימה חיה</Typography>
+        <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>תצוגה מקדימה חיה</Typography>
         <Box sx={{ borderRadius: 1.5, overflow: 'hidden', border: `1px solid ${c.border2}`, mb: 2.5, transform: 'scale(1)', transformOrigin: 'top' }}>
           <DocPreview doc={sampleDoc} branding={branding} compact />
         </Box>
 
-        <Button onClick={saveBrand} variant="contained" fullWidth disabled={saving} sx={{ borderRadius: 1.5, fontWeight: 500, py: 1.5 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור עיצוב'}</Button>
+        <Button onClick={saveBrand} variant="contained" fullWidth disabled={saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>{saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'שמור עיצוב'}</Button>
       </Dialog>
 
       {/* Preview dialog — the actual branded document */}
-      <Dialog scroll="body" open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 4, maxWidth: 520, width: '100%' } }}>
+      <Dialog scroll="body" open={!!preview} onClose={() => setPreview(null)} PaperProps={{ sx: { borderRadius: 2, maxWidth: 520, width: '100%' } }}>
         {preview && branding && <DocPreview doc={preview} branding={branding} />}
       </Dialog>
     </Box>
@@ -255,11 +255,11 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <Box>
               {branding.showLogo && branding.logo && <Box component="img" src={branding.logo} sx={{ height: compact ? 28 : 38, mb: 0.5, objectFit: 'contain' }} />}
-              <Typography sx={{ fontSize: compact ? 16 : 20, fontWeight: 600, color: c.text }}>{branding.businessName}</Typography>
+              <Typography sx={{ fontSize: compact ? 16 : 20, fontWeight: 800, color: c.text }}>{branding.businessName}</Typography>
               {branding.businessId && <Typography sx={{ fontSize: 11, color: c.text3 }}>ע.מ {branding.businessId}</Typography>}
             </Box>
             <Box sx={{ textAlign: 'left' }}>
-              <Typography sx={{ fontSize: compact ? 14 : 17, fontWeight: 600, color: ac }}>{docTitle}</Typography>
+              <Typography sx={{ fontSize: compact ? 14 : 17, fontWeight: 800, color: ac }}>{docTitle}</Typography>
               <Typography sx={{ fontSize: 12, color: c.text3 }}>#{doc.number} · {doc.date}</Typography>
             </Box>
           </Box>
@@ -270,9 +270,9 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
       return (
         <Box sx={{ px: pad, pt: pad, pb: 1.5, textAlign: 'center', borderBottom: `1px solid ${c.border}` }}>
           {branding.showLogo && branding.logo && <Box component="img" src={branding.logo} sx={{ height: compact ? 32 : 46, mb: 0.5, objectFit: 'contain' }} />}
-          <Typography sx={{ fontSize: compact ? 18 : 24, fontWeight: 600, color: c.text, letterSpacing: '-0.01em' }}>{branding.businessName}</Typography>
+          <Typography sx={{ fontSize: compact ? 18 : 24, fontWeight: 800, color: c.text, letterSpacing: '-0.01em' }}>{branding.businessName}</Typography>
           <Typography sx={{ fontSize: 11, color: c.text3 }}>{[branding.businessId && `ע.מ ${branding.businessId}`, branding.phone, branding.address].filter(Boolean).join(' · ')}</Typography>
-          <Box sx={{ display: 'inline-block', mt: 1, px: 2, py: 0.5, border: `1.5px solid ${ac}`, borderRadius: 1, color: ac, fontWeight: 600, fontSize: compact ? 13 : 15 }}>{docTitle} #{doc.number}</Box>
+          <Box sx={{ display: 'inline-block', mt: 1, px: 2, py: 0.5, border: `1.5px solid ${ac}`, borderRadius: 1, color: ac, fontWeight: 800, fontSize: compact ? 13 : 15 }}>{docTitle} #{doc.number}</Box>
         </Box>
       );
     }
@@ -280,11 +280,11 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
       return (
         <Box sx={{ bgcolor: ac, color: '#fff', p: pad }}>
           {branding.showLogo && branding.logo && <Box component="img" src={branding.logo} sx={{ height: compact ? 30 : 42, mb: 1, borderRadius: 1, bgcolor: '#fff', p: 0.5 }} />}
-          <Typography sx={{ fontSize: compact ? 22 : 30, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1 }}>{branding.businessName}</Typography>
+          <Typography sx={{ fontSize: compact ? 22 : 30, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>{branding.businessName}</Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: 1.5 }}>
             <Typography sx={{ fontSize: 12, opacity: 0.9 }}>{branding.businessId && `ע.מ ${branding.businessId}`}</Typography>
             <Box sx={{ textAlign: 'left' }}>
-              <Typography sx={{ fontSize: compact ? 15 : 18, fontWeight: 600 }}>{docTitle}</Typography>
+              <Typography sx={{ fontSize: compact ? 15 : 18, fontWeight: 800 }}>{docTitle}</Typography>
               <Typography sx={{ fontSize: 12, opacity: 0.85 }}>#{doc.number} · {doc.date}</Typography>
             </Box>
           </Box>
@@ -296,11 +296,11 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
       <Box sx={{ background: `linear-gradient(135deg, ${ac}, ${ac}cc)`, color: '#fff', p: pad, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
           {branding.showLogo && branding.logo && <Box component="img" src={branding.logo} sx={{ height: compact ? 30 : 44, mb: 1, borderRadius: 1, bgcolor: '#fff', p: 0.5 }} />}
-          <Typography sx={{ fontSize: compact ? 16 : 20, fontWeight: 600 }}>{branding.businessName}</Typography>
+          <Typography sx={{ fontSize: compact ? 16 : 20, fontWeight: 800 }}>{branding.businessName}</Typography>
           {branding.businessId && <Typography sx={{ fontSize: 12, opacity: 0.85 }}>ע.מ {branding.businessId}</Typography>}
         </Box>
         <Box sx={{ textAlign: 'left' }}>
-          <Typography sx={{ fontSize: compact ? 14 : 16, fontWeight: 600 }}>{docTitle}</Typography>
+          <Typography sx={{ fontSize: compact ? 14 : 16, fontWeight: 800 }}>{docTitle}</Typography>
           <Typography sx={{ fontSize: 13, opacity: 0.9 }}>#{doc.number}</Typography>
           <Typography sx={{ fontSize: 12, opacity: 0.8, mt: 0.5 }}>{doc.date}</Typography>
         </Box>
@@ -315,19 +315,19 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
       <Box sx={{ p: pad }}>
         {/* Customer */}
         <Box sx={{ mb: 2 }}>
-          <Typography sx={{ fontSize: 10.5, color: c.text3, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>לכבוד</Typography>
-          <Typography sx={{ fontSize: compact ? 13 : 15, fontWeight: 500, color: c.text }}>{doc.customerName || '—'}</Typography>
+          <Typography sx={{ fontSize: 10.5, color: c.text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>לכבוד</Typography>
+          <Typography sx={{ fontSize: compact ? 13 : 15, fontWeight: 700, color: c.text }}>{doc.customerName || '—'}</Typography>
           {doc.customerPhone && <Typography sx={{ fontSize: 12.5, color: c.text3 }}>{doc.customerPhone}</Typography>}
         </Box>
 
         {/* Items */}
-        <Box sx={{ border: `1px solid ${c.border2}`, borderRadius: 4, overflow: 'hidden', mb: 2 }}>
-          <Box sx={{ display: 'flex', bgcolor: tmpl === 'minimal' ? c.surface2 : `${ac}12`, px: 1.5, py: 1, fontSize: 11.5, fontWeight: 500, color: tmpl === 'minimal' ? c.text2 : ac }}>
+        <Box sx={{ border: `1px solid ${c.border2}`, borderRadius: 2.5, overflow: 'hidden', mb: 2 }}>
+          <Box sx={{ display: 'flex', bgcolor: tmpl === 'minimal' ? c.surface2 : `${ac}12`, px: 1.5, py: 1, fontSize: 11.5, fontWeight: 700, color: tmpl === 'minimal' ? c.text2 : ac }}>
             <Box sx={{ flex: 2 }}>תיאור</Box><Box sx={{ width: 45, textAlign: 'center' }}>כמות</Box><Box sx={{ width: 60, textAlign: 'left' }}>מחיר</Box><Box sx={{ width: 70, textAlign: 'left' }}>סה״כ</Box>
           </Box>
           {doc.items.map((it, i) => (
             <Box key={i} sx={{ display: 'flex', px: 1.5, py: 1.1, fontSize: 12.5, borderTop: `1px solid ${c.border}`, color: c.text }}>
-              <Box sx={{ flex: 2 }}>{it.description || '—'}</Box><Box sx={{ width: 45, textAlign: 'center' }}>{it.qty}</Box><Box sx={{ width: 60, textAlign: 'left' }}>₪{it.price}</Box><Box sx={{ width: 70, textAlign: 'left', fontWeight: 500 }}>₪{(it.qty * it.price).toLocaleString()}</Box>
+              <Box sx={{ flex: 2 }}>{it.description || '—'}</Box><Box sx={{ width: 45, textAlign: 'center' }}>{it.qty}</Box><Box sx={{ width: 60, textAlign: 'left' }}>₪{it.price}</Box><Box sx={{ width: 70, textAlign: 'left', fontWeight: 700 }}>₪{(it.qty * it.price).toLocaleString()}</Box>
             </Box>
           ))}
         </Box>
@@ -336,13 +336,13 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
         <Box sx={{ ml: 'auto', maxWidth: 220 }}>
           {doc.discount > 0 && <Row label="הנחה" value={`-₪${doc.discount}`} />}
           {doc.taxRate > 0 && <><Row label="ביניים" value={`₪${subtotal.toLocaleString()}`} /><Row label={`מע״מ ${doc.taxRate}%`} value={`₪${tax.toLocaleString()}`} /></>}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: `${ac}10`, borderRadius: 4, px: 1.5, py: 1, mt: 1 }}>
-            <Typography sx={{ fontSize: compact ? 14 : 16, fontWeight: 600, color: c.text }}>סה״כ לתשלום</Typography>
-            <Typography sx={{ fontSize: compact ? 16 : 19, fontWeight: 600, color: ac, letterSpacing: '-0.02em' }}>₪{total.toLocaleString()}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: `${ac}10`, borderRadius: 2, px: 1.5, py: 1, mt: 1 }}>
+            <Typography sx={{ fontSize: compact ? 14 : 16, fontWeight: 800, color: c.text }}>סה״כ לתשלום</Typography>
+            <Typography sx={{ fontSize: compact ? 16 : 19, fontWeight: 900, color: ac, letterSpacing: '-0.02em' }}>₪{total.toLocaleString()}</Typography>
           </Box>
         </Box>
 
-        {doc.notes && <Typography sx={{ fontSize: 12, color: c.text2, mt: 2, bgcolor: c.fill, borderRadius: 4, p: 1.5 }}>{doc.notes}</Typography>}
+        {doc.notes && <Typography sx={{ fontSize: 12, color: c.text2, mt: 2, bgcolor: c.surface2, borderRadius: 2, p: 1.5 }}>{doc.notes}</Typography>}
 
         {/* Signature */}
         {branding.showSignature && !compact && (
@@ -357,14 +357,14 @@ function DocPreview({ doc, branding, compact }: { doc: BizDocument; branding: Do
 
         {/* Footer */}
         <Box sx={{ textAlign: 'center', mt: compact ? 2 : 3, pt: 1.5, borderTop: `1px solid ${c.border}` }}>
-          <Typography sx={{ fontSize: 12.5, color: ac, fontWeight: 500 }}>{branding.footer}</Typography>
+          <Typography sx={{ fontSize: 12.5, color: ac, fontWeight: 700 }}>{branding.footer}</Typography>
           {!compact && <Typography sx={{ fontSize: 10.5, color: c.text3, mt: 0.5 }}>{[branding.phone, branding.email, branding.address].filter(Boolean).join(' · ')}</Typography>}
         </Box>
 
         {!compact && (
           <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
-            <Button onClick={() => window.print()} variant="contained" fullWidth sx={{ borderRadius: 1.5, fontWeight: 500, bgcolor: ac, '&:hover': { bgcolor: ac, filter: 'brightness(0.92)' } }}>🖨️ הדפס / PDF</Button>
-            {doc.customerPhone && <Button href={`https://wa.me/972${doc.customerPhone.replace(/^0/, '')}`} target="_blank" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 500, whiteSpace: 'nowrap' }}>שלח</Button>}
+            <Button onClick={() => window.print()} variant="contained" fullWidth sx={{ borderRadius: 1.5, fontWeight: 700, bgcolor: ac, '&:hover': { bgcolor: ac, filter: 'brightness(0.92)' } }}>🖨️ הדפס / PDF</Button>
+            {doc.customerPhone && <Button href={`https://wa.me/972${doc.customerPhone.replace(/^0/, '')}`} target="_blank" variant="outlined" sx={{ borderRadius: 1.5, fontWeight: 700, whiteSpace: 'nowrap' }}>שלח</Button>}
           </Box>
         )}
       </Box>

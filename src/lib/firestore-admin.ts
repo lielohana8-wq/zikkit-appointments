@@ -175,12 +175,27 @@ export async function sendPush(bizId: string, phoneRaw: string, title: string, m
     if (key.length < 9) return;
     const biz = await getBiz(bizId);
     const subs = (biz?.pushSubs as Record<string, unknown>) || {};
-    const sub = subs['p' + key] || subs[key];
-    if (!sub) { await logPush(false, 'המכשיר של המספר הזה לא נרשם להתראות — יש לפתוח את המערכת במכשיר ולאשר התראות'); return; }
+    const entry = subs['p' + key] || subs[key];
+    if (!entry) { await logPush(false, 'המכשיר של המספר הזה לא נרשם להתראות — יש לפתוח את המערכת במכשיר ולאשר התראות'); return; }
+    const devices = Array.isArray(entry) ? entry : [entry];
     const webpush = (await import('web-push')).default;
     webpush.setVapidDetails('mailto:support@zikkit.app', pub, priv);
-    await webpush.sendNotification(sub as never, JSON.stringify({ title, body: message }));
-    await logPush(true, '');
+    const alive: unknown[] = [];
+    let delivered = 0;
+    for (const dev of devices) {
+      try {
+        await webpush.sendNotification(dev as never, JSON.stringify({ title, body: message }));
+        alive.push(dev); delivered++;
+      } catch (err) {
+        const code = (err as { statusCode?: number })?.statusCode;
+        if (code !== 404 && code !== 410) alive.push(dev);
+      }
+    }
+    if (alive.length !== devices.length || Array.isArray(entry) === false) {
+      try { await setBizField(bizId, ['pushSubs', 'p' + key], alive); } catch { /* non-fatal */ }
+    }
+    if (delivered > 0) await logPush(true, devices.length > 1 ? `נשלח ל-${delivered}/${devices.length} מכשירים` : '');
+    else await logPush(false, 'כל המנויים של המספר פגו — יש לפתוח את האפליקציה מהמכשיר ולהקיש פעם אחת');
   } catch (e) {
     await logPush(false, 'שליחת פוש נכשלה: ' + String((e as Error)?.message || e).slice(0, 80));
   }

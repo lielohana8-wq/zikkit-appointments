@@ -51,20 +51,20 @@ export default function AppInstallPage() {
   );
 
   const step = (n: number, icon: string, title: string, desc: string) => (
-    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'flex-start', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2 }}>
-      <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: c.accentDim, color: c.accent, fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{n}</Box>
+    <Box sx={{ display: 'flex', gap: 1.75, alignItems: 'flex-start', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2.5, p: 2 }}>
+      <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: c.accentDim, color: c.accent, fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{n}</Box>
       <Box>
-        <Typography sx={{ fontSize: 15, fontWeight: 600, color: c.text }}>{icon} {title}</Typography>
+        <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text }}>{icon} {title}</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3, mt: 0.25, lineHeight: 1.5 }}>{desc}</Typography>
       </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas, display: 'flex', flexDirection: 'column', alignItems: 'center', px: 3, py: 6 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', px: 3, py: 6 }}>
       <Box sx={{ maxWidth: 440, width: '100%', textAlign: 'center' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}><ZikkitLogo useImage size={64} /></Box>
-        <Typography sx={{ fontSize: 30, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+        <Typography sx={{ fontSize: 30, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
           Zikkit על המסך שלך.<br /><span style={{ color: c.accent }}>כמו כל אפליקציה.</span>
         </Typography>
         <Typography sx={{ fontSize: 14.5, color: c.text3, mt: 1.5, mb: 3, lineHeight: 1.6 }}>
@@ -81,8 +81,8 @@ export default function AppInstallPage() {
         {(device === 'standalone' || installed) && (
           <Box>
             <Box sx={{ fontSize: 48, mb: 1.5 }}>🎉</Box>
-            <Typography sx={{ fontSize: 18, fontWeight: 600, color: c.text, mb: 2 }}>האפליקציה מותקנת — אתה בפנים!</Typography>
-            <Button onClick={() => router.push('/dashboard')} variant="contained" size="large" fullWidth sx={{ py: 1.75, borderRadius: 4, fontWeight: 600, fontSize: 16 }}>פתח את Zikkit →</Button>
+            <Typography sx={{ fontSize: 18, fontWeight: 800, color: c.text, mb: 2 }}>האפליקציה מותקנת — אתה בפנים!</Typography>
+            <Button onClick={() => router.push('/dashboard')} variant="contained" size="large" fullWidth sx={{ py: 1.75, borderRadius: 2, fontWeight: 800, fontSize: 16 }}>פתח את Zikkit →</Button>
           </Box>
         )}
 
@@ -90,7 +90,7 @@ export default function AppInstallPage() {
         {device === 'android' && !installed && (
           <Box>
             {deferred ? (
-              <Button onClick={async () => { deferred.prompt(); const r = await deferred.userChoice; if (r.outcome === 'accepted') setInstalled(true); }} variant="contained" size="large" fullWidth sx={{ py: 2, borderRadius: 4, fontWeight: 600, fontSize: 17, boxShadow: `0 12px 36px ${c.accent}55` }}>
+              <Button onClick={async () => { deferred.prompt(); const r = await deferred.userChoice; if (r.outcome === 'accepted') setInstalled(true); }} variant="contained" size="large" fullWidth sx={{ py: 2, borderRadius: 2, fontWeight: 900, fontSize: 17, boxShadow: `0 12px 36px ${c.accent}55` }}>
                 📲 התקן את Zikkit — בלחיצה
               </Button>
             ) : (
@@ -116,11 +116,11 @@ export default function AppInstallPage() {
         {/* ===== Desktop ===== */}
         {device === 'desktop' && !installed && (
           <Box>
-            <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 3, mb: 2 }}>
+            <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 3, p: 3, mb: 2 }}>
               <Box sx={{ fontSize: 34, mb: 1 }}>📱</Box>
-              <Typography sx={{ fontSize: 15, fontWeight: 600, color: c.text, mb: 0.5 }}>פתח את הדף הזה בטלפון</Typography>
+              <Typography sx={{ fontSize: 15, fontWeight: 800, color: c.text, mb: 0.5 }}>פתח את הדף הזה בטלפון</Typography>
               <Typography sx={{ fontSize: 13, color: c.text3, mb: 2 }}>שלח לעצמך את הקישור — וההתקנה משם היא לחיצה אחת</Typography>
-              <Button onClick={() => { navigator.clipboard?.writeText(window.location.href); showToast('הקישור הועתק — שלח לעצמך בוואטסאפ', 'success'); }} variant="contained" sx={{ borderRadius: 4, fontWeight: 600 }}>📋 העתק קישור</Button>
+              <Button onClick={() => { navigator.clipboard?.writeText(window.location.href); showToast('הקישור הועתק — שלח לעצמך בוואטסאפ', 'success'); }} variant="contained" sx={{ borderRadius: 2, fontWeight: 800 }}>📋 העתק קישור</Button>
             </Box>
             <Typography sx={{ fontSize: 12.5, color: c.text3 }}>💡 גם במחשב אפשר: בכרום, לחץ על אייקון ההתקנה ⊕ בשורת הכתובת</Typography>
           </Box>

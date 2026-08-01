@@ -171,37 +171,37 @@ export default function TeamPage() {
   if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>צוות ועמדות</Typography>
-        <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 500 }}>+ חבר צוות</Button>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>צוות ועמדות</Typography>
+        <Button onClick={openNew} variant="contained" sx={{ borderRadius: 99, fontWeight: 700 }}>+ חבר צוות</Button>
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 760, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
         {/* Stations count */}
-        <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 3, mb: 3 }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 3, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>💺 מספר עמדות / כיסאות</Typography>
-            <Typography sx={{ fontSize: 22, fontWeight: 600, color: c.accent }}>{stations}</Typography>
+            <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>💺 מספר עמדות / כיסאות</Typography>
+            <Typography sx={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{stations}</Typography>
           </Box>
           <Slider value={stations} onChange={(_, v) => updateStationCount(v as number)} min={1} max={15} step={1} marks sx={{ color: c.accent }} />
           <Typography sx={{ fontSize: 12, color: c.text3 }}>דנה תקבע עד {stations} תורים במקביל</Typography>
         </Box>
 
         {/* Team members */}
-        <Typography sx={{ fontSize: 16, fontWeight: 600, color: c.text, mb: 2 }}>חברי הצוות ({team.length})</Typography>
+        <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text, mb: 2 }}>חברי הצוות ({team.length})</Typography>
         {team.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <Box sx={{ fontSize: 48, mb: 2 }}>🧑‍🤝‍🧑</Box>
-            <Typography sx={{ color: c.text2, mb: 1, fontWeight: 500 }}>עדיין אין חברי צוות</Typography>
+            <Typography sx={{ color: c.text2, mb: 1, fontWeight: 700 }}>עדיין אין חברי צוות</Typography>
             <Typography sx={{ color: c.text3, fontSize: 14, mb: 3 }}>הוסף ספרים, מטפלות, או כל חבר צוות</Typography>
-            <Button onClick={openNew} variant="contained" sx={{ borderRadius: 1.5, fontWeight: 500 }}>הוסף את הראשון</Button>
+            <Button onClick={openNew} variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700 }}>הוסף את הראשון</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             {team.map((m) => (
-              <Box key={m.id} sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2.5, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
+              <Box key={m.id} sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2.5, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
                   {(
                     <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.25 }}>
@@ -212,10 +212,10 @@ export default function TeamPage() {
                   {m.photo ? (
                     <Box component="img" src={m.photo} sx={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${m.color}` }} />
                   ) : (
-                    <Box sx={{ width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${m.color}, ${m.color}bb)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 600 }}>{m.name[0]}</Box>
+                    <Box sx={{ width: 58, height: 58, borderRadius: '50%', background: `linear-gradient(135deg, ${m.color}, ${m.color}bb)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800 }}>{m.name[0]}</Box>
                   )}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 16, fontWeight: 600, color: c.text }}>{m.name}</Typography>
+                    <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>{m.name}</Typography>
                     <Typography sx={{ fontSize: 13, color: c.text3 }}>{m.role}</Typography>
                     {m.station && <Box sx={{ display: 'inline-block', mt: 0.5, fontSize: 10, fontWeight: 600, bgcolor: c.accentDim, color: c.accent, borderRadius: 99, px: 1, py: 0.2 }}>עמדה {m.station}</Box>}
                   </Box>
@@ -224,12 +224,12 @@ export default function TeamPage() {
                 {m.description && <Typography sx={{ fontSize: 12, color: c.text3, mb: 1, lineHeight: 1.5 }}>{m.description}</Typography>}
                 {m.services.length > 0 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
-                    {m.services.slice(0, 4).map((s) => <Chip key={s} label={s} size="small" sx={{ bgcolor: c.fill, color: c.text2, fontSize: 10 }} />)}
-                    {m.services.length > 4 && <Chip label={`+${m.services.length - 4}`} size="small" sx={{ bgcolor: c.fill, fontSize: 10 }} />}
+                    {m.services.slice(0, 4).map((s) => <Chip key={s} label={s} size="small" sx={{ bgcolor: c.surface3, color: c.text2, fontSize: 10 }} />)}
+                    {m.services.length > 4 && <Chip label={`+${m.services.length - 4}`} size="small" sx={{ bgcolor: c.surface3, fontSize: 10 }} />}
                   </Box>
                 )}
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button onClick={() => openEdit(m)} size="small" sx={{ flex: 1, borderRadius: 4, bgcolor: c.fill, color: c.text, fontWeight: 600 }}>ערוך</Button>
+                  <Button onClick={() => openEdit(m)} size="small" sx={{ flex: 1, borderRadius: 2, bgcolor: c.surface2, color: c.text, fontWeight: 600 }}>ערוך</Button>
                   <Button onClick={() => remove(m.id)} size="small" sx={{ color: c.hot, minWidth: 'auto' }}>✕</Button>
                 </Box>
               </Box>
@@ -239,8 +239,8 @@ export default function TeamPage() {
       </Box>
 
       {/* Add/Edit dialog */}
-      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3.5, maxWidth: 440, width: '100%' } }}>
-        <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 2, color: c.text }}>{editId ? 'עריכת חבר צוות' : 'חבר צוות חדש'}</Typography>
+      <Dialog scroll="body" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 440, width: '100%' } }}>
+        <Typography sx={{ fontSize: 20, fontWeight: 800, mb: 2, color: c.text }}>{editId ? 'עריכת חבר צוות' : 'חבר צוות חדש'}</Typography>
 
         {/* Photo */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -248,7 +248,7 @@ export default function TeamPage() {
             {draft.photo ? (
               <Box component="img" src={draft.photo} sx={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
             ) : (
-              <Box sx={{ width: 80, height: 80, borderRadius: '50%', bgcolor: c.fill, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📷</Box>
+              <Box sx={{ width: 80, height: 80, borderRadius: '50%', bgcolor: c.surface3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📷</Box>
             )}
             <Box sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: c.accent, color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>+</Box>
             <input type="file" accept="image/*" hidden onChange={handlePhoto} />
@@ -264,7 +264,7 @@ export default function TeamPage() {
         <TextField fullWidth label="עמדה משויכת" type="number" value={draft.station ?? ''} onChange={(e) => setDraft((p) => ({ ...p, station: e.target.value ? Number(e.target.value) : null }))} sx={{ mb: 2 }} inputProps={{ min: 1, max: stations }} helperText={`1-${stations}`} />
 
         {/* Color */}
-        <Typography sx={{ fontSize: 12, fontWeight: 500, color: c.text2, mb: 1 }}>צבע ביומן</Typography>
+        <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text2, mb: 1 }}>צבע ביומן</Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           {COLORS.map((col) => (
             <Box key={col} onClick={() => setDraft((p) => ({ ...p, color: col }))} sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: col, cursor: 'pointer', border: draft.color === col ? `3px solid ${c.text}` : '3px solid transparent' }} />
@@ -274,7 +274,7 @@ export default function TeamPage() {
         {/* Services */}
         {availableServices.length > 0 && (
           <>
-            <Typography sx={{ fontSize: 12, fontWeight: 500, color: c.text2, mb: 1 }}>שירותים שנותן</Typography>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text2, mb: 1 }}>שירותים שנותן</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 3 }}>
               {availableServices.map((svc) => (
                 <Chip key={svc} label={svc} onClick={() => toggleService(svc)} sx={{ cursor: 'pointer', bgcolor: draft.services.includes(svc) ? c.accent : c.surface3, color: draft.services.includes(svc) ? '#fff' : c.text2, fontWeight: 600 }} />
@@ -284,10 +284,10 @@ export default function TeamPage() {
         )}
 
         {/* Staff login credentials */}
-        <Box sx={{ bgcolor: c.fill, borderRadius: 1.5, p: 2, mb: 3, mt: 1 }}>
+        <Box sx={{ bgcolor: c.surface2, borderRadius: 1.5, p: 2, mb: 3, mt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: draft.createLogin ? 1.5 : 0 }}>
             <Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 500, color: c.text }}>🔑 התחברות לחבר הצוות</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: c.text }}>🔑 התחברות לחבר הצוות</Typography>
               <Typography sx={{ fontSize: 12, color: c.text3 }}>{draft.loginEmail && editId ? `מחובר: ${draft.loginEmail}` : 'תן לו גישה לתורים שלו'}</Typography>
             </Box>
             <Switch checked={draft.createLogin} onChange={(e) => setDraft((p) => ({ ...p, createLogin: e.target.checked }))} />
@@ -300,7 +300,7 @@ export default function TeamPage() {
           )}
         </Box>
 
-        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 1.5, fontWeight: 600, py: 1.5 }}>
+        <Button onClick={save} variant="contained" fullWidth disabled={!draft.name || saving} sx={{ borderRadius: 1.5, fontWeight: 800, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : editId ? 'שמור שינויים' : 'הוסף לצוות'}
         </Button>
       </Dialog>

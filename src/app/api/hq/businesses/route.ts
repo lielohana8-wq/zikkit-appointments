@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
       const galleryCount = ((booking.gallery as unknown[]) || []).length;
 
       const bookingsTotal = live.length;
+      const revenueTotal = live.reduce((t, b) => t + (Number(b.price) || 0), 0);
       const onlineCnt = live.filter((b) => b.source === 'online' || b.source === 'app').length;
       const manualCnt = live.filter((b) => b.source === 'manual').length;
       const onlinePct = onlineCnt + manualCnt > 0 ? Math.round((onlineCnt / (onlineCnt + manualCnt)) * 100) : null;
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
       ));
 
       return {
-        bookingsTotal,
+        bookingsTotal, revenueTotal,
         ownerPhone: String((data.cfg as Record<string, unknown>)?.owner_phone || booking.notifyPhone || ''),
         onlinePct, usage, pushSubsCount, trialDaysLeft, healthScore,
         bookings7, upcoming, cancelledCount, revenueMonth,

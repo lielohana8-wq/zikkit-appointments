@@ -45,21 +45,21 @@ export default function SmsLogPage() {
     return '';
   };
 
-  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.canvas }}><CircularProgress sx={{ color: c.accent }} /></Box>;
+  if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bg }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20, bgcolor: c.chrome, backdropFilter: 'blur(20px)' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 20, bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)' }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, color: c.text }}>📨 יומן הודעות SMS</Typography>
-        <Button onClick={() => { setDataLoading(true); load(); }} sx={{ color: c.accent, fontWeight: 500 }}>רענן</Button>
+        <Typography sx={{ fontSize: 16, fontWeight: 800, color: c.text }}>📨 יומן הודעות SMS</Typography>
+        <Button onClick={() => { setDataLoading(true); load(); }} sx={{ color: c.accent, fontWeight: 700 }}>רענן</Button>
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2, sm: 4 }, py: 3 }}>
         {/* Account health */}
         {health && (
-          <Box sx={{ bgcolor: health.ok ? c.accentDim : c.hotDim, border: `1px solid ${health.ok ? c.accent : c.hot}44`, borderRadius: 4, p: 2, mb: 2.5 }}>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: c.text, mb: 0.5 }}>
+          <Box sx={{ bgcolor: health.ok ? c.accentDim : c.hotDim, border: `1px solid ${health.ok ? c.accent : c.hot}44`, borderRadius: 2.5, p: 2, mb: 2.5 }}>
+            <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: c.text, mb: 0.5 }}>
               {health.ok ? '✅ חשבון Twilio תקין' : '⚠️ נדרש טיפול בחשבון Twilio'}
             </Typography>
             <Typography sx={{ fontSize: 12.5, color: c.text2 }}>
@@ -76,21 +76,21 @@ export default function SmsLogPage() {
         {items.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Box sx={{ fontSize: 40, mb: 1.5 }}>📭</Box>
-            <Typography sx={{ fontWeight: 500, color: c.text, mb: 0.5 }}>עוד אין רשומות</Typography>
+            <Typography sx={{ fontWeight: 700, color: c.text, mb: 0.5 }}>עוד אין רשומות</Typography>
             <Typography sx={{ fontSize: 13, color: c.text3 }}>קבע תור בדיקה מדף ההזמנות — והשליחות יופיעו כאן</Typography>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {items.map((e, i) => (
-              <Box key={i} sx={{ bgcolor: c.card, border: `1px solid ${e.ok ? c.border2 : c.hot + '55'}`, borderRadius: 4, p: 1.75 }}>
+              <Box key={i} sx={{ bgcolor: c.surface1, border: `1px solid ${e.ok ? c.border2 : c.hot + '55'}`, borderRadius: 2.5, p: 1.75 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                   <Typography sx={{ fontSize: 15 }}>{e.ok ? '✅' : '❌'}</Typography>
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: c.text, direction: 'ltr' }}>{e.to}</Typography>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: c.text, direction: 'ltr' }}>{e.to}</Typography>
                   <Typography sx={{ fontSize: 11.5, color: c.text3, mr: 'auto' }}>{new Date(e.at).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })}</Typography>
                 </Box>
                 {e.preview && <Typography sx={{ fontSize: 12.5, color: c.text2, mb: e.err ? 0.5 : 0 }}>{e.preview}…</Typography>}
                 {!e.ok && e.err && <Typography sx={{ fontSize: 12, color: c.hot, fontWeight: 600 }}>שגיאה: {e.err}{explain(e.err)}</Typography>}
-                {e.delivery && <Typography sx={{ fontSize: 12, color: e.delivery.startsWith('✓') ? c.accent : e.delivery.startsWith('✗') ? c.hot : c.text3, fontWeight: 500, mt: 0.25 }}>מסירה: {e.delivery}</Typography>}
+                {e.delivery && <Typography sx={{ fontSize: 12, color: e.delivery.startsWith('✓') ? c.accent : e.delivery.startsWith('✗') ? c.hot : c.text3, fontWeight: 700, mt: 0.25 }}>מסירה: {e.delivery}</Typography>}
               </Box>
             ))}
           </Box>

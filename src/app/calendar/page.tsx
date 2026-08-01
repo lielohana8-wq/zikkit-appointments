@@ -180,16 +180,16 @@ export default function CalendarPage() {
   const weekDays = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(d.getDate() + i); return d.toISOString().split('T')[0]; });
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 20 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>יומן תורים</Typography>
-        <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 500, px: 2.5 }}>+ תור</Button>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>יומן תורים</Typography>
+        <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ תור</Button>
       </Box>
 
       {/* View toggle */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, py: 1.5, bgcolor: c.card, borderBottom: `1px solid ${c.border}` }}>
-        <Box sx={{ display: 'flex', gap: 0.5, bgcolor: c.fill, p: 0.4, borderRadius: 99 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5, py: 1.5, bgcolor: c.surface1, borderBottom: `1px solid ${c.border}` }}>
+        <Box sx={{ display: 'flex', gap: 0.5, bgcolor: c.surface3, p: 0.4, borderRadius: 99 }}>
           {([['day', 'יום'], ['week', 'שבוע']] as [typeof viewMode, string][]).map(([v, label]) => (
             <Button key={v} onClick={() => setViewMode(v)} sx={{ borderRadius: 99, fontWeight: 600, fontSize: 13.5, px: 3, py: 0.5, minWidth: 70, bgcolor: viewMode === v ? c.surface1 : 'transparent', color: viewMode === v ? c.text : c.text3, boxShadow: viewMode === v ? c.shadowSm : 'none', '&:hover': { bgcolor: viewMode === v ? c.surface1 : 'transparent' } }}>{label}</Button>
           ))}
@@ -198,7 +198,7 @@ export default function CalendarPage() {
 
       {/* Day strip */}
       {viewMode === 'day' && (
-      <Box sx={{ display: 'flex', gap: 1, px: { xs: 2, sm: 3 }, py: 2, overflowX: 'auto', bgcolor: c.card, borderBottom: `1px solid ${c.border}`, '&::-webkit-scrollbar': { height: 0 } }}>
+      <Box sx={{ display: 'flex', gap: 1, px: { xs: 2, sm: 3 }, py: 2, overflowX: 'auto', bgcolor: c.surface1, borderBottom: `1px solid ${c.border}`, '&::-webkit-scrollbar': { height: 0 } }}>
         {days.map((d, i) => {
           const dateObj = new Date(d);
           const count = bookings.filter((b) => b.date === d).length;
@@ -206,9 +206,9 @@ export default function CalendarPage() {
           return (
             <Box key={d} onClick={() => setSelectedDate(d)} sx={{ cursor: 'pointer', minWidth: 62, textAlign: 'center', py: 1.5, px: 1, borderRadius: 1.5, bgcolor: active ? c.accent : c.surface2, color: active ? '#fff' : c.text2, boxShadow: active ? c.shadowAccent : 'none', transition: 'all 0.2s', flexShrink: 0, '&:hover': { bgcolor: active ? c.accent : c.surface3 } }}>
               <Typography sx={{ fontSize: 11, fontWeight: 600, opacity: active ? 0.85 : 1 }}>{i === 0 ? 'היום' : i === 1 ? 'מחר' : HEBREW_DAYS[dateObj.getDay()]}</Typography>
-              <Typography sx={{ fontSize: 19, fontWeight: 600, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{dateObj.getDate()}</Typography>
+              <Typography sx={{ fontSize: 19, fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.02em' }}>{dateObj.getDate()}</Typography>
               <Typography sx={{ fontSize: 9, opacity: 0.6 }}>{dateObj.getMonth() + 1}</Typography>
-              {count > 0 && <Box sx={{ fontSize: 9.5, mt: 0.5, fontWeight: 500, bgcolor: active ? 'rgba(255,255,255,0.25)' : c.accentDim, color: active ? '#fff' : c.accent, borderRadius: 99, py: 0.1 }}>{count}</Box>}
+              {count > 0 && <Box sx={{ fontSize: 9.5, mt: 0.5, fontWeight: 700, bgcolor: active ? 'rgba(255,255,255,0.25)' : c.accentDim, color: active ? '#fff' : c.accent, borderRadius: 99, py: 0.1 }}>{count}</Box>}
             </Box>
           );
         })}
@@ -225,16 +225,16 @@ export default function CalendarPage() {
               const isToday = d === new Date().toISOString().split('T')[0];
               return (
                 <Box key={d} sx={{ minHeight: 200 }}>
-                  <Box onClick={() => { setSelectedDate(d); setViewMode('day'); }} sx={{ cursor: 'pointer', textAlign: 'center', py: 1, borderRadius: 4, mb: 1, bgcolor: isToday ? c.accent : c.surface2, color: isToday ? '#fff' : c.text2 }}>
+                  <Box onClick={() => { setSelectedDate(d); setViewMode('day'); }} sx={{ cursor: 'pointer', textAlign: 'center', py: 1, borderRadius: 2.5, mb: 1, bgcolor: isToday ? c.accent : c.surface2, color: isToday ? '#fff' : c.text2 }}>
                     <Typography sx={{ fontSize: 10.5, fontWeight: 600 }}>{HEBREW_DAYS[dateObj.getDay()]}</Typography>
-                    <Typography sx={{ fontSize: 16, fontWeight: 600, lineHeight: 1.1 }}>{dateObj.getDate()}</Typography>
+                    <Typography sx={{ fontSize: 16, fontWeight: 800, lineHeight: 1.1 }}>{dateObj.getDate()}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {dayBks.length === 0 ? (
                       <Box sx={{ textAlign: 'center', py: 2, color: c.text3, fontSize: 10 }}>—</Box>
                     ) : dayBks.map((b) => (
-                      <Box key={b.id} onClick={() => openEdit(b)} sx={{ cursor: 'pointer', bgcolor: b.status === 'blocked' ? c.surface2 : c.surface1, opacity: b.status === 'blocked' ? 0.75 : 1, border: b.status === 'blocked' ? `1px dashed ${c.border}` : `1px solid ${c.border2}`, borderRight: `3px solid ${b.status === 'blocked' ? c.text3 : staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75, transition: 'all 0.15s', '&:hover': { bgcolor: c.fill } }}>
-                        <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: b.status === 'blocked' ? c.text3 : staffColor(b.staff) }}>{b.time}</Typography>
+                      <Box key={b.id} onClick={() => openEdit(b)} sx={{ cursor: 'pointer', bgcolor: b.status === 'blocked' ? c.surface2 : c.surface1, opacity: b.status === 'blocked' ? 0.75 : 1, border: b.status === 'blocked' ? `1px dashed ${c.border}` : `1px solid ${c.border2}`, borderRight: `3px solid ${b.status === 'blocked' ? c.text3 : staffColor(b.staff)}`, borderRadius: 1.5, p: 0.75, transition: 'all 0.15s', '&:hover': { bgcolor: c.surface2 } }}>
+                        <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: b.status === 'blocked' ? c.text3 : staffColor(b.staff) }}>{b.time}</Typography>
                         <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: c.text, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                         <Typography sx={{ fontSize: 9, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || 'טיפול'}</Typography>
                       </Box>
@@ -263,7 +263,7 @@ export default function CalendarPage() {
         {/* Day header */}
         <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 2 }}>
           <Box>
-            <Typography sx={{ fontSize: 24, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', lineHeight: 1 }}>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: c.text, letterSpacing: '-0.03em', lineHeight: 1 }}>
               {(() => { const d = new Date(selectedDate + 'T00:00:00'); return `יום ${HEBREW_DAYS[d.getDay()]}`; })()}
             </Typography>
             <Typography sx={{ fontSize: 13, color: c.text3, fontWeight: 600, mt: 0.5 }}>
@@ -271,9 +271,9 @@ export default function CalendarPage() {
             </Typography>
           </Box>
           {dayBookings.length > 0 && (
-            <Box sx={{ textAlign: 'left', bgcolor: c.accentDim, borderRadius: 4, px: 1.75, py: 0.9 }}>
-              <Typography sx={{ fontSize: 18, fontWeight: 600, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>₪{dayRevenue.toLocaleString()}</Typography>
-              <Typography sx={{ fontSize: 10.5, color: c.accent, fontWeight: 500, opacity: 0.8 }}>צפי הכנסה</Typography>
+            <Box sx={{ textAlign: 'left', bgcolor: c.accentDim, borderRadius: 2, px: 1.75, py: 0.9 }}>
+              <Typography sx={{ fontSize: 18, fontWeight: 900, color: c.accent, letterSpacing: '-0.02em', lineHeight: 1 }}>₪{dayRevenue.toLocaleString()}</Typography>
+              <Typography sx={{ fontSize: 10.5, color: c.accent, fontWeight: 700, opacity: 0.8 }}>צפי הכנסה</Typography>
             </Box>
           )}
         </Box>
@@ -281,9 +281,9 @@ export default function CalendarPage() {
         {/* Staff filter — tap a barber to see only their column */}
         {team.length > 0 && (
           <Box sx={{ display: 'flex', gap: 0.75, mb: 2, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
-            <Box onClick={() => setStaffFilter(null)} sx={{ cursor: 'pointer', flexShrink: 0, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 600, border: `1.5px solid ${!staffFilter ? c.accent : c.border2}`, color: !staffFilter ? c.accent : c.text3, bgcolor: !staffFilter ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>הכל</Box>
+            <Box onClick={() => setStaffFilter(null)} sx={{ cursor: 'pointer', flexShrink: 0, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, border: `1.5px solid ${!staffFilter ? c.accent : c.border2}`, color: !staffFilter ? c.accent : c.text3, bgcolor: !staffFilter ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>הכל</Box>
             {team.map((m) => (
-              <Box key={m.id} onClick={() => setStaffFilter(staffFilter === m.name ? null : m.name)} sx={{ cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 600, border: `1.5px solid ${staffFilter === m.name ? m.color : c.border2}`, color: staffFilter === m.name ? m.color : c.text3, bgcolor: staffFilter === m.name ? `${m.color}15` : 'transparent', transition: 'all 0.15s' }}>
+              <Box key={m.id} onClick={() => setStaffFilter(staffFilter === m.name ? null : m.name)} sx={{ cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.6, borderRadius: 99, fontSize: 12.5, fontWeight: 800, border: `1.5px solid ${staffFilter === m.name ? m.color : c.border2}`, color: staffFilter === m.name ? m.color : c.text3, bgcolor: staffFilter === m.name ? `${m.color}15` : 'transparent', transition: 'all 0.15s' }}>
                 <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: m.color }} />{m.name}
               </Box>
             ))}
@@ -325,7 +325,7 @@ export default function CalendarPage() {
               <Box sx={{ width: 44, flexShrink: 0 }}>
                 {Array.from({ length: (END - START) / 60 }, (_, i) => (
                   <Box key={i} sx={{ height: HOUR_PX, position: 'relative' }}>
-                    <Typography sx={{ fontSize: 11, fontWeight: 600, color: c.text3, position: 'absolute', top: -7, left: 4, letterSpacing: '-0.01em' }}>{String(8 + i).padStart(2, '0')}:00</Typography>
+                    <Typography sx={{ fontSize: 11, fontWeight: 800, color: c.text3, position: 'absolute', top: -7, left: 4, letterSpacing: '-0.01em' }}>{String(8 + i).padStart(2, '0')}:00</Typography>
                   </Box>
                 ))}
               </Box>
@@ -386,7 +386,7 @@ export default function CalendarPage() {
                     try { await updateBooking(bizId, id, { duration: dur }); } catch { load(); }
                   }
                 }}
-                sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, overflow: 'hidden', cursor: 'copy', touchAction: resize ? 'none' : 'auto' }}>
+                sx={{ position: 'relative', flex: 1, height: ((END - START) / 60) * HOUR_PX, bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, overflow: 'hidden', cursor: 'copy', touchAction: resize ? 'none' : 'auto' }}>
                 {Array.from({ length: (END - START) / 60 }, (_, i) => (
                   <Box key={i} sx={{ position: 'absolute', top: i * HOUR_PX, left: 0, right: 0, borderTop: i === 0 ? 'none' : `1px solid ${c.border}`, height: HOUR_PX }}>
                     <Box sx={{ position: 'absolute', top: HOUR_PX / 2, left: 0, right: 0, borderTop: `1px dashed ${c.border}`, opacity: 0.3 }} />
@@ -418,8 +418,8 @@ export default function CalendarPage() {
                         bgcolor: blocked ? c.surface3 : `${col}14`, opacity: blocked ? 0.8 : 1, boxShadow: blocked ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
                         border: blocked ? `1.5px dashed ${c.border}` : b.status === 'pending' ? '1.5px solid #F59E0B' : `1.5px solid ${col}55`, borderRight: `3px solid ${blocked ? c.text3 : col}`, borderRadius: 1.5, px: 1, py: 0.4,
                         transition: 'box-shadow 0.15s', '&:hover': { boxShadow: c.shadowMd, zIndex: 4 } }}>
-                      <Typography sx={{ fontSize: 11, fontWeight: 600, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{liveTime} · {liveDur} דק'{resize?.id === b.id ? ' ↕' : ''}{move?.id === b.id && move.started ? ' ✥' : ''}</Typography>
-                      <Typography sx={{ fontSize: 12, fontWeight: 500, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
+                      <Typography sx={{ fontSize: 11, fontWeight: 800, color: blocked ? c.text3 : b.status === 'pending' ? '#B45309' : col, lineHeight: 1.3 }}>{b.status === 'pending' ? '⏳ ' : ''}{liveTime} · {liveDur} דק'{resize?.id === b.id ? ' ↕' : ''}{move?.id === b.id && move.started ? ' ✥' : ''}</Typography>
+                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: c.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.customerName}</Typography>
                       {h > 48 && <Typography sx={{ fontSize: 10.5, color: c.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.service || (blocked ? '' : 'טיפול')}{!blocked && b.source === 'dana' ? ' · 🎙️ דנה' : ''}{!blocked && b.source === 'online' ? ' · 🔗' : ''}</Typography>}
                     </Box>
                   );
@@ -432,12 +432,12 @@ export default function CalendarPage() {
       </Box>
       )}
 
-      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3.5, maxWidth: 420, width: '100%' } }}>
-        <Typography sx={{ fontSize: 21, fontWeight: 600, mb: 0.5, color: c.text }}>{form.isBlock ? '🚫 חסימת זמן' : 'תור חדש'}</Typography>
+      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 420, width: '100%' } }}>
+        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 0.5, color: c.text }}>{form.isBlock ? '🚫 חסימת זמן' : 'תור חדש'}</Typography>
         <Typography sx={{ fontSize: 13, color: c.text3, mb: 1.5 }}>{selectedDate}</Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
           {[{ v: false, l: '📅 תור' }, { v: true, l: '🚫 חסימה' }].map((m) => (
-            <Box key={String(m.v)} onClick={() => setForm((p) => ({ ...p, isBlock: m.v }))} sx={{ cursor: 'pointer', flex: 1, textAlign: 'center', py: 0.9, borderRadius: 4, fontSize: 13.5, fontWeight: 500, border: `1.5px solid ${form.isBlock === m.v ? c.accent : c.border2}`, color: form.isBlock === m.v ? c.accent : c.text3, bgcolor: form.isBlock === m.v ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>{m.l}</Box>
+            <Box key={String(m.v)} onClick={() => setForm((p) => ({ ...p, isBlock: m.v }))} sx={{ cursor: 'pointer', flex: 1, textAlign: 'center', py: 0.9, borderRadius: 2, fontSize: 13.5, fontWeight: 700, border: `1.5px solid ${form.isBlock === m.v ? c.accent : c.border2}`, color: form.isBlock === m.v ? c.accent : c.text3, bgcolor: form.isBlock === m.v ? c.accentDim : 'transparent', transition: 'all 0.15s' }}>{m.l}</Box>
           ))}
         </Box>
         {form.isBlock && <Typography sx={{ fontSize: 12.5, color: c.text3, mb: 2, mt: -1 }}>הזמן ייחסם ביומן — לקוחות לא יוכלו לקבוע בו בדף ההזמנות</Typography>}
@@ -500,7 +500,7 @@ export default function CalendarPage() {
             {[2, 3, 4, 5, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} תורים</option>)}
           </TextField>
         )}
-        <Button onClick={submit} variant="contained" fullWidth disabled={(!form.customerName && !form.isBlock) || saving} sx={{ borderRadius: 1.5, fontWeight: 500, py: 1.5 }}>
+        <Button onClick={submit} variant="contained" fullWidth disabled={(!form.customerName && !form.isBlock) || saving} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>
           {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : form.isBlock ? '🚫 חסום את הזמן' : 'קבע תור'}
         </Button>
       </Dialog>

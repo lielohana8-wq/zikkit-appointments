@@ -92,15 +92,15 @@ export default function CustomersPage() {
   const detailHistory = detail ? getCustomerHistory(bookings, detail.phone) : null;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: { xs: 2.5, sm: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>לקוחות</Typography>
-        <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 500, px: 2.5 }}>+ לקוח</Button>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>לקוחות</Typography>
+        <Button onClick={() => setAddOpen(true)} variant="contained" sx={{ borderRadius: 99, fontWeight: 700, px: 2.5 }}>+ לקוח</Button>
       </Box>
 
       <Box className="zk-page" sx={{ maxWidth: 680, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <TextField fullWidth placeholder="🔍  חיפוש לפי שם או טלפון" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 99, bgcolor: c.card } }} />
+        <TextField fullWidth placeholder="🔍  חיפוש לפי שם או טלפון" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 99, bgcolor: c.surface1 } }} />
 
         {/* Filter pills */}
         <Box sx={{ display: 'flex', gap: 0.75, mb: 3 }}>
@@ -109,7 +109,7 @@ export default function CustomersPage() {
           ))}
         </Box>
 
-        {customers.length > 0 && <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{filtered.length} לקוחות</Typography>}
+        {customers.length > 0 && <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text3, mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{filtered.length} לקוחות</Typography>}
 
         {filtered.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -119,20 +119,20 @@ export default function CustomersPage() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {filtered.map((cu) => (
-              <Box key={cu.id} onClick={() => setDetail(cu)} sx={{ cursor: 'pointer', bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
+              <Box key={cu.id} onClick={() => setDetail(cu)} sx={{ cursor: 'pointer', bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': {  transform: 'translateY(-2px)' } }}>
                 <Box sx={{ position: 'relative' }}>
-                  <Box sx={{ width: 46, height: 46, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 18, flexShrink: 0 }}>{cu.name?.[0] || '?'}</Box>
+                  <Box sx={{ width: 46, height: 46, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{cu.name?.[0] || '?'}</Box>
                   {cu.vip && <Box sx={{ position: 'absolute', top: -3, right: -3, fontSize: 13 }}>⭐</Box>}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Typography sx={{ fontSize: 15, fontWeight: 500, color: c.text }}>{cu.name}</Typography>
-                    {(cu.tags || []).filter((t) => t !== 'VIP').slice(0, 1).map((t) => <Box key={t} sx={{ fontSize: 9.5, fontWeight: 600, bgcolor: c.fill, color: c.text2, borderRadius: 99, px: 0.75 }}>{t}</Box>)}
+                    <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{cu.name}</Typography>
+                    {(cu.tags || []).filter((t) => t !== 'VIP').slice(0, 1).map((t) => <Box key={t} sx={{ fontSize: 9.5, fontWeight: 600, bgcolor: c.surface3, color: c.text2, borderRadius: 99, px: 0.75 }}>{t}</Box>)}
                   </Box>
                   <Typography sx={{ fontSize: 13, color: c.text3 }}>{cu.phone}</Typography>
                 </Box>
-                <Box sx={{ textAlign: 'center', bgcolor: c.fill, borderRadius: 4, px: 1.5, py: 0.75 }}>
-                  <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.accent, lineHeight: 1 }}>{cu.visits}</Typography>
+                <Box sx={{ textAlign: 'center', bgcolor: c.surface2, borderRadius: 2.5, px: 1.5, py: 0.75 }}>
+                  <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.accent, lineHeight: 1 }}>{cu.visits}</Typography>
                   <Typography sx={{ fontSize: 9.5, color: c.text3 }}>ביקורים</Typography>
                 </Box>
               </Box>
@@ -142,37 +142,37 @@ export default function CustomersPage() {
       </Box>
 
       {/* Add dialog */}
-      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 3.5, maxWidth: 400, width: '100%' } }}>
-        <Typography sx={{ fontSize: 21, fontWeight: 600, mb: 2.5, color: c.text }}>לקוח חדש</Typography>
+      <Dialog scroll="body" open={addOpen} onClose={() => setAddOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 3.5, maxWidth: 400, width: '100%' } }}>
+        <Typography sx={{ fontSize: 21, fontWeight: 800, mb: 2.5, color: c.text }}>לקוח חדש</Typography>
         <TextField fullWidth label="שם" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="טלפון" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} sx={{ mb: 2 }} />
         <TextField fullWidth label="אימייל (אופציונלי)" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} sx={{ mb: 3 }} />
-        <Button onClick={add} variant="contained" fullWidth disabled={!form.name || !form.phone} sx={{ borderRadius: 1.5, fontWeight: 500, py: 1.5 }}>הוסף לקוח</Button>
+        <Button onClick={add} variant="contained" fullWidth disabled={!form.name || !form.phone} sx={{ borderRadius: 1.5, fontWeight: 700, py: 1.5 }}>הוסף לקוח</Button>
       </Dialog>
 
       {/* Detail dialog */}
-      <Dialog scroll="body" open={!!detail} onClose={() => { setDetail(null); load(); }} PaperProps={{ sx: { borderRadius: 4, maxWidth: 440, width: '100%' } }}>
+      <Dialog scroll="body" open={!!detail} onClose={() => { setDetail(null); load(); }} PaperProps={{ sx: { borderRadius: 2, maxWidth: 440, width: '100%' } }}>
         {detail && detailHistory && (
           <Box>
             {/* Header */}
             <Box sx={{ bgcolor: c.accent, p: 3, color: '#fff', position: 'relative' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 600 }}>{detail.name?.[0]}</Box>
+                <Box sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800 }}>{detail.name?.[0]}</Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontSize: 22, fontWeight: 600 }}>{detail.name} {detail.vip && '⭐'}</Typography>
+                  <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{detail.name} {detail.vip && '⭐'}</Typography>
                   <Typography sx={{ fontSize: 14, opacity: 0.9 }}>{detail.phone}</Typography>
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', gap: 2, mt: 2.5 }}>
-                <Box><Typography sx={{ fontSize: 22, fontWeight: 600, lineHeight: 1 }}>{detail.visits}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>ביקורים</Typography></Box>
-                <Box><Typography sx={{ fontSize: 22, fontWeight: 600, lineHeight: 1 }}>₪{detailHistory.totalSpent.toLocaleString()}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>סה״כ הוציא</Typography></Box>
-                {detail.lastVisit && <Box><Typography sx={{ fontSize: 22, fontWeight: 600, lineHeight: 1 }}>{detail.lastVisit.slice(5)}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>ביקור אחרון</Typography></Box>}
+                <Box><Typography sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{detail.visits}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>ביקורים</Typography></Box>
+                <Box><Typography sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>₪{detailHistory.totalSpent.toLocaleString()}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>סה״כ הוציא</Typography></Box>
+                {detail.lastVisit && <Box><Typography sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{detail.lastVisit.slice(5)}</Typography><Typography sx={{ fontSize: 11, opacity: 0.85 }}>ביקור אחרון</Typography></Box>}
               </Box>
             </Box>
 
             {/* No-show warning */}
             {detailHistory.noShows >= 2 && (
-              <Box sx={{ mx: 3, mt: 2, p: 1.75, bgcolor: c.hotDim, border: `1px solid ${c.hot}`, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ mx: 3, mt: 2, p: 1.75, bgcolor: c.hotDim, border: `1px solid ${c.hot}`, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ fontSize: 20 }}>⚠️</Box>
                 <Typography sx={{ fontSize: 13, color: c.hot, fontWeight: 600 }}>לקוח זה לא הגיע ל-{detailHistory.noShows} תורים. שקול לבקש אישור מראש.</Typography>
               </Box>
@@ -180,7 +180,7 @@ export default function CustomersPage() {
 
             <Box sx={{ p: 3 }}>
               {/* Tags */}
-              <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>תגיות</Typography>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>תגיות</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2.5 }}>
                 {TAGS.map((tag) => {
                   const on = (detail.tags || []).includes(tag);
@@ -190,31 +190,31 @@ export default function CustomersPage() {
 
               {/* Quick actions */}
               <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
-                <Button href={`tel:${detail.phone}`} fullWidth variant="outlined" sx={{ borderRadius: 4, fontWeight: 600 }}>📞 התקשר</Button>
-                <Button href={`https://wa.me/972${detail.phone.replace(/^0/, '')}`} target="_blank" fullWidth variant="outlined" sx={{ borderRadius: 4, fontWeight: 600, color: '#25D366', borderColor: c.border2 }}>💬 וואטסאפ</Button>
+                <Button href={`tel:${detail.phone}`} fullWidth variant="outlined" sx={{ borderRadius: 2.5, fontWeight: 600 }}>📞 התקשר</Button>
+                <Button href={`https://wa.me/972${detail.phone.replace(/^0/, '')}`} target="_blank" fullWidth variant="outlined" sx={{ borderRadius: 2.5, fontWeight: 600, color: '#25D366', borderColor: c.border2 }}>💬 וואטסאפ</Button>
               </Box>
 
               {/* Notes */}
-              <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>הערות</Typography>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>הערות</Typography>
               <TextField fullWidth multiline rows={2} defaultValue={detail.notes || ''} onBlur={(e) => saveNotes(detail, e.target.value)} placeholder="העדפות, רגישויות, פרטים..." sx={{ mb: 2.5 }} size="small" />
 
               {/* History */}
-              <Typography sx={{ fontSize: 12.5, fontWeight: 500, color: c.text2, mb: 1 }}>היסטוריית תורים ({detailHistory.history.length})</Typography>
+              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: c.text2, mb: 1 }}>היסטוריית תורים ({detailHistory.history.length})</Typography>
               {detailHistory.history.length === 0 ? (
                 <Typography sx={{ fontSize: 13, color: c.text3, py: 2, textAlign: 'center' }}>אין תורים עדיין</Typography>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 200, overflowY: 'auto' }}>
                   {detailHistory.history.map((h) => (
-                    <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.fill, borderRadius: 4, p: 1.25 }}>
+                    <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: c.surface2, borderRadius: 2.5, p: 1.25 }}>
                       <Box sx={{ textAlign: 'center', minWidth: 38 }}>
-                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: c.accent, lineHeight: 1 }}>{new Date(h.date).getDate()}</Typography>
+                        <Typography sx={{ fontSize: 14, fontWeight: 800, color: c.accent, lineHeight: 1 }}>{new Date(h.date).getDate()}</Typography>
                         <Typography sx={{ fontSize: 9, color: c.text3 }}>{HEBREW_MONTHS[new Date(h.date).getMonth()]}</Typography>
                       </Box>
                       <Box sx={{ flex: 1 }}>
                         <Typography sx={{ fontSize: 13, fontWeight: 600, color: c.text }}>{h.service || 'טיפול'}</Typography>
                         <Typography sx={{ fontSize: 11, color: c.text3 }}>{h.time}{h.staff ? ` · ${h.staff}` : ''}</Typography>
                       </Box>
-                      {h.status === 'cancelled' ? <Typography sx={{ fontSize: 11, color: c.hot }}>בוטל</Typography> : h.price ? <Typography sx={{ fontSize: 13, fontWeight: 500, color: c.text2 }}>₪{h.price}</Typography> : null}
+                      {h.status === 'cancelled' ? <Typography sx={{ fontSize: 11, color: c.hot }}>בוטל</Typography> : h.price ? <Typography sx={{ fontSize: 13, fontWeight: 700, color: c.text2 }}>₪{h.price}</Typography> : null}
                     </Box>
                   ))}
                 </Box>

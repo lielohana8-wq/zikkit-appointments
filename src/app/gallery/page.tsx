@@ -55,22 +55,22 @@ export default function GalleryPage() {
   if (loading || dataLoading) return <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: c.accent }} /></Box>;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: c.canvas }}>
-      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: c.chrome, backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: c.bg }}>
+      <Box sx={{ borderBottom: `1px solid ${c.border}`, py: 1.75, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'var(--zk-blur)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <Button onClick={() => router.push('/dashboard')} sx={{ color: c.text2, fontWeight: 600 }}>{'← דאשבורד'}</Button>
-        <Typography sx={{ fontSize: 17, fontWeight: 600, color: c.text }}>גלריית עבודות</Typography>
+        <Typography sx={{ fontSize: 17, fontWeight: 800, color: c.text }}>גלריית עבודות</Typography>
         <Box sx={{ width: 80 }} />
       </Box>
 
       <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2.5, sm: 4 }, py: 3 }}>
-        <Box sx={{ bgcolor: c.card, border: `1px solid ${c.border2}`, borderRadius: 4, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center' }}>
+        <Box sx={{ bgcolor: c.surface1, border: `1px solid ${c.border2}`, borderRadius: 2, p: 2, mb: 3, display: 'flex', gap: 1.5, alignItems: 'center' }}>
           <Box sx={{ fontSize: 22 }}>🖼️</Box>
           <Typography sx={{ fontSize: 12.5, color: c.text2, lineHeight: 1.5, flex: 1 }}>
             התמונות שתעלה כאן יופיעו בדף הנחיתה האוטומטי של העסק (עד 12).
           </Typography>
         </Box>
 
-        <Button component="label" variant="contained" disabled={uploading || images.length >= 12} fullWidth sx={{ borderRadius: 1.5, fontWeight: 500, mb: 3, py: 1.4, borderStyle: 'dashed' }}>
+        <Button component="label" variant="contained" disabled={uploading || images.length >= 12} fullWidth sx={{ borderRadius: 1.5, fontWeight: 700, mb: 3, py: 1.4, borderStyle: 'dashed' }}>
           {uploading ? <><CircularProgress size={16} sx={{ color: '#fff', mr: 1 }} />מעלה...</> : `📷 העלה תמונה (${images.length}/12)`}
           <input type="file" accept="image/*" multiple hidden onChange={handleFile} />
         </Button>

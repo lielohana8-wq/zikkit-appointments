@@ -82,7 +82,20 @@ export default function HQPage() {
 
   useEffect(() => { if (isOwner) loadAll(); else if (!loading) setDataLoading(false); }, [isOwner, loading, loadAll]);
 
-  const bizAction = async (bizId: string, action: string, plan?: string) => {
+    const notifyBiz = async (bizId: string) => {
+    const message = prompt('מה לשלוח לבעל העסק? (פוש + SMS)');
+    if (!message) return;
+    await fetch('/api/hq/businesses', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, bizId, action: 'notify', message }) });
+    alert('נשלח ✓');
+  };
+  const notifyAll = async () => {
+    const message = prompt('הודעה לכל בעלי העסקים בפלטפורמה (פוש):');
+    if (!message || !confirm(`לשלוח לכולם?\n"${message}"`)) return;
+    const r = await fetch('/api/hq/businesses', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, bizId: 'all', action: 'notifyAll', message }) });
+    const d = await r.json();
+    alert(`נשלח ל-${d.sentCount ?? 0} עסקים ✓`);
+  };
+const bizAction = async (bizId: string, action: string, plan?: string) => {
     setBusyId(bizId);
     try {
       const res = await fetch('/api/hq/businesses', {
@@ -214,6 +227,7 @@ export default function HQPage() {
               a.click();
             }} variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>⬇️ CSV</Button>
             <Button component="a" href="/pilot-requests" variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>🎯 לידים</Button>
+            <Button onClick={notifyAll} variant="outlined" sx={{ borderColor: c.border2, color: c.text2, fontWeight: 800, borderRadius: 2 }}>📣 לכולם</Button>
           </Box>
           <Typography sx={{ fontSize: 11.5, color: c.text3, mt: 1 }}>המחירים נכנסים לתוקף מיידית בעמוד המנויים ובתשלום עצמו</Typography>
         </Box>
@@ -283,6 +297,9 @@ export default function HQPage() {
                       ? <Button onClick={() => bizAction(b.id, 'activate')} disabled={busyId === b.id} size="small" variant="contained" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, bgcolor: c.green }}>הפעל</Button>
                       : null}
                     <Button component="a" href={`/book/${b.id}`} target="_blank" size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.text2 }}>🔗 דף</Button>
+                    <Button onClick={() => notifyBiz(b.id)} size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.text2 }}>📣 הודעה</Button>
+                    <Button onClick={() => bizAction(b.id, 'extendTrial')} disabled={busyId === b.id} size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.text2 }}>➕30 ניסיון</Button>
+                    <Button onClick={() => { navigator.clipboard.writeText(b.id); }} size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: c.text3 }}>📋 ID</Button>
                     {b.ownerPhone && <Button component="a" href={`https://wa.me/972${String(b.ownerPhone).replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" size="small" sx={{ borderRadius: 1.5, fontWeight: 700, fontSize: 12, color: '#25D366' }}>💬 וואטסאפ</Button>}
                     {false
                       ? <Button size="small">x</Button>

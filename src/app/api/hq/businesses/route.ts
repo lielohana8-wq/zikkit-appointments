@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listAllBiz, setBizField } from '@/lib/firestore-admin';
+import { listAllBiz, setBizField, getBiz, sendPush, sendSms } from '@/lib/firestore-admin';
 import { hqAuth } from '@/lib/hq-auth';
 
 /**
@@ -53,7 +53,8 @@ export async function GET(req: NextRequest) {
       const usage = ((data.usage as Record<string, number>) || {});
       const pushSubsCount = Object.keys(((data.pushSubs as Record<string, unknown>) || {})).length;
       const createdMs = new Date(String(data.createdAt || (data.cfg as Record<string, unknown>)?.created_at || '')).getTime() || 0;
-      const trialDaysLeft = ((data.subscription as Record<string, unknown>)?.status === 'active') ? null : (createdMs ? Math.max(0, 30 - Math.floor((now - createdMs) / day)) : null);
+      const trialLen = 30 + (Number(data.trialBonusDays) || 0);
+      const trialDaysLeft = ((data.subscription as Record<string, unknown>)?.status === 'active') ? null : (createdMs ? Math.max(0, trialLen - Math.floor((now - createdMs) / day)) : null);
       const healthScore = Math.min(100, Math.round(
         Math.min(40, bookings7 * 2) +
         (booking.logo ? 10 : 0) + (booking.banner ? 5 : 0) +
@@ -100,7 +101,7 @@ export async function PATCH(req: NextRequest) {
     const denied = hqAuth(req, body.email);
     if (denied) return denied;
 
-    const { bizId, action, plan } = body;
+    const { bizId, action, plan, title, message } = body;
     if (!bizId || !action) return NextResponse.json({ error: 'missing bizId/action' }, { status: 400 });
 
     if (action === 'suspend') {
@@ -114,6 +115,26 @@ export async function PATCH(req: NextRequest) {
         renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         grantedByAdmin: true,
       });
+    } else if (action === 'extendTrial') {
+      const b = await getBiz(bizId);
+      const bonus = Number((b as Record<string, unknown>)?.trialBonusDays) || 0;
+      await setBizField(bizId, ['trialBonusDays'], bonus + 30);
+    } else if (action === 'notify') {
+      const b = await getBiz(bizId);
+      const ownerPhone = String(((b?.booking as Record<string, unknown>) || {}).notifyPhone || ((b?.cfg as Record<string, unknown>) || {}).owner_phone || '');
+      if (!ownerPhone) return NextResponse.json({ error: 'no owner phone' }, { status: 400 });
+      await sendPush(bizId, ownerPhone, title || '📣 הודעה מזיקית', message || '').catch(() => {});
+      await sendSms(ownerPhone, `📣 זיקית: ${message || ''}`, bizId).catch(() => {});
+    } else if (action === 'notifyAll') {
+      const all = await listAllBiz();
+      let sentCount = 0;
+      for (const { id: bid, data: bd } of all) {
+        const op = String(((bd.booking as Record<string, unknown>) || {}).notifyPhone || ((bd.cfg as Record<string, unknown>) || {}).owner_phone || '');
+        if (!op) continue;
+        await sendPush(bid, op, title || '📣 הודעה מזיקית', message || '').catch(() => {});
+        sentCount++;
+      }
+      return NextResponse.json({ success: true, sentCount });
     } else {
       return NextResponse.json({ error: 'unknown action' }, { status: 400 });
     }

@@ -12,6 +12,7 @@ import { ToastProvider } from '@/components/Toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeModeProvider } from '@/components/ThemeMode';
 import { CommandPalette } from '@/components/CommandPalette';
+import { SuspendGate } from '@/components/SuspendGate';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const cache = useMemo(
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>
             <ToastProvider>
               <AuthProvider>
-                {children}
+                <SuspendGate>
+                  {children}
+                </SuspendGate>
                 <CommandPalette />
               </AuthProvider>
               <PWAInstaller />

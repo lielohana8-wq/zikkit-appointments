@@ -42,6 +42,13 @@ export async function GET(req: NextRequest) {
         error: 'העסק לא נמצא. ודא שה-bizId נכון ושנשמרו הגדרות.',
       });
     }
+    if ((biz as Record<string, unknown>).suspended === true) {
+      return NextResponse.json({
+        enabled: false,
+        reason: 'suspended',
+        error: 'העסק אינו זמין כרגע. לפרטים ניתן לפנות לבית העסק ישירות.',
+      });
+    }
 
     const booking = (biz.booking as Record<string, unknown>) || {};
     // Owner must explicitly enable the page (default: enabled unless set to false)
@@ -151,6 +158,18 @@ export async function POST(req: NextRequest) {
 
     const biz = await getBiz(bizId);
     if (!biz) return NextResponse.json({ success: false, error: 'not found' }, { status: 404 });
+    if ((biz as Record<string, unknown>).suspended === true) return NextResponse.json({ success: false, error: 'suspended', message: 'העסק אינו זמין כרגע. לפרטים ניתן לפנות לבית העסק ישירות.' }, { status: 403 });
+
+    // Blacklist: a customer flagged as blocked cannot book through any online flow.
+    // The message is deliberately generic — we don't advertise the blacklist.
+    {
+      const gPhone = String((body as Record<string, unknown>).phone || '').replace(/\D/g, '').slice(-9);
+      if (gPhone.length === 9) {
+        const gCusts = (((biz.customers as Record<string, unknown>) || {}).list as Array<Record<string, unknown>>) || [];
+        const gHit = gCusts.find((cu) => String(cu.phone || '').replace(/\D/g, '').slice(-9) === gPhone && cu.blocked === true);
+        if (gHit) return NextResponse.json({ success: false, error: 'לא ניתן להשלים את הפעולה אונליין. אנא צרו קשר טלפוני עם העסק.' }, { status: 403 });
+      }
+    }
 
     // ---- Waitlist: customer wants to be notified if a slot opens ----
     if (action === 'waitlist') {

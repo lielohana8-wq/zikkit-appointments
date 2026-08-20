@@ -75,6 +75,16 @@ export default function CustomersPage() {
     await load();
   };
 
+  const toggleBlock = async (cust: Customer) => {
+    if (!bizId) return;
+    const next = !cust.blocked;
+    if (next && !confirm(`לחסום את ${cust.name}? לא יוכל לקבוע תורים אונליין או דרך דנה.`)) return;
+    await updateCustomer(bizId, cust.id, { blocked: next });
+    const updated = { ...cust, blocked: next };
+    setDetail(updated);
+    await load();
+  };
+
   const saveNotes = async (cust: Customer, notes: string) => {
     if (!bizId) return;
     await updateCustomer(bizId, cust.id, { notes });
@@ -123,11 +133,13 @@ export default function CustomersPage() {
                 <Box sx={{ position: 'relative' }}>
                   <Box sx={{ width: 46, height: 46, borderRadius: '50%', bgcolor: c.accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{cu.name?.[0] || '?'}</Box>
                   {cu.vip && <Box sx={{ position: 'absolute', top: -3, right: -3, fontSize: 13 }}>⭐</Box>}
+                  {cu.blocked && <Box sx={{ position: 'absolute', bottom: -3, right: -3, fontSize: 13 }}>🚫</Box>}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Typography sx={{ fontSize: 15, fontWeight: 700, color: c.text }}>{cu.name}</Typography>
                     {(cu.tags || []).filter((t) => t !== 'VIP').slice(0, 1).map((t) => <Box key={t} sx={{ fontSize: 9.5, fontWeight: 600, bgcolor: c.surface3, color: c.text2, borderRadius: 99, px: 0.75 }}>{t}</Box>)}
+                    <Box onClick={(e) => { e.stopPropagation(); toggleBlock(cu); }} sx={{ fontSize: 9.5, fontWeight: 700, bgcolor: cu.blocked ? '#F8717126' : c.surface3, color: cu.blocked ? '#F87171' : c.text3, borderRadius: 99, px: 0.75, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>{cu.blocked ? '🚫 חסום' : 'חסימה'}</Box>
                   </Box>
                   <Typography sx={{ fontSize: 13, color: c.text3 }}>{cu.phone}</Typography>
                 </Box>

@@ -48,6 +48,7 @@ export interface Customer {
   visits: number;
   lastVisit?: string;
   notes?: string;
+  blocked?: boolean;
   totalSpent: number;
   tags?: string[];        // e.g. "VIP", "חדש", "קבוע"
   vip?: boolean;

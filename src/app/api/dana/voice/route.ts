@@ -45,6 +45,13 @@ export async function POST(req: NextRequest) {
     if (!biz) return xml(say('העסק לא נמצא. להתראות!') + '<Hangup/>');
     const bizName = ((biz.cfg as Record<string, unknown>)?.biz_name as string) || 'העסק';
 
+    // Blacklist check — blocked customers are politely redirected, never told why
+    const callerKey = from.replace(/\D/g, '').slice(-9);
+    const custList = (((biz.customers as Record<string, unknown>) || {}).list as Array<Record<string, unknown>>) || [];
+    if (callerKey.length === 9 && custList.some((cu) => String(cu.phone || '').replace(/\D/g, '').slice(-9) === callerKey && cu.blocked === true)) {
+      return xml(say(`תודה שהתקשרתם ל${bizName}. לקביעת תור אנא פנו ישירות לבית העסק. יום נעים!`) + '<Hangup/>');
+    }
+
     let history: Array<{ role: string; content: string }> = [];
     try { history = JSON.parse(Buffer.from(req.nextUrl.searchParams.get('st') || '', 'base64').toString() || '[]'); } catch { /* fresh */ }
 
